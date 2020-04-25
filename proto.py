@@ -20,8 +20,8 @@ class GradientBoostingPartitionClassifier(object):
                  y,
                  min_partition_size,
                  max_partition_size,
-                 gamma,
-                 eta,
+                 gamma=0.,
+                 eta=0.,
                  num_classifiers=100,
                  ):
 
@@ -55,31 +55,34 @@ class GradientBoostingPartitionClassifier(object):
                                                          self.N,
                                                          1)).astype(theano.config.floatX))
         # optimal approximate tree at each step
-        self.approx_partition_trees = theano.shared(name='approx_partition_trees',
-                                                    value=np.zeros((self.num_classifiers,
-                                                                    self.num_features + 1,
-                                                                    1)).astype(theano.config.floatX))
+        self.implied_trees = theano.shared(name='implied_trees',
+                                           value=np.zeros((self.num_classifiers,
+                                                           self.num_features + 1,
+                                                           1)).astype(theano.config.floatX))
 
-        # set initial classifier to the output mean
-        y_bar = theano.function([], T.mean(self.y))()
-        leaf_value = y_bar * np.ones((self.N, 1)).astype(theano.config.floatX)
+        # set initial random leaf values
+        # leaf_value = np.asarray(rng.choice((0, 1),
+        #                               self.N)).reshape(self.N, 1).astype(theano.config.floatX)
+        leaf_value = self.y.get_value().reshape((self.N, 1))
         self.set_next_leaf_value(leaf_value)
 
         # Set initial partition to be the size 1 partition (all leaf values the same)
         self.partitions.append(list(range(self.N)))
 
         # Set initial classifier
-        approx_partition_tree = self.imply_tree(leaf_value)
-        self.set_next_classifier(approx_partition_tree)        
+        implied_tree = self.imply_tree(leaf_value)
+        self.set_next_classifier(implied_tree)        
         
         # For testing
-        self.srng = T.shared_randomstreams.RandomStreams(seed=SEED)                
+        self.srng = T.shared_randomstreams.RandomStreams(seed=SEED)
+
+        self.curr_classifier += 1
 
     def set_next_classifier(self, classifier):
         i = self.curr_classifier
         c = T.dmatrix()
-        update = (self.approx_partition_trees,
-                  T.set_subtensor(self.approx_partition_trees[i, :, :], c))
+        update = (self.implied_trees,
+                  T.set_subtensor(self.implied_trees[i, :, :], c))
         f = theano.function([c], updates=[update])
         f(classifier)
 
@@ -99,9 +102,9 @@ class GradientBoostingPartitionClassifier(object):
         implied_tree = np.concatenate([reg.coef_.squeeze(), reg.intercept_]).reshape(-1,1)
         return implied_tree
 
-    def weak_learner_predict(self, approx_partition_tree):
+    def weak_learner_predict(self, implied_tree):
         X = T.concatenate([self.X, T.as_tensor(np.ones((self.N, 1)).astype(theano.config.floatX))], axis=1)
-        y_hat = T.dot(X, approx_partition_tree)
+        y_hat = T.dot(X, implied_tree)
         return y_hat
 
     def predict(self):
@@ -111,7 +114,7 @@ class GradientBoostingPartitionClassifier(object):
         
         y,inner_updates = theano.scan(
             fn=iter_step,
-            sequences=[self.approx_partition_trees],
+            sequences=[self.implied_trees],
             outputs_info=[None]
             )
 
@@ -123,7 +126,7 @@ class GradientBoostingPartitionClassifier(object):
     def loss_without_regularization(self, y_hat):
         return self._mse(y_hat)
 
-    def find_optimal_partition(self, num_partitions):
+    def fit_step(self, num_partitions):
         g,h = self.generate_coefficients()
 
         optimizer = PartitionTreeOptimizer(g, h)
@@ -132,21 +135,28 @@ class GradientBoostingPartitionClassifier(object):
         # Set next partition to be optimal
         self.partitions.append(optimizer.maximal_part)
 
+        # Assert optimization correct
         assert np.isclose(optimizer.maximal_val, np.sum(optimizer.summands)), 'optimal value mismatch'
         for part,val in zip(optimizer.maximal_part, optimizer.summands):
             assert np.isclose(np.sum(np.abs(g)[part])**2/np.sum(h[part]), val), 'optimal partitions mismatch'
 
-        # Find optimal tree cuts
+        # Set optimal leaf_values
         leaf_values = np.zeros((self.N, 1))
         for part in optimizer.maximal_part:
             min_val = -1 * np.sum(g[part])/np.sum(h[part])
             leaf_values[part] = min_val
+
+        self.set_next_leaf_value(leaf_values)
             
-        # Find implied tree
+        # Set implied tree
         implied_tree = self.imply_tree(leaf_values)
-            
+        self.set_next_classifier(implied_tree)
+
+        import pdb
+        pdb.set_trace()
+
+        self.curr_classifier += 1
         
-        return 10
         
     def generate_coefficients(self):
         ''' Generate gradient, hessian sequences for offgraph
@@ -178,7 +188,7 @@ class GradientBoostingPartitionClassifier(object):
         # Test
         quadratic_term = 0.5 * np.dot(y_hat0.T, np.dot(H(y_hat0), f_t))
         quadratic_term_coeff = 0.5 * np.dot(h, f_t)
-        assert quadratic_term == quadratic_term_coeff
+        assert np.isclose(quadratic_term, quadratic_term_coeff)
 
         return (g, h)        
 
