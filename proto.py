@@ -14,7 +14,7 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-X,y = make_classification(random_state=55, n_samples=100)
+X,y = make_classification(random_state=55, n_samples=200)
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 SEED = 55
@@ -74,19 +74,27 @@ class GradientBoostingPartitionClassifier(object):
                                          value=np.zeros((self.num_classifiers + 1,
                                                          self.N,
                                                          1)).astype(theano.config.floatX))
-        # optimal approximate tree at each step
-        self.implied_trees = theano.shared(name='implied_trees',
-                                           value=np.zeros((self.num_classifiers + 1,
-                                                           self.num_features + 1,
-                                                           1)).astype(theano.config.floatX))
-
+        # classifier at each step
+        if self.distill_method == 'OLS':
+            self.implied_trees = [OLSImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+        elif self.distill_method == 'LDA':
+            self.implied_trees = [LDAImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+        elif self.distill_method == 'direct':
+            self.implied_trees = [DirectImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+        
         # set initial random leaf values
         # leaf_value = np.asarray(rng.choice((0, 1),
         #                               self.N)).reshape(self.N, 1).astype(theano.config.floatX)
         # noise = np.asarray(rng.choice((-1e-1, 1e-1),
         #                               self.N)).reshape(self.N, 1).astype(theano.config.floatX)
         # leaf_value = self.y.get_value().reshape((self.N, 1)) + noise
-        leaf_value = np.asarray(rng.uniform(low=0.0, high=1.0, size=(self.N, 1))).astype(theano.config.floatX)
+        if self.distill_method == 'LDA':
+            # Cannot have number of unique classes == number of samples, so
+            # we must restrict sampling to create fewer classes
+            leaf_value = rng.choice(rng.uniform(low=0.0, high=1.0, size=(self.min_partition_size,)),
+                                    size=(self.N, 1)).astype(theano.config.floatX)
+        else:
+            leaf_value = np.asarray(rng.uniform(low=0.0, high=1.0, size=(self.N, 1))).astype(theano.config.floatX)
         self.set_next_leaf_value(leaf_value)
 
         # Set initial partition to be the size 1 partition (all leaf values the same)
@@ -94,6 +102,7 @@ class GradientBoostingPartitionClassifier(object):
 
         # Set initial classifier
         implied_tree = self.imply_tree(leaf_value)
+        
         self.set_next_classifier(implied_tree)        
         
         # For testing
@@ -103,11 +112,7 @@ class GradientBoostingPartitionClassifier(object):
 
     def set_next_classifier(self, classifier):
         i = self.curr_classifier
-        c = T.dmatrix()
-        update = (self.implied_trees,
-                  T.set_subtensor(self.implied_trees[i, :, :], c))
-        f = theano.function([c], updates=[update])
-        f(classifier)
+        self.implied_trees[i] = classifier
 
     def set_next_leaf_value(self, leaf_value):
         i = self.curr_classifier
@@ -122,38 +127,34 @@ class GradientBoostingPartitionClassifier(object):
         y0 = leaf_values
             
         if self.distill_method == 'OLS':
-            from sklearn.linear_model import LinearRegression
-            reg = LinearRegression(fit_intercept=True).fit(X0, y0)
-            implied_tree = np.concatenate([reg.coef_.squeeze(), reg.intercept_]).reshape(-1,1)
+            implied_tree = OLSImpliedTree(X0, y0)
         elif self.distill_method == 'LDA':
-            clf_lda = LDAImpliedTree(X0, y0)
-            clf_lda.fit()
-            implied_tree = clf_lda
+            implied_tree = LDAImpliedTree(X0, y0)
         elif self.distill_method == 'direct':
-            implied_tree = np.asarray([np.nan]*(1 + self.num_features)).reshape(-1, 1)
+            implied_tree = DirectImpliedTree(X0, y0)
+
         return implied_tree
 
-    def weak_learner_predict(self, implied_tree, classifier_ind):
-        if self.distill_method == 'OLS':
-            ones = T.as_tensor(np.ones((self.N, 1)).astype(theano.config.floatX))
-            X = T.concatenate([self.X, ones], axis=1)
-            y_hat = T.dot(X, implied_tree)
-        elif self.distill_method == 'direct':
-            y_hat = self.leaf_values[classifier_ind]
-            
+    def weak_learner_predict(self, classifier_ind):
+        classifier = self.implied_trees[classifier_ind]
+        return classifier.predict(self.X)
+
+    def predict(self):        
+        y_hat = theano.shared(name='y_hat', value=np.zeros((self.N, 1)))
+        for classifier_ind in range(self.curr_classifier):
+            y_hat += self.implied_trees[classifier_ind].predict(self.X)
         return y_hat
 
-    def predict(self):
-        def iter_step(learner, classifier_ind):
-            y_step = self.weak_learner_predict(learner, classifier_ind)
+    def predict_old(self):
+        def iter_step(classifier_ind):
+            y_step = self.weak_learner_predict(classifier_ind)
             return y_step
 
         # scan is short-circuited by length of T.arange(self.curr_classifier)
         y,inner_updates = theano.scan(
             fn=iter_step,
-            sequences=[self.implied_trees, T.arange(self.curr_classifier)],
+            sequences=[T.arange(self.curr_classifier)],
             outputs_info=[None],
-            n_steps=self.curr_classifier,
             )
 
         return T.sum(y, axis=0)
@@ -202,8 +203,7 @@ class GradientBoostingPartitionClassifier(object):
                     
         
         # Calculate optimal leaf_values
-        leaf_value = np.zeros((self.N, 1))
-        
+        leaf_value = np.zeros((self.N, 1))        
         for part in optimizer.maximal_part:
             if self.solver_type == 'quadratic':
                 r1, r2 = self.quadratic_solution_scalar(np.sum(g[part]),
@@ -342,21 +342,27 @@ class GradientBoostingPartitionClassifier(object):
         r2 = (s1 - s2) / (2*a)
 
         return (r1.reshape(-1,1), r2.reshape(-1, 1))
-        
+
+class DirectImpliedTree(object):
+    def __init__(self, X=None, y=None):
+        self.X = X
+        self.y = y
+
+    def predict(self, X):
+        return T.as_tensor(self.y.astype(theano.config.floatX))
+
 class OLSImpliedTree(LinearRegression):
     def __init__(self, X=None, y=None):
         super(OLSImpliedTree, self).__init__(fit_intercept=True)
         self.X = X
         self.y = y
-        super(OLSImpliedTree, self).fit(X, y)
+        self.fit(X, y)
         
     def predict(self, X):
-        coeffs = np.concatenate([reg.coef_.squeeze(), reg.intercept_]).reshape(-1,1)
-
-        ones = T.as_tensor(np.ones((self.N, 1)).astype(theano.config.floatX))
-        X = T.concatenate([self.X, ones], axis=1)
-        y_hat = T.dot(X, implied_tree)
-
+        y_hat0 = super(OLSImpliedTree, self).predict(X.get_value())
+        y_hat = T.as_tensor(y_hat0.astype(theano.config.floatX))
+        return y_hat
+        
 class LDAImpliedTree(LinearDiscriminantAnalysis):
     def __init__(self, X=None, y=None):
         super(LDAImpliedTree, self).__init__()
@@ -365,13 +371,11 @@ class LDAImpliedTree(LinearDiscriminantAnalysis):
         self.val_to_class = dict(zip(unique_vals, range(len(unique_vals))))
         self.class_to_val = {v:k for k,v in self.val_to_class.items()}
         self.y = np.array([self.val_to_class[x[0]] for x in y])
-
-    def fit(self):
-        super( LDAImpliedTree, self).fit(self.X, self.y)
+        super(LDAImpliedTree, self).fit(self.X, self.y)
 
     def predict(self, X):
-        y_hat0 = super(LDAImpliedTree, self).predict(X)
-        y_hat = np.array([self.class_to_val[x] for x in y_hat0])
+        y_hat0 = super(LDAImpliedTree, self).predict(X.get_value())
+        y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
         return y_hat
 
 class Task(object):
@@ -495,7 +499,12 @@ class PartitionTreeOptimizer(object):
                 result = results.get()
                 allResults.append(result)            
         else:
-            task = Task(self.a, self.b, self.c, self.solver_type, self.slices[0])
+            task = Task(self.a,
+                        self.b,
+                        self.c,
+                        self.solver_type,
+                        self.slices[0],
+                        partition_type=self.partition_type)
             allResults = [task()]
             
         def reduce(allResults, fn):
@@ -513,6 +522,7 @@ class PartitionTreeOptimizer(object):
         if self.partition_type == 'endpoints':
             subsets = [range(s[0],s[1]) for s in subsets]
 
+        self.allResults = allResults
         self.maximal_val = val            
         self.maximal_sorted_part = subsets
         self.maximal_part = [list(self.sortind[subset]) for subset in subsets]
@@ -644,8 +654,8 @@ class PartitionTreeOptimizer(object):
     
 
 # Test
-num_steps = 5
-num_classifiers = 50
+num_steps = 20
+num_classifiers = 100
 num_partitions = 4
 
 clf = GradientBoostingPartitionClassifier(X,
@@ -658,25 +668,23 @@ clf = GradientBoostingPartitionClassifier(X,
                                           use_constant_term=False,
                                           solver_type='linear_hessian',
                                           learning_rate=1.0,
-                                          distill_method='direct',
+                                          distill_method='LDA',
                                           use_monotonic_partitions=True
                                           )
-
 
 clf.fit(num_steps)
 
 # Vanilla regression model
 from sklearn.linear_model import LinearRegression
 X0 = clf.X.get_value()
-y0 = theano.function([], clf.predict())()
+y0 = clf.y.get_value()
 reg = LinearRegression(fit_intercept=True).fit(X0, y0)
-y_hat = reg.predict(X0)
 
 x = T.dmatrix('x')
 _loss = theano.function([x], clf.loss_without_regularization(x))
 
 y_hat_clf = theano.function([], clf.predict())()
-y_hat_ols = reg.predict(X0)
+y_hat_ols = reg.predict(X0).reshape(-1,1)
 
-print('_loss_clf: {:4.6f}'.format(_loss(y_hat_ols)))
-print('_loss_ols: {:4.6f}'.format(_loss(y_hat_clf)))
+print('_loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+print('_loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
