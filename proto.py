@@ -1,21 +1,45 @@
 import logging
 import multiprocessing
 import numpy as np
+import pandas as pd
 from itertools import combinations
 from scipy.special import comb
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
 from functools import partial, lru_cache
 from itertools import chain, islice
+import functools
+import networkx as nx
+import networkx.algorithms.shortest_paths    
 
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-X,y = make_classification(random_state=55, n_samples=200)
-X_train, X_test, y_train, y_test = train_test_split(X, y)
+import seaborn as sns
+from sklearn import metrics
+import matplotlib.pyplot as plt
+
+def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
+    df_cm = pd.DataFrame(
+        confusion_matrix, index=class_names, columns=class_names, 
+    )
+    fig = plt.figure(figsize=figsize)
+    try:
+        heatmap = sns.heatmap(df_cm, annot=True, fmt="d")
+    except ValueError:
+        raise ValueError("Confusion matrix values must be integers.")
+    heatmap.yaxis.set_ticklabels(heatmap.yaxis.get_ticklabels(), rotation=0, ha='right', fontsize=fontsize)
+    heatmap.xaxis.set_ticklabels(heatmap.xaxis.get_ticklabels(), rotation=45, ha='right', fontsize=fontsize)
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    return fig
+  
+X,y = make_classification(random_state=55, n_samples=500)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 SEED = 55
 rng = np.random.RandomState(SEED)
@@ -33,7 +57,8 @@ class GradientBoostingPartitionClassifier(object):
                  solver_type='linear_hessian',
                  learning_rate=0.1,
                  distill_method='OLS',
-                 use_monotonic_partitions=True
+                 use_monotonic_partitions=True,
+                 shortest_path_solver=False,
                  ):
 
         # Inputs
@@ -57,6 +82,7 @@ class GradientBoostingPartitionClassifier(object):
         self.learning_rate = learning_rate
         self.distill_method = distill_method
         self.use_monotonic_partitions = use_monotonic_partitions
+        self.shortest_path_solver = shortest_path_solver
 
         # Derived
         # optimal partition at each step, not part of any
@@ -76,11 +102,18 @@ class GradientBoostingPartitionClassifier(object):
                                                          1)).astype(theano.config.floatX))
         # classifier at each step
         if self.distill_method == 'OLS':
-            self.implied_trees = [OLSImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+            self.implied_trees = [OLSImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * \
+                                 (self.num_classifiers + 1)
         elif self.distill_method == 'LDA':
-            self.implied_trees = [LDAImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+            self.implied_trees = [LDAImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * \
+                                 (self.num_classifiers + 1)
         elif self.distill_method == 'direct':
-            self.implied_trees = [DirectImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * (self.num_classifiers + 1)
+            self.implied_trees = [DirectImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * \
+                                 (self.num_classifiers + 1)
+        elif self.distill_method == 'DecisionTree':
+            self.implied_trees = [DecisionTreeImpliedTree(self.X.get_value(), np.zeros((self.N, 1)))] * \
+                                 (self.num_classifiers + 1)
+        
         
         # set initial random leaf values
         # leaf_value = np.asarray(rng.choice((0, 1),
@@ -88,7 +121,7 @@ class GradientBoostingPartitionClassifier(object):
         # noise = np.asarray(rng.choice((-1e-1, 1e-1),
         #                               self.N)).reshape(self.N, 1).astype(theano.config.floatX)
         # leaf_value = self.y.get_value().reshape((self.N, 1)) + noise
-        if self.distill_method == 'LDA':
+        if self.distill_method in ('LDA', 'DecisionTree'):
             # Cannot have number of unique classes == number of samples, so
             # we must restrict sampling to create fewer classes
             leaf_value = rng.choice(rng.uniform(low=0.0, high=1.0, size=(self.min_partition_size,)),
@@ -132,6 +165,8 @@ class GradientBoostingPartitionClassifier(object):
             implied_tree = LDAImpliedTree(X0, y0)
         elif self.distill_method == 'direct':
             implied_tree = DirectImpliedTree(X0, y0)
+        elif self.distill_method == 'DecisionTree':
+            implied_tree = DecisionTreeImpliedTree(X0, y0)
 
         return implied_tree
 
@@ -139,6 +174,13 @@ class GradientBoostingPartitionClassifier(object):
         classifier = self.implied_trees[classifier_ind]
         return classifier.predict(self.X)
 
+    def predict_from_input(self, X0):
+        X = theano.shared(value=X0.astype(theano.config.floatX))
+        y_hat = theano.shared(name='y_hat', value=np.zeros((X0.shape[0], 1)))
+        for classifier_ind in range(self.curr_classifier):
+            y_hat += self.implied_trees[classifier_ind].predict(X)
+        return y_hat
+        
     def predict(self):        
         y_hat = theano.shared(name='y_hat', value=np.zeros((self.N, 1)))
         for classifier_ind in range(self.curr_classifier):
@@ -159,18 +201,18 @@ class GradientBoostingPartitionClassifier(object):
 
         return T.sum(y, axis=0)
     
-    def loss(self, y_hat):
-        return self._mse(y_hat) + T.sum(self.regularization)
-
-    def loss_without_regularization(self, y_hat):
-        return self._mse(y_hat)
-
     def fit(self, num_steps=None):
         num_steps = num_steps or self.num_classifiers
-        print('STEP {}: LOSS: {:4.6f}'.format(0, theano.function([], clf.loss_without_regularization(clf.predict()))()))        
+        print('STEP {}: LOSS: {:4.6f}'.format(0,
+                                              theano.function([],
+                                                              clf.loss_without_regularization(
+                                                                  clf.predict()))()))        
         for i in range(num_steps):
             self.fit_step(num_partitions)
-            print('STEP {}: LOSS: {:4.6f}'.format(i, theano.function([], self.loss_without_regularization(clf.predict()))()))
+            print('STEP {}: LOSS: {:4.6f}'.format(i,
+                                                  theano.function([],
+                                                                  self.loss_without_regularization(
+                                                                      clf.predict()))()))
         print('Training finished')
 
     def fit_step(self, num_partitions):
@@ -180,9 +222,10 @@ class GradientBoostingPartitionClassifier(object):
                                            h,
                                            c,
                                            solver_type=self.solver_type,
-                                           use_monotonic_partitions=self.use_monotonic_partitions)
+                                           use_monotonic_partitions=self.use_monotonic_partitions,
+                                           shortest_path_solver=self.shortest_path_solver)
         optimizer.run(num_partitions)
-        
+
         # Set next partition to be optimal
         self.partitions.append(optimizer.maximal_part)
 
@@ -196,10 +239,12 @@ class GradientBoostingPartitionClassifier(object):
 
         print('LENGTH OF OPTIMAL PARTITIONS: {!r}'.format(
             [len(part) for part in optimizer.maximal_part]))
-        print('OPTIMAL PARTITION ENDPOITS: {!r}'.format(
-            [(p[0],p[-1]) for p in optimizer.maximal_part]))
+        print('OPTIMAL SORTED PARTITION ENDPOITS: {!r}'.format(
+            [(p[0],p[-1]) for p in optimizer.maximal_sorted_part]))
         print('OPTIMAL SUMMANDS: {!r}'.format(
             optimizer.summands))
+        print('OPTIMAL LEAF VALUES: {!r}'.format(
+            optimizer.leaf_values))
                     
         
         # Calculate optimal leaf_values
@@ -218,7 +263,7 @@ class GradientBoostingPartitionClassifier(object):
                 leaf_value[part] = self.learning_rate * min_val
             else:
                 raise RuntimeError('Incorrect solver_type')
-            
+
         # Set leaf_value
         self.set_next_leaf_value(leaf_value)
 
@@ -312,6 +357,12 @@ class GradientBoostingPartitionClassifier(object):
 
         return (g, h)        
 
+    def loss(self, y_hat):
+        return self._mse(y_hat) + T.sum(self.regularization)
+
+    def loss_without_regularization(self, y_hat):
+        return self._mse(y_hat)
+
     def _mse(self, y_hat):
         # XXX
         return T.sum(self._mse_coordinatewise(y_hat))
@@ -362,7 +413,19 @@ class OLSImpliedTree(LinearRegression):
         y_hat0 = super(OLSImpliedTree, self).predict(X.get_value())
         y_hat = T.as_tensor(y_hat0.astype(theano.config.floatX))
         return y_hat
-        
+
+class ClassifierImpliedTree(object):
+    _classifierClz = None
+
+    def __init__(self, X=None, y=None):
+        self._classifier = _classifierClz()
+        self.X = X
+        unique_vals = np.sort(np.unique(y))
+        self.val_to_class = dict(zip(unique_vals, range(len(unique_vals))))
+        self.class_to_val = {v:k for k,v in self.val_to_class.items()}
+        self.y = np.array([self.val_to_class[x[0]] for x in y])
+        self._classifier.fit(self.X, self.y)
+
 class LDAImpliedTree(LinearDiscriminantAnalysis):
     def __init__(self, X=None, y=None):
         super(LDAImpliedTree, self).__init__()
@@ -377,6 +440,22 @@ class LDAImpliedTree(LinearDiscriminantAnalysis):
         y_hat0 = super(LDAImpliedTree, self).predict(X.get_value())
         y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
         return y_hat
+
+class DecisionTreeImpliedTree(DecisionTreeClassifier):
+    def __init__(self, X=None, y=None):
+        super(DecisionTreeImpliedTree, self).__init__(max_depth=2)
+        self.X = X
+        unique_vals = np.sort(np.unique(y))
+        self.val_to_class = dict(zip(unique_vals, range(len(unique_vals))))
+        self.class_to_val = {v:k for k,v in self.val_to_class.items()}
+        self.y = np.array([self.val_to_class[x[0]] for x in y])
+        super(DecisionTreeClassifier, self).fit(self.X, self.y)
+
+    def predict(self, X):
+        y_hat0 = super(DecisionTreeImpliedTree, self).predict(X.get_value())
+        y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
+        return y_hat
+
 
 class Task(object):
     def __init__(self, a, b, c, solver_type, partition, partition_type='full'):
@@ -444,7 +523,8 @@ class PartitionTreeOptimizer(object):
                  c=None,
                  num_workers=None,
                  solver_type='linear_hessian',
-                 use_monotonic_partitions=True):
+                 use_monotonic_partitions=True,
+                 shortest_path_solver=False):
 
 
         self.a = a if c is not None else abs(a)
@@ -454,7 +534,8 @@ class PartitionTreeOptimizer(object):
         self.num_workers = num_workers or multiprocessing.cpu_count() - 1
         self.solver_type = solver_type
         self.use_monotonic_partitions = use_monotonic_partitions
-        self.partition_type = 'endpoints' if self.use_monotonic_partitions else 'full'            
+        self.partition_type = 'endpoints' if self.use_monotonic_partitions else 'full'
+        self.shortest_path_solver = shortest_path_solver
         
         self.INT_LIST = range(0, self.n)
 
@@ -470,6 +551,56 @@ class PartitionTreeOptimizer(object):
         (self.a,self.b,self.c) = (seq[self.sortind] for seq in (self.a,self.b,self.c))
 
     def run(self, num_partitions):
+        if self.shortest_path_solver:
+            self.run_shortest_path_solver(num_partitions)
+        else:
+            self.run_brute_force(num_partitions)
+
+    @functools.lru_cache(4096)
+    def _calc_weight(self, i, j):
+        return np.sum(self.a[i:j])**2/np.sum(self.b[i:j])
+
+    def run_shortest_path_solver(self, num_partitions):
+        G = nx.DiGraph()
+        # source
+        G.add_node((0,0))
+        # sink
+        G.add_node((self.n, num_partitions))
+
+        def connect_nodes(G, j, k):
+            for i in range(j):
+                if G.has_node((i,k-1)):
+                    weight = -1 * self._calc_weight(i, j)
+                    G.add_edge((i,k-1), (j,k), weight=weight)
+
+        for k in range(1, num_partitions):
+            for j in range(k, self.n):
+                if j <= self.n-(num_partitions-k):
+                    G.add_node((j, k))
+                    connect_nodes(G, j, k)
+                    print('added edges: ({}, {})'.format(j,k))
+                    
+        # connect sink to previous layer
+        for i in range(self.n):
+            if G.has_node((i, num_partitions - 1)):
+                weight = -1 * self._calc_weight(i, self.n)
+                G.add_edge((i, num_partitions-1), (self.n, num_partitions), weight=weight)
+
+        path = networkx.algorithms.shortest_paths.weighted.bellman_ford_path(G,
+                                                                             (0,0),
+                                                                             (self.n, num_partitions),
+                                                                             weight='weight')
+
+        subsets = [range(p[0], q[0]) for p,q in zip(path[:-1], path[1:])]
+        summands = [np.sum(self.a[subset])**2/np.sum(self.b[subset]) for subset in subsets]
+
+        self.maximal_val = sum(summands)
+        self.maximal_sorted_part = subsets
+        self.maximal_part = [list(self.sortind[subset]) for subset in subsets]
+        self.leaf_values = [np.sum(self.a[part])/np.sum(self.b[part]) for part in subsets]
+        self.summands = summands
+
+    def run_brute_force(self, num_partitions):
         self.slice_partitions(num_partitions)
 
         num_slices = len(self.slices) # should be the same as num_workers
@@ -515,10 +646,6 @@ class PartitionTreeOptimizer(object):
         except ValueError:
             raise RuntimeError('optimization failed for some reason')
 
-        # Assert that partitions are monotonic
-        # XXX
-        # assert all(np.diff(list(chain.from_iterable(subsets))) > 0)
-        
         if self.partition_type == 'endpoints':
             subsets = [range(s[0],s[1]) for s in subsets]
 
@@ -526,6 +653,7 @@ class PartitionTreeOptimizer(object):
         self.maximal_val = val            
         self.maximal_sorted_part = subsets
         self.maximal_part = [list(self.sortind[subset]) for subset in subsets]
+        self.leaf_values = [np.sum(self.a[part])/np.sum(self.b[part]) for part in subsets]
         self.summands = summands
 
     def slice_partitions(self, num_partitions):
@@ -654,12 +782,12 @@ class PartitionTreeOptimizer(object):
     
 
 # Test
-num_steps = 20
+num_steps = 15
 num_classifiers = 100
-num_partitions = 4
+num_partitions = 30
 
-clf = GradientBoostingPartitionClassifier(X,
-                                          y,
+clf = GradientBoostingPartitionClassifier(X_train,
+                                          y_train,
                                           min_partition_size=2,
                                           max_partition_size=10,
                                           gamma=0.,
@@ -668,8 +796,9 @@ clf = GradientBoostingPartitionClassifier(X,
                                           use_constant_term=False,
                                           solver_type='linear_hessian',
                                           learning_rate=1.0,
-                                          distill_method='LDA',
-                                          use_monotonic_partitions=True
+                                          distill_method='DecisionTree',
+                                          use_monotonic_partitions=True,
+                                          shortest_path_solver=True
                                           )
 
 clf.fit(num_steps)
@@ -686,5 +815,30 @@ _loss = theano.function([x], clf.loss_without_regularization(x))
 y_hat_clf = theano.function([], clf.predict())()
 y_hat_ols = reg.predict(X0).reshape(-1,1)
 
-print('_loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
-print('_loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+
+# Out-of-sample predictions
+X,y = make_classification(random_state=55, n_samples=10000)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+X0 = X_test
+y0 = y_test.reshape(-1,1)
+
+y_hat_clf = theano.function([], clf.predict_from_input(X0))()
+y_hat_ols = reg.predict(X0).reshape(-1,1)
+
+y_hat_clf = (y_hat_clf > .5).astype(int)
+y_hat_ols = (y_hat_ols > .5).astype(int)
+
+def _loss(y_hat):
+    return np.sum((y0 - y_hat)**2)
+
+
+print('OOS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+print('OOS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+
+print('OOS _accuracy_clf: {:1.4f}'.format(metrics.accuracy_score(y_hat_clf, y0)))
+print('OOS _accuracy_ols: {:1.4f}'.format(metrics.accuracy_score(y_hat_ols, y0)))
+      
+target_names = ['0', '1']
+conf = plot_confusion(metrics.confusion_matrix(y_hat_ols, y0), target_names)
