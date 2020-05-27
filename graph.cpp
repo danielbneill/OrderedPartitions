@@ -47,9 +47,40 @@ PartitionGraph::add_edge_and_weight(int j, int k, std::vector<float> &&diffs)
   }
 }
 
+void
+PartitionGraph::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
+  std::vector<int> ind(a.size());
+  std::iota(ind.begin(), ind.end(), 0);
+  
+  std::stable_sort(ind.begin(), ind.end(),
+		   [&a, &b](int i, int j) {
+		     return (a[i]/b[i]) < (a[j]/b[j]);
+		   });
+
+  priority_sortind_ = ind;
+
+  // Inefficient reordering
+  std::vector<float> a_s, b_s;
+  for (auto i : ind) {
+    a_s.push_back(a[i]);
+    b_s.push_back(b[i]);
+  }
+  
+  std::copy(a_s.begin(), a_s.end(), a.begin());
+  std::copy(b_s.begin(), b_s.end(), b.begin());
+}
+
 void 
 PartitionGraph::create() 
 {
+  // replace a with abs(a)
+  std::transform(a_.begin(), a_.end(), a_.begin(), [](float f){
+		   return f > 0 ? f : -f;
+		 });
+
+  // sort vectors by priority function G(x,y) = x/y
+  sort_by_priority(a_, b_);
+
   // partial sums for ease of weight calculation
   std::vector<float> asum(n_), bsum(n_);
   std::partial_sum(a_.begin(), a_.end(), asum.begin(), std::plus<float>());
@@ -131,11 +162,28 @@ PartitionGraph::optimize() {
 		});
   optimalpath_.push_back(std::make_pair(first, n_));
 
-  std::for_each(optimalpath_.begin(), optimalpath_.end(), [](ipair i){
-		  std::cout << "[" << i.first << ", " << i.second << ") --> ";
-		});
-  std::cout << " >>SINK<< \n";
+  int subset_ind = 0;
+  for (auto& node : optimalpath_) {
+    subsets_[subset_ind]= std::vector<int>();
+    for(size_t i=node.first; i<node.second; ++i) {
+      subsets_[subset_ind].push_back(priority_sortind_[i]);
+    }
+    subset_ind++;
+  }
 
+  /*
+    std::for_each(optimalpath_.begin(), optimalpath_.end(), [](ipair i){
+    std::cout << "[" << i.first << ", " << i.second << ") --> ";
+    });
+    std::cout << " >>SINK<< \n";
+  */
+
+  /*
+    std::cout << "SORTIND\n";
+    std::copy(priority_sortind_.begin(), priority_sortind_.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << "\n";
+  */
+  
   /*
     std::cout << "WEIGHTS\n";
     std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](ipair i) {
@@ -143,12 +191,29 @@ PartitionGraph::optimize() {
     << this->compute_weight(i.first, i.second) << "\n";
     });
   */
-
+	
+  /* 
+     std::cout << "SUBSETS\n";
+     std::cout << "[\n";
+     std::for_each(subsets_.begin(), subsets_.end(), [](std::vector<int>& subset){
+     std::cout << "[";
+     std::copy(subset.begin(), subset.end(),
+     std::ostream_iterator<int>(std::cout, " "));
+     std::cout << "]\n";
+		  });
+		  std::cout << "]";
+  */
+    
 }
 
 std::list<std::pair<int,int>>
 PartitionGraph::get_optimal_path() const {
   return optimalpath_;
+}
+
+std::vector<std::vector<int>>
+PartitionGraph::get_optimal_subsets_extern() const {
+  return subsets_;
 }
 
 void
@@ -157,7 +222,7 @@ PartitionGraph::write_dot() const {
 }
 
 std::vector<int>
-PartitionGraph::get_optimal_path_extern() {
+PartitionGraph::get_optimal_path_extern() const {
   // just flatten everything out
   std::vector<int> optimalpath;
   

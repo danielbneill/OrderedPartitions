@@ -7,9 +7,11 @@
 %}
 
 %include "std_vector.i"
+
 namespace std {
 %template(IArray) vector<int>;
 %template(FArray) vector<float>;
+%template(IArrayArray) vector<vector<int>>;
 }
 
 %include "python_graph.hpp"

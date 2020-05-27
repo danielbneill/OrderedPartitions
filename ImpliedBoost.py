@@ -40,7 +40,7 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     plt.xlabel('Predicted label')
     return fig
   
-X,y = make_classification(random_state=55, n_samples=63)
+X,y = make_classification(random_state=55, n_samples=200)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 SEED = 144
@@ -220,56 +220,73 @@ class GradientBoostingPartitionClassifier(object):
     def fit_step(self, num_partitions):
         g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term)
 
-        optimizer = PartitionTreeOptimizer(g,
-                                           h,
-                                           c,
-                                           solver_type=self.solver_type,
-                                           use_monotonic_partitions=self.use_monotonic_partitions,
-                                           shortest_path_solver=self.shortest_path_solver)
+        # Pure Python optimizer
+        # optimizer = PartitionTreeOptimizer(g,
+        #                                    h,
+        #                                    c,
+        #                                    solver_type=self.solver_type,
+        #                                    use_monotonic_partitions=self.use_monotonic_partitions,
+        #                                    shortest_path_solver=self.shortest_path_solver)
 
-
-        num_partitions = rng.choice(range(self.min_partition_size, self.max_partition_size))
-        print('num_partitions: {}'.format(num_partitions))
         
-        optimizer.run(num_partitions)
+
+        # num_partitions = rng.choice(range(self.min_partition_size, self.max_partition_size))
+        # print('num_partitions: {}'.format(num_partitions))
+        
+        # optimizer.run(num_partitions)
 
         # Set next partition to be optimal
-        self.partitions.append(optimizer.maximal_part)
+        # self.partitions.append(optimizer.maximal_part)
 
         # Assert optimization correct
-        assert np.isclose(optimizer.maximal_val, np.sum(optimizer.summands)), \
-               'optimal value mismatch'
-        for part,val in zip(optimizer.maximal_part, optimizer.summands):
-            if self.solver_type == 'linear_hessian':
-                assert np.isclose(np.sum(abs(g[part]))**2/np.sum(h[part]), val), \
-                       'optimal partitions mismatch'
+        # assert np.isclose(optimizer.maximal_val, np.sum(optimizer.summands)), \
+        #        'optimal value mismatch'
+        # for part,val in zip(optimizer.maximal_part, optimizer.summands):
+        #     if self.solver_type == 'linear_hessian':
+        #         assert np.isclose(np.sum(abs(g[part]))**2/np.sum(h[part]), val), \
+        #                'optimal partitions mismatch'
 
-        print('LENGTH OF OPTIMAL PARTITIONS: {!r}'.format(
-            [len(part) for part in optimizer.maximal_part]))
-        print('OPTIMAL SORTED PARTITION ENDPOITS: {!r}'.format(
-            [(p[0],p[-1]) for p in optimizer.maximal_sorted_part]))
-        print('OPTIMAL SUMMANDS: {!r}'.format(
-            optimizer.summands))
-        print('OPTIMAL LEAF VALUES: {!r}'.format(
-            optimizer.leaf_values))
-                    
-        
+        # print('LENGTH OF OPTIMAL PARTITIONS: {!r}'.format(
+        #     [len(part) for part in optimizer.maximal_part]))
+        # print('OPTIMAL SORTED PARTITION ENDPOITS: {!r}'.format(
+        #     [(p[0],p[-1]) for p in optimizer.maximal_sorted_part]))
+        # print('OPTIMAL SUMMANDS: {!r}'.format(
+        #     optimizer.summands))
+        # print('OPTIMAL LEAF VALUES: {!r}'.format(
+        #     optimizer.leaf_values))
+                            
         # Calculate optimal leaf_values
-        leaf_value = np.zeros((self.N, 1))        
-        for part in optimizer.maximal_part:
-            if self.solver_type == 'quadratic':
-                r1, r2 = self.quadratic_solution_scalar(np.sum(g[part]),
-                                                        np.sum(h[part]),
-                                                        np.sum(c[part]))
-                leaf_value[part] = self.learning_rate * r1
-            elif self.solver_type == 'linear_hessian':
-                min_val = -1 * np.sum(g[part])/np.sum(h[part])
-                leaf_value[part] = self.learning_rate * min_val
-            elif self.solver_type == 'linear_constant':
-                min_val = -1 * np.sum(g[part])/np.sum(c[part])
-                leaf_value[part] = self.learning_rate * min_val
-            else:
-                raise RuntimeError('Incorrect solver_type')
+        # leaf_value = np.zeros((self.N, 1))        
+        # for part in optimizer.maximal_part:
+        #     if self.solver_type == 'quadratic':
+        #         r1, r2 = self.quadratic_solution_scalar(np.sum(g[part]),
+        #                                                 np.sum(h[part]),
+        #                                                 np.sum(c[part]))
+        #         leaf_value[part] = self.learning_rate * r1
+        #     elif self.solver_type == 'linear_hessian':
+        #         min_val = -1 * np.sum(g[part])/np.sum(h[part])
+        #         leaf_value[part] = self.learning_rate * min_val
+        #     elif self.solver_type == 'linear_constant':
+        #         min_val = -1 * np.sum(g[part])/np.sum(c[part])
+        #         leaf_value[part] = self.learning_rate * min_val
+        #     else:
+        #         raise RuntimeError('Incorrect solver_type')
+
+        # SWIG optimizer
+        g_c = proto.FArray()
+        h_c = proto.FArray()
+        g_c = g
+        h_c = h
+        num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+        subsets = proto.find_optimal_partition(self.N, num_partitions, g_c, h_c)
+
+        self.partitions.append(subsets)
+
+        leaf_value = np.zeros((self.N, 1))
+        for subset in subsets:
+            part = list(subset)
+            min_val = -1 * np.sum(g[part])/np.sum(h[part])
+            leaf_value[part] = self.learning_rate * min_val
 
         # Set leaf_value
         self.set_next_leaf_value(leaf_value)
@@ -462,7 +479,6 @@ class DecisionTreeImpliedTree(DecisionTreeClassifier):
         y_hat0 = super(DecisionTreeImpliedTree, self).predict(X.get_value())
         y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
         return y_hat
-
 
 class Task(object):
     def __init__(self, a, b, c, solver_type, partition, partition_type='full'):
@@ -791,88 +807,88 @@ class PartitionTreeOptimizer(object):
     
 
 # Test
-num_steps = 10
-num_classifiers = 30
-num_partitions = 30
-min_partitions = 5
-max_partitions = 6
+if __name__ == '__main__':
+    num_steps = 50
+    num_classifiers = 50
+    num_partitions = 50
+    min_partitions = 10
+    max_partitions = 20
 
-clf = GradientBoostingPartitionClassifier(X_train,
-                                          y_train,
-                                          min_partition_size=min_partitions,
-                                          max_partition_size=max_partitions,
-                                          gamma=0.,
-                                          eta=0.,
-                                          num_classifiers=num_classifiers,
-                                          use_constant_term=False,
-                                          solver_type='linear_hessian',
-                                          learning_rate=1.0,
-                                          distill_method='DecisionTree',
-                                          use_monotonic_partitions=True,
-                                          shortest_path_solver=True
-                                          )
+    clf = GradientBoostingPartitionClassifier(X_train,
+                                              y_train,
+                                              min_partition_size=min_partitions,
+                                              max_partition_size=max_partitions,
+                                              gamma=0.,
+                                              eta=0.,
+                                              num_classifiers=num_classifiers,
+                                              use_constant_term=False,
+                                              solver_type='linear_hessian',
+                                              learning_rate=1.0,
+                                              distill_method='DecisionTree',
+                                              use_monotonic_partitions=True,
+                                              shortest_path_solver=True
+                                              )
 
-clf.fit(num_steps)
+    clf.fit(num_steps)
 
-# Vanilla regression model
-from sklearn.linear_model import LinearRegression
-from catboost import CatBoostClassifier, Pool
-X0 = clf.X.get_value()
-y0 = clf.y.get_value()
-reg = LinearRegression(fit_intercept=True).fit(X0, y0)
-logreg = LogisticRegression().fit(X0, y0)
-clf_cb = CatBoostClassifier(iterations=100,
-                           depth=2,
-                           learning_rate=1,
-                           loss_function='CrossEntropy',
-                           verbose=False)
+    # Vanilla regression model
+    from sklearn.linear_model import LinearRegression
+    from catboost import CatBoostClassifier, Pool
+    X0 = clf.X.get_value()
+    y0 = clf.y.get_value()
+    reg = LinearRegression(fit_intercept=True).fit(X0, y0)
+    logreg = LogisticRegression().fit(X0, y0)
+    clf_cb = CatBoostClassifier(iterations=100,
+                                depth=2,
+                                learning_rate=1,
+                                loss_function='CrossEntropy',
+                                verbose=False)
+    
+    clf_cb.fit(X0, y0)
+    
+    x = T.dmatrix('x')
+    _loss = theano.function([x], clf.loss_without_regularization(x))
+    
+    y_hat_clf = theano.function([], clf.predict())()
+    y_hat_ols = reg.predict(X0).reshape(-1,1)
+    y_hat_lr = logreg.predict(X0).reshape(-1,1)
+    y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
+    
+    y_hat_clf = (y_hat_clf > .5).astype(int)
+    y_hat_ols = (y_hat_ols > .5).astype(int)
+    
+    print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+    print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+    print('IS _loss_lr:  {:4.6f}'.format(_loss(y_hat_lr)))
+    print('IS _loss_cb:  {:4.6f}'.format(_loss(y_hat_cb)))
+    print()
+    
+    # Out-of-sample predictions
+    X0 = X_test
+    y0 = y_test.reshape(-1,1)
+    
+    y_hat_clf = theano.function([], clf.predict_from_input(X0))()
+    y_hat_ols = reg.predict(X0).reshape(-1,1)
+    y_hat_lr = logreg.predict(X0).reshape(-1,1)
+    y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
 
-clf_cb.fit(X0, y0)
-
-x = T.dmatrix('x')
-_loss = theano.function([x], clf.loss_without_regularization(x))
-
-y_hat_clf = theano.function([], clf.predict())()
-y_hat_ols = reg.predict(X0).reshape(-1,1)
-y_hat_lr = logreg.predict(X0).reshape(-1,1)
-y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
-
-y_hat_clf = (y_hat_clf > .5).astype(int)
-y_hat_ols = (y_hat_ols > .5).astype(int)
-
-print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
-print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
-print('IS _loss_lr:  {:4.6f}'.format(_loss(y_hat_lr)))
-print('IS _loss_cb:  {:4.6f}'.format(_loss(y_hat_cb)))
-
-# Out-of-sample predictions
-X,y = make_classification(random_state=55, n_samples=10000)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
-X0 = X_test
-y0 = y_test.reshape(-1,1)
-
-y_hat_clf = theano.function([], clf.predict_from_input(X0))()
-y_hat_ols = reg.predict(X0).reshape(-1,1)
-y_hat_lr = logreg.predict(X0).reshape(-1,1)
-y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
-
-y_hat_clf = (y_hat_clf > .5).astype(int)
-y_hat_ols = (y_hat_ols > .5).astype(int)
-
-def _loss(y_hat):
-    return np.sum((y0 - y_hat)**2)
-
-
-print('OOS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
-print('OOS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
-print('OOS _loss_lr: {:4.6f}'.format(_loss(y_hat_lr)))
-print('OOS _loss_cb: {:4.6f}'.format(_loss(y_hat_cb)))
-
-print('OOS _accuracy_clf: {:1.4f}'.format(metrics.accuracy_score(y_hat_clf, y0)))
-print('OOS _accuracy_ols: {:1.4f}'.format(metrics.accuracy_score(y_hat_ols, y0)))
-print('OOS _accuracy_lr: {:1.4f}'.format(metrics.accuracy_score(y_hat_lr, y0)))
-print('OOS _accuracy_cb: {:1.4f}'.format(metrics.accuracy_score(y_hat_cb, y0)))
-      
-target_names = ['0', '1']
-conf = plot_confusion(metrics.confusion_matrix(y_hat_ols, y0), target_names)
+    y_hat_clf = (y_hat_clf > .5).astype(int)
+    y_hat_ols = (y_hat_ols > .5).astype(int)
+                        
+    def _loss(y_hat):
+        return np.sum((y0 - y_hat)**2)
+    
+    print('OOS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+    print('OOS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+    print('OOS _loss_lr: {:4.6f}'.format(_loss(y_hat_lr)))
+    print('OOS _loss_cb: {:4.6f}'.format(_loss(y_hat_cb)))
+    print()
+    
+    print('OOS _accuracy_clf: {:1.4f}'.format(metrics.accuracy_score(y_hat_clf, y0)))
+    print('OOS _accuracy_ols: {:1.4f}'.format(metrics.accuracy_score(y_hat_ols, y0)))
+    print('OOS _accuracy_lr: {:1.4f}'.format(metrics.accuracy_score(y_hat_lr, y0)))
+    print('OOS _accuracy_cb: {:1.4f}'.format(metrics.accuracy_score(y_hat_cb, y0)))
+    
+    target_names = ['0', '1']
+    conf = plot_confusion(metrics.confusion_matrix(y_hat_ols, y0), target_names)
 

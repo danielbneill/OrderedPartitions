@@ -3,6 +3,9 @@
 
 #include <vector>
 
-std::vector<int> find_path(int n, int T, std::vector<float> a, std::vector<float> b);
+std::vector<std::vector<int>> find_optimal_partition(int n,
+						     int T,
+						     std::vector<float> a,
+						     std::vector<float> b);
 
 #endif

@@ -35,7 +35,9 @@ using edge_iterator =   boost::graph_traits<graph_t>::edge_iterator;
 using ipair = std::pair<int, int>;
 using ipairlist = std::list<ipair>;
 using ilist = std::list<int>;
+using ivec = std::vector<int>;
 using fvec = std::vector<float>;
+using ivecvec = std::vector<std::vector<int>>;
 
 class PartitionGraph {
 public:
@@ -48,7 +50,9 @@ public:
     T_{T},
     a_{a},
     b_{b},
-    per_level_{n-T+1}
+    per_level_{n-T+1},
+    priority_sortind_{ivec(T_)},
+    subsets_{ivecvec(T_)}
   { _init(); }
 
   PartitionGraph(int n,
@@ -58,7 +62,9 @@ public:
 		 ):
     n_{n},
     T_{T},
-    per_level_{n-T+1}
+    per_level_{n-T+1},
+    priority_sortind_{ivec(T_)},
+    subsets_{ivecvec(T_)}
   { 
     a_.assign(a, a+n);
     b_.assign(b, b+n);
@@ -70,7 +76,8 @@ public:
   void _init() { create(); optimize(); }
 
   ipairlist get_optimal_path() const;
-  std::vector<int> get_optimal_path_extern();
+  ivec get_optimal_path_extern() const;
+  ivecvec get_optimal_subsets_extern() const;
   void write_dot() const;
 
 private:
@@ -79,13 +86,16 @@ private:
   int per_level_;
   fvec a_;
   fvec b_;
+  ivec priority_sortind_;
   ipairlist optimalpath_;
   ilist optimalnodepath_;
   ilist optimaledgeweights_;
+  ivecvec subsets_;
   graph_t G_;
 
   inline int node_to_int(int,int);
   inline ipair int_to_node(int);
+  void sort_by_priority(fvec&, fvec&);
   float compute_weight(int, int);
   float compute_weight(int, int, fvec&);
   void add_edge_and_weight(int, int, fvec&&);
