@@ -1,13 +1,11 @@
-#include <limits>
-
 #include "python_graph.hpp"
-#include "graph.hpp"
+#include <thread>
 
 ivecvec find_optimal_partition(int n, 
-						     int T, 
-						     std::vector<float> a, 
-						     std::vector<float> b) {
-
+			       int T, 
+			       std::vector<float> a, 
+			       std::vector<float> b) {
+  
   auto pg = PartitionGraph(n, T, a, b);
   return pg.get_optimal_subsets_extern();
   
@@ -54,6 +52,44 @@ swpair sweep_best(int n,
 
   return std::make_pair(subsets, weight);
   
+}
+
+swcont sweep_parallel(int n,
+		    int T,
+		    std::vector<float> a,
+		    std::vector<float> b) {
+  
+  std::cout << "concurrency: " << std::thread::hardware_concurrency() << std::endl;
+
+  ThreadsafeQueue<swpair> results_queue;
+  
+  auto task = [&results_queue](int n, int i, fvec a, fvec b){
+    PartitionGraph pg{n, i, a, b};
+    results_queue.push(std::make_pair(pg.get_optimal_subsets_extern(),
+				      pg.get_optimal_weight_extern()));
+  };
+
+  std::vector<ThreadPool::TaskFuture<void>> v;
+
+  
+  for (int i=T; i>1; --i) {
+    v.push_back(DefaultThreadPool::submitJob(task, n, i, a, b));
+  }	       
+  for (auto& item : v) 
+    item.get();
+
+  swpair result;
+  swcont results;
+  while (!results_queue.empty()) {
+    bool valid = results_queue.waitPop(result);
+    if (valid) {
+      results.push_back(result);
+      std::cout << " result: (" << (result.first).size() << ", " << result.second << ")" << std::endl;
+    }
+  }
+
+  return results;
+
 }
 
 swcont sweep(int n,

@@ -44,7 +44,7 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     plt.xlabel('Predicted label')
     return fig
   
-X,y = make_classification(random_state=551, n_samples=100)
+X,y = make_classification(random_state=551, n_samples=200)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 
 SEED = 144
@@ -921,10 +921,10 @@ class Worker(multiprocessing.Process):
 
 # Test
 if __name__ == '__main__':
-    num_steps = 20
+    num_steps = 50
     num_classifiers = num_steps
-    min_partitions = 50
-    max_partitions = 51
+    min_partitions = 25
+    max_partitions = 26
 
     clf = GradientBoostingPartitionClassifier(X_train,
                                               y_train,

@@ -50,6 +50,13 @@ ThreadsafeQueue<T>::push(T value) {
 
 template<typename T>
 bool
+ThreadsafeQueue<T>::size(void) const {
+  std::lock_guard<std::mutex> lock{m_mutex};
+  return m_queue.size();
+}
+
+template<typename T>
+bool
 ThreadsafeQueue<T>::empty(void) const {
   std::lock_guard<std::mutex> lock{m_mutex};
   return m_queue.empty();

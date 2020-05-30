@@ -23,6 +23,7 @@ public:
   bool waitPop(T&);
   void push(T);
   bool empty() const;
+  bool size() const;
   void clear();
   void invalidate();
   bool isValid() const;

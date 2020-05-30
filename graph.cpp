@@ -97,17 +97,17 @@ PartitionGraph::create()
       diffs[i*n_+j] = wt;
     }
   }
-  std::cerr << "PRECOMPUTES COMPLETE\n";
+  // std::cerr << "PRECOMPUTES COMPLETE\n";
 
   // source added implicitly via add_edge()
   
   // add layers for $T \in \{1, \dots T__{-1}\}$
-  std::cerr << "CONSTRUCTING GRAPH\n";
+  // std::cerr << "CONSTRUCTING GRAPH\n";
   for(size_t k=1; k<T_; ++k) {
     for(size_t j=k; j<(k+per_level_); ++j) {
       add_edge_and_weight(j, k, std::move(diffs));
     }
-    std::cerr << "  LAYER " << k << " OF " << T_-1 << " COMPLETE\n";
+    // std::cerr << "  LAYER " << k << " OF " << T_-1 << " COMPLETE\n";
   }
   
   // add sink, must add explicitly
@@ -117,13 +117,13 @@ PartitionGraph::create()
     weight = compute_weight(j, n_, diffs);
     auto r = boost::add_edge(node_to_int(j, T_-1), curr_node, EdgeWeightProperty(weight), G_);
   }
-  std::cerr << "GRAPH CONSTRUCTION COMPLETE\n";
+  // std::cerr << "GRAPH CONSTRUCTION COMPLETE\n";
 }
 
 void
 PartitionGraph::optimize() {
   // Glorified bellman-ford call
-  std::cerr << "COMPUTING SHORTEST PATH\n";
+  // std::cerr << "COMPUTING SHORTEST PATH\n";
 
   int nb_vertices = boost::num_vertices(G_);
   boost::property_map<graph_t, float EdgeWeightProperty::*>::type weight_pmap;
