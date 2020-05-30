@@ -74,9 +74,9 @@ void
 PartitionGraph::create() 
 {
   // replace a with abs(a)
-  std::transform(a_.begin(), a_.end(), a_.begin(), [](float f){
-		   return f > 0 ? f : -f;
-		 });
+  // std::transform(a_.begin(), a_.end(), a_.begin(), [](float f){
+  // 		   return f > 0 ? f : -f;
+  // 	 });
 
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
@@ -171,37 +171,36 @@ PartitionGraph::optimize() {
     subset_ind++;
   }
 
+  std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](ipair i) {
+		  this->optimalweight_ += this->compute_weight(i.first, i.second);
+		});
+
   /*
+    // Details
     std::for_each(optimalpath_.begin(), optimalpath_.end(), [](ipair i){
     std::cout << "[" << i.first << ", " << i.second << ") --> ";
     });
     std::cout << " >>SINK<< \n";
-  */
-
-  /*
+    
     std::cout << "SORTIND\n";
     std::copy(priority_sortind_.begin(), priority_sortind_.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << "\n";
-  */
-  
-  /*
+    
     std::cout << "WEIGHTS\n";
     std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](ipair i) {
     std::cout << "[" << i.first << ", " << i.second << ") : " 
     << this->compute_weight(i.first, i.second) << "\n";
     });
-  */
-	
-  /* 
-     std::cout << "SUBSETS\n";
-     std::cout << "[\n";
-     std::for_each(subsets_.begin(), subsets_.end(), [](std::vector<int>& subset){
-     std::cout << "[";
-     std::copy(subset.begin(), subset.end(),
-     std::ostream_iterator<int>(std::cout, " "));
-     std::cout << "]\n";
-		  });
-		  std::cout << "]";
+    
+    std::cout << "SUBSETS\n";
+    std::cout << "[\n";
+    std::for_each(subsets_.begin(), subsets_.end(), [](std::vector<int>& subset){
+    std::cout << "[";
+    std::copy(subset.begin(), subset.end(),
+    std::ostream_iterator<int>(std::cout, " "));
+    std::cout << "]\n";
+    });
+    std::cout << "]";
   */
     
 }
@@ -214,6 +213,11 @@ PartitionGraph::get_optimal_path() const {
 std::vector<std::vector<int>>
 PartitionGraph::get_optimal_subsets_extern() const {
   return subsets_;
+}
+
+float
+PartitionGraph::get_optimal_weight_extern() const {
+  return optimalweight_;
 }
 
 void

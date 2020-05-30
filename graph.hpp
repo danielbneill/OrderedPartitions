@@ -52,7 +52,8 @@ public:
     b_{b},
     per_level_{n-T+1},
     priority_sortind_{ivec(T_)},
-    subsets_{ivecvec(T_)}
+    subsets_{ivecvec(T_)},
+    optimalweight_{0.}
   { _init(); }
 
   PartitionGraph(int n,
@@ -64,7 +65,8 @@ public:
     T_{T},
     per_level_{n-T+1},
     priority_sortind_{ivec(T_)},
-    subsets_{ivecvec(T_)}
+    subsets_{ivecvec(T_)},
+    optimalweight_{0.}
   { 
     a_.assign(a, a+n);
     b_.assign(b, b+n);
@@ -78,6 +80,7 @@ public:
   ipairlist get_optimal_path() const;
   ivec get_optimal_path_extern() const;
   ivecvec get_optimal_subsets_extern() const;
+  float get_optimal_weight_extern() const;
   void write_dot() const;
 
 private:
@@ -89,6 +92,7 @@ private:
   ivec priority_sortind_;
   ipairlist optimalpath_;
   ilist optimalnodepath_;
+  float optimalweight_;
   ilist optimaledgeweights_;
   ivecvec subsets_;
   graph_t G_;
