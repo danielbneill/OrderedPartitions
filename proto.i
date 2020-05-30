@@ -14,6 +14,7 @@ namespace std {
 %template(FArray) vector<float>;
 %template(IArrayArray) vector<vector<int>>;
 %template(IArrayFPair) pair<vector<vector<int>>, float>;
+%template(SWCont) vector<pair<vector<vector<int>>, float>>;
 }
 
 %include "python_graph.hpp"

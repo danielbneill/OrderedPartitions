@@ -44,7 +44,7 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     plt.xlabel('Predicted label')
     return fig
   
-X,y = make_classification(random_state=551, n_samples=200)
+X,y = make_classification(random_state=551, n_samples=100)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
 
 SEED = 144
@@ -215,6 +215,7 @@ class GradientBoostingPartitionClassifier(object):
     def fit_step(self):
         g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term)
 
+        # OPTION 1
         # Pure Python optimizer
         # optimizer = PartitionTreeOptimizer(g,
         #                                    h,
@@ -267,36 +268,60 @@ class GradientBoostingPartitionClassifier(object):
         #     else:
         #         raise RuntimeError('Incorrect solver_type')
 
-        # SWIG optimizer
+        # OPTION 2
+        # SWIG optimizer, multiprocessing distribution
         # optimize over all smaller partition sizes
-        num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
-        num_workers = multiprocessing.cpu_count() - 1
-        tasks = multiprocessing.JoinableQueue()
-        results = multiprocessing.Queue()
-        workers = [Worker(tasks, results) for i in range(num_workers)]
+        # num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+        # num_workers = multiprocessing.cpu_count() - 1
+        # tasks = multiprocessing.JoinableQueue()
+        # results = multiprocessing.Queue()
+        # workers = [Worker(tasks, results) for i in range(num_workers)]
                 
-        for worker in workers:
-            worker.start()
+        # for worker in workers:
+        #     worker.start()
 
-        for splits in range(num_partitions, 2, -1):
-            tasks.put(OptimizerTask(self.N, splits, g, h))
+        # for splits in range(num_partitions, 2, -1):
+        #     tasks.put(OptimizerTask(self.N, splits, g, h))
 
-        for i in range(num_workers):
-            tasks.put(EndTask())
+        # for i in range(num_workers):
+        #     tasks.put(EndTask())
 
-        tasks.join()
+        # tasks.join()
                       
-        allResults = list()
-        while not results.empty():
-            result = results.get(block=True)
-            allResults.append(result)
+        # allResults = list()
+        # while not results.empty():
+        #     result = results.get(block=True)
+        #     allResults.append(result)
             
+        # x = T.dmatrix('x')
+        # loss = theano.function([x], self.loss_without_regularization(x))
+        # min_loss = float('inf')
+        
+        # for s,w in allResults:
+        #     leaf_value = np.zeros((self.N, 1))
+        #     for subset in s:
+        #         part = list(subset)
+        #         min_val = -1 * np.sum(g[part])/np.sum(h[part])
+        #         leaf_value[part] = self.learning_rate * min_val
+        #     implied_tree = self.imply_tree(leaf_value)
+        #     loss_new = loss(theano.function([], self.predict())() + theano.function([], implied_tree.predict(self.X))())
+        #     if loss_new < min_loss:
+        #         min_loss = loss_new
+        #         subsets = s
+        #         min_leaf_value = leaf_value
+
+        # OPTION 3
+        # SWIG optimizer, task-based C++ distribution
+        num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+        results = Optimizer(num_partitions, g, h)()
+
         x = T.dmatrix('x')
         loss = theano.function([x], self.loss_without_regularization(x))
         min_loss = float('inf')
         
-        for s,w in allResults:
+        for result in results:
             leaf_value = np.zeros((self.N, 1))
+            s = result[0]
             for subset in s:
                 part = list(subset)
                 min_val = -1 * np.sum(g[part])/np.sum(h[part])
@@ -306,19 +331,14 @@ class GradientBoostingPartitionClassifier(object):
             if loss_new < min_loss:
                 min_loss = loss_new
                 subsets = s
+                min_leaf_value = leaf_value
 
         self.partitions.append(subsets)
-
-        leaf_value = np.zeros((self.N, 1))
-        for subset in subsets:
-            part = list(subset)
-            min_val = -1 * np.sum(g[part])/np.sum(h[part])
-            leaf_value[part] = self.learning_rate * min_val
 
         print('{!r}'.format([(round(val,4), np.sum(leaf_value==val)) for val in np.unique(leaf_value)]))
 
         # Set leaf_value
-        self.set_next_leaf_value(leaf_value)
+        self.set_next_leaf_value(min_leaf_value)
 
         # Calculate implied_tree
         implied_tree = self.imply_tree(leaf_value)
@@ -849,6 +869,17 @@ class PartitionTreeOptimizer(object):
     @staticmethod
     def _Mon_n_k(n, k):
         return comb(n-1, k-1, exact=True)
+
+class Optimizer(object):
+    def __init__(self, num_partitions, g, h):
+        self.N = len(g)
+        self.num_partitions = num_partitions
+        self.g_c = proto.FArray()
+        self.h_c = proto.FArray()        
+        self.g_c = g
+        self.h_c = h
+    def __call__(self):
+        return proto.sweep(self.N, self.num_partitions, self.g_c, self.h_c)
 
 class EndTask(object):
     pass
