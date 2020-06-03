@@ -59,8 +59,6 @@ swcont sweep_parallel(int n,
 		    std::vector<float> a,
 		    std::vector<float> b) {
   
-  std::cout << "concurrency: " << std::thread::hardware_concurrency() << std::endl;
-
   ThreadsafeQueue<swpair> results_queue;
   
   auto task = [&results_queue](int n, int i, fvec a, fvec b){
@@ -84,7 +82,6 @@ swcont sweep_parallel(int n,
     bool valid = results_queue.waitPop(result);
     if (valid) {
       results.push_back(result);
-      std::cout << " result: (" << (result.first).size() << ", " << result.second << ")" << std::endl;
     }
   }
 

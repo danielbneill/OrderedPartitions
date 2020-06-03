@@ -175,13 +175,13 @@ PartitionGraph::optimize() {
 		  this->optimalweight_ += this->compute_weight(i.first, i.second);
 		});
 
+  // Details
   /*
-    // Details
     std::for_each(optimalpath_.begin(), optimalpath_.end(), [](ipair i){
     std::cout << "[" << i.first << ", " << i.second << ") --> ";
     });
     std::cout << " >>SINK<< \n";
-    
+
     std::cout << "SORTIND\n";
     std::copy(priority_sortind_.begin(), priority_sortind_.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << "\n";

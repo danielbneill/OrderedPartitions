@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import numpy as np
 import pandas as pd
+import heapq
 from itertools import combinations
 from functools import partial
 from scipy.special import comb
@@ -44,8 +45,8 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     plt.xlabel('Predicted label')
     return fig
   
-X,y = make_classification(random_state=551, n_samples=200)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5)
+X,y = make_classification(random_state=551, n_samples=750)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 SEED = 144
 rng = np.random.RandomState(SEED)
@@ -150,20 +151,20 @@ class GradientBoostingPartitionClassifier(object):
         f = theano.function([c], updates=[update])
         f(leaf_value)
 
-    def imply_tree(self, leaf_values):
+    def imply_tree(self, leaf_values, **impliedSolverKwargs):
         X0 = self.X.get_value()
         y0 = leaf_values
             
         if self.distill_method == 'OLS':
-            implied_tree = OLSImpliedTree(X0, y0)
+            implied_tree = OLSImpliedTree(X0, y0, **impliedSolverKwargs)
         elif self.distill_method == 'LDA':
-            implied_tree = LDAImpliedTree(X0, y0)
+            implied_tree = LDAImpliedTree(X0, y0, **impliedSolverKwargs)
         elif self.distill_method == 'SVM':
-            implied_tree = SVMImpliedTree(X0, y0)
+            implied_tree = SVMImpliedTree(X0, y0, **impliedSolverKwargs)
         elif self.distill_method == 'direct':
-            implied_tree = DirectImpliedTree(X0, y0)
+            implied_tree = DirectImpliedTree(X0, y0, **impliedSolverKwargs)
         elif self.distill_method == 'DecisionTree':
-            implied_tree = DecisionTreeImpliedTree(X0, y0)
+            implied_tree = DecisionTreeImpliedTree(X0, y0, **impliedSolverKwargs)
 
         return implied_tree
 
@@ -204,7 +205,7 @@ class GradientBoostingPartitionClassifier(object):
                                               theano.function([],
                                                               clf.loss_without_regularization(
                                                                   clf.predict()))()))        
-        for i in range(num_steps):
+        for i in range(1,num_steps):
             self.fit_step()
             print('STEP {}: LOSS: {:4.6f}'.format(i,
                                                   theano.function([],
@@ -215,102 +216,6 @@ class GradientBoostingPartitionClassifier(object):
     def fit_step(self):
         g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term)
 
-        # OPTION 1
-        # Pure Python optimizer
-        # optimizer = PartitionTreeOptimizer(g,
-        #                                    h,
-        #                                    c,
-        #                                    solver_type=self.solver_type,
-        #                                    use_monotonic_partitions=self.use_monotonic_partitions,
-        #                                    shortest_path_solver=self.shortest_path_solver)
-
-        
-
-        # num_partitions = rng.choice(range(self.min_partition_size, self.max_partition_size))
-        # print('num_partitions: {}'.format(num_partitions))
-        
-        # optimizer.run(num_partitions)
-
-        # Set next partition to be optimal
-        # self.partitions.append(optimizer.maximal_part)
-
-        # Assert optimization correct
-        # assert np.isclose(optimizer.maximal_val, np.sum(optimizer.summands)), \
-        #        'optimal value mismatch'
-        # for part,val in zip(optimizer.maximal_part, optimizer.summands):
-        #     if self.solver_type == 'linear_hessian':
-        #         assert np.isclose(np.sum(abs(g[part]))**2/np.sum(h[part]), val), \
-        #                'optimal partitions mismatch'
-
-        # print('LENGTH OF OPTIMAL PARTITIONS: {!r}'.format(
-        #     [len(part) for part in optimizer.maximal_part]))
-        # print('OPTIMAL SORTED PARTITION ENDPOITS: {!r}'.format(
-        #     [(p[0],p[-1]) for p in optimizer.maximal_sorted_part]))
-        # print('OPTIMAL SUMMANDS: {!r}'.format(
-        #     optimizer.summands))
-        # print('OPTIMAL LEAF VALUES: {!r}'.format(
-        #     optimizer.leaf_values))
-                            
-        # Calculate optimal leaf_values
-        # leaf_value = np.zeros((self.N, 1))        
-        # for part in optimizer.maximal_part:
-        #     if self.solver_type == 'quadratic':
-        #         r1, r2 = self.quadratic_solution_scalar(np.sum(g[part]),
-        #                                                 np.sum(h[part]),
-        #                                                 np.sum(c[part]))
-        #         leaf_value[part] = self.learning_rate * r1
-        #     elif self.solver_type == 'linear_hessian':
-        #         min_val = -1 * np.sum(g[part])/np.sum(h[part])
-        #         leaf_value[part] = self.learning_rate * min_val
-        #     elif self.solver_type == 'linear_constant':
-        #         min_val = -1 * np.sum(g[part])/np.sum(c[part])
-        #         leaf_value[part] = self.learning_rate * min_val
-        #     else:
-        #         raise RuntimeError('Incorrect solver_type')
-
-        # OPTION 2
-        # SWIG optimizer, multiprocessing distribution
-        # optimize over all smaller partition sizes
-        # num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
-        # num_workers = multiprocessing.cpu_count() - 1
-        # tasks = multiprocessing.JoinableQueue()
-        # results = multiprocessing.Queue()
-        # workers = [Worker(tasks, results) for i in range(num_workers)]
-                
-        # for worker in workers:
-        #     worker.start()
-
-        # for splits in range(num_partitions, 2, -1):
-        #     tasks.put(OptimizerTask(self.N, splits, g, h))
-
-        # for i in range(num_workers):
-        #     tasks.put(EndTask())
-
-        # tasks.join()
-                      
-        # allResults = list()
-        # while not results.empty():
-        #     result = results.get(block=True)
-        #     allResults.append(result)
-            
-        # x = T.dmatrix('x')
-        # loss = theano.function([x], self.loss_without_regularization(x))
-        # min_loss = float('inf')
-        
-        # for s,w in allResults:
-        #     leaf_value = np.zeros((self.N, 1))
-        #     for subset in s:
-        #         part = list(subset)
-        #         min_val = -1 * np.sum(g[part])/np.sum(h[part])
-        #         leaf_value[part] = self.learning_rate * min_val
-        #     implied_tree = self.imply_tree(leaf_value)
-        #     loss_new = loss(theano.function([], self.predict())() + theano.function([], implied_tree.predict(self.X))())
-        #     if loss_new < min_loss:
-        #         min_loss = loss_new
-        #         subsets = s
-        #         min_leaf_value = leaf_value
-
-        # OPTION 3
         # SWIG optimizer, task-based C++ distribution
         num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
         results = Optimizer(num_partitions, g, h)()
@@ -318,24 +223,43 @@ class GradientBoostingPartitionClassifier(object):
         x = T.dmatrix('x')
         loss = theano.function([x], self.loss_without_regularization(x))
         min_loss = float('inf')
+        loss_heap = []
         
-        for result in results:
+        for rind, result in enumerate(results):
             leaf_value = np.zeros((self.N, 1))
             s = result[0]
+            impliedSolverKwargs = dict(max_depth=len(s))
             for subset in s:
                 part = list(subset)
                 min_val = -1 * np.sum(g[part])/np.sum(h[part])
                 leaf_value[part] = self.learning_rate * min_val
-            implied_tree = self.imply_tree(leaf_value)
+            implied_tree = self.imply_tree(leaf_value, **impliedSolverKwargs)
             loss_new = loss(theano.function([], self.predict())() + theano.function([], implied_tree.predict(self.X))())
+
+            heapq.heappush(loss_heap, (loss_new.item(0), rind))
+            
             if loss_new < min_loss:
                 min_loss = loss_new
                 subsets = s
                 min_leaf_value = leaf_value
 
+        best_loss, best_rind = heapq.heappop(loss_heap)
+
+        # Do it again
+        leaf_value = np.zeros((self.N, 1))
+        s = results[best_rind][0]
+        for subset in s:
+            part = list(subset)
+            min_val = -1 * np.sum(g[part])/np.sum(h[part])
+            leaf_value[part] = self.learning_rate * min_val
+        implied_tree = self.imply_tree(leaf_value, **impliedSolverKwargs)
+        
         self.partitions.append(subsets)
 
-        print('{!r}'.format([(round(val,4), np.sum(leaf_value==val)) for val in np.unique(leaf_value)]))
+        implied_value = theano.function([], implied_tree.predict(self.X))()
+
+        print('leaf_value:    {!r}'.format([(round(val,4), np.sum(leaf_value==val)) for val in np.unique(leaf_value)]))
+        print('implied_value: {!r}'.format([(round(val,4), np.sum(implied_value==val)) for val in np.unique(implied_value)]))        
 
         # Set leaf_value
         self.set_next_leaf_value(min_leaf_value)
@@ -369,76 +293,17 @@ class GradientBoostingPartitionClassifier(object):
 
         return (g, h, c)        
         
-    def generate_coefficients_old(self, constantTerm=False):
-        ''' Generate gradient, hessian sequences for offgraph
-            optimizaition, return types are np.arrays
-        '''
-        x = T.dvector('x')
-        loss = self.loss_without_regularization(T.shape_padaxis(x, 1))
-
-
-        grads = T.grad(loss, x)
-        hess = T.hessian(loss, x)
-
-        G = theano.function([x], grads)
-        H = theano.function([x], hess)
-
-        # Test - random y_hat, random increment f_T
-        y_hat0 = rng.uniform(low=0., high=1., size=(self.N,))
-        f_t = rng.uniform(low=0., high=.01, size=(self.N,))
-        loss0 = theano.function([x], loss)(y_hat0 + f_t)        
-        loss0_approx0 = theano.function([x], loss)(y_hat0) + \
-                        np.dot(G(y_hat0), f_t) + \
-                        0.5 * np.dot(f_t.T, np.dot(H(y_hat0), f_t))
-        loss0_approx1 = theano.function([x], loss)(y_hat0) + \
-                        np.dot(G(y_hat0), f_t) + \
-                        0.5 * np.dot(np.dot(f_t.T, H(y_hat0)), f_t)
-        assert np.isclose(loss0, loss0_approx0, rtol=0.01)
-        assert np.isclose(loss0, loss0_approx1, rtol=0.01)
-
-        # Test
-        y_hat0 = rng.uniform(low=0., high=1., size=(self.N,))
-        y0 = self.y.get_value()
-        f_t0 = y0 - y_hat0
-        g = G(y_hat0)
-        h = np.dot(f_t0.T, H(y_hat0))
-        y_tilde = y_hat0 - (0.5 * -g*g/h)
-        assert np.isclose(y_tilde, y0).all()
-
-        # Test
-        quadratic_term0 = 0.5 * np.dot(f_t.T, np.dot(H(y_hat0), f_t))
-        quadratic_term1 = 0.5 * np.dot(np.dot(f_t.T, H(y_hat0)), f_t)
-        assert np.isclose(quadratic_term0, quadratic_term1)
-
-        # Test - y_hat = prediction, f_t = y - y_hat
-        y_hat0 = theano.function([], self.predict())().squeeze()
-        f_t = self.y.get_value() - y_hat0
-        loss0 = theano.function([x], loss)(y_hat0 + f_t)        
-        loss0_approx = theano.function([x], loss)(y_hat0) + \
-                      np.dot(G(y_hat0), f_t) + \
-                      0.5 * np.dot(np.dot(f_t.T, H(y_hat0)), f_t)
-        assert np.isclose(loss0, loss0_approx, rtol=0.01)
-
-        y_hat = theano.function([], self.predict())().squeeze()
-        f_t = self.y.get_value() - y_hat0
-        g = G(y_hat0)
-        h = np.dot(f_t.T, H(y_hat0))                
-
-        if constantTerm:
-            c = theano.function([], self._mse_coordinatewise(self.predict()))().squeeze()
-            return (g, h, c)
-
-        return (g, h)        
-
     def loss(self, y_hat):
         return self._mse(y_hat) + T.sum(self.regularization)
 
     def loss_without_regularization(self, y_hat):
         return self._mse(y_hat)
 
+    def cross_entropy(self, y_hat):
+        y0 = T.shape_padaxis(self.y, 1)
+        return -(y0 * T.log(y_hat) + (1-y0)*T.log(1-y_hat))
+    
     def _mse(self, y_hat):
-        # XXX
-        # return T.sum(self._mse_coordinatewise(y_hat))
         return T.sqrt(T.sum(self._mse_coordinatewise(y_hat)))
 
     def _mse_coordinatewise(self, y_hat):
@@ -529,10 +394,9 @@ class SVMImpliedTree(SVC):
         y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
         return y_hat
         
-
 class DecisionTreeImpliedTree(DecisionTreeClassifier):
-    def __init__(self, X=None, y=None):
-        super(DecisionTreeImpliedTree, self).__init__(max_depth=2)
+    def __init__(self, X=None, y=None, max_depth=2):
+        super(DecisionTreeImpliedTree, self).__init__(max_depth=max_depth)
         self.X = X
         unique_vals = np.sort(np.unique(y))
         self.val_to_class = dict(zip(unique_vals, range(len(unique_vals))))
@@ -879,7 +743,7 @@ class Optimizer(object):
         self.g_c = g
         self.h_c = h
     def __call__(self):
-        return proto.sweep(self.N, self.num_partitions, self.g_c, self.h_c)
+        return proto.sweep_parallel(self.N, self.num_partitions, self.g_c, self.h_c)
 
 class EndTask(object):
     pass
@@ -921,10 +785,10 @@ class Worker(multiprocessing.Process):
 
 # Test
 if __name__ == '__main__':
-    num_steps = 50
+    num_steps = 20
     num_classifiers = num_steps
-    min_partitions = 25
-    max_partitions = 26
+    min_partitions = 75
+    max_partitions = 76
 
     clf = GradientBoostingPartitionClassifier(X_train,
                                               y_train,
@@ -1003,4 +867,4 @@ if __name__ == '__main__':
     
     target_names = ['0', '1']
     conf = plot_confusion(metrics.confusion_matrix(y_hat_clf, y0), target_names)
-    plt.show()
+    # plt.show()
