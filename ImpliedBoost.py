@@ -17,6 +17,8 @@ from itertools import chain, islice
 import functools
 import multiprocessing
 
+from catboost import CatBoostClassifier, Pool
+
 import networkx as nx
 import networkx.algorithms.shortest_paths    
 
@@ -29,6 +31,12 @@ import proto
 import seaborn as sns
 from sklearn import metrics
 import matplotlib.pyplot as plt
+
+X,y = make_classification(random_state=551, n_samples=150)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+SEED = 144
+rng = np.random.RandomState(SEED)
 
 def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     df_cm = pd.DataFrame(
@@ -44,12 +52,69 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     return fig
-  
-X,y = make_classification(random_state=551, n_samples=750)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-SEED = 144
-rng = np.random.RandomState(SEED)
+def oos_summary(clf):
+    # Vanilla regression model
+    from sklearn.linear_model import LinearRegression
+    X0 = clf.X.get_value()
+    y0 = clf.y.get_value()
+    reg = LinearRegression(fit_intercept=True).fit(X0, y0)
+    logreg = LogisticRegression().fit(X0, y0)
+    clf_cb = CatBoostClassifier(iterations=100,
+                                depth=2,
+                                learning_rate=1,
+                                loss_function='CrossEntropy',
+                                verbose=False)
+    
+    clf_cb.fit(X0, y0)
+    
+    x = T.dmatrix('x')
+    _loss = theano.function([x], clf.loss_without_regularization(x))
+    
+    y_hat_clf = theano.function([], clf.predict())()
+    y_hat_ols = reg.predict(X0).reshape(-1,1)
+    y_hat_lr = logreg.predict(X0).reshape(-1,1)
+    y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
+    
+    y_hat_clf = (y_hat_clf > .5).astype(int)
+    y_hat_ols = (y_hat_ols > .5).astype(int)
+    
+    print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+    print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+    print('IS _loss_lr:  {:4.6f}'.format(_loss(y_hat_lr)))
+    print('IS _loss_cb:  {:4.6f}'.format(_loss(y_hat_cb)))
+    print()
+    
+    # Out-of-sample predictions
+    X0 = X_test
+    y0 = y_test.reshape(-1,1)
+    
+    y_hat_clf = theano.function([], clf.predict_from_input(X0))()
+    y_hat_ols = reg.predict(X0).reshape(-1,1)
+    y_hat_lr = logreg.predict(X0).reshape(-1,1)
+    y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
+
+    y_hat_clf = (y_hat_clf > .5).astype(int)
+    y_hat_ols = (y_hat_ols > .5).astype(int)
+                        
+    def _loss(y_hat):
+        return np.sum((y0 - y_hat)**2)
+    
+    print('OOS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
+    print('OOS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
+    print('OOS _loss_lr: {:4.6f}'.format(_loss(y_hat_lr)))
+    print('OOS _loss_cb: {:4.6f}'.format(_loss(y_hat_cb)))
+    print()
+    
+    print('OOS _accuracy_clf: {:1.4f}'.format(metrics.accuracy_score(y_hat_clf, y0)))
+    print('OOS _accuracy_ols: {:1.4f}'.format(metrics.accuracy_score(y_hat_ols, y0)))
+    print('OOS _accuracy_lr: {:1.4f}'.format(metrics.accuracy_score(y_hat_lr, y0)))
+    print('OOS _accuracy_cb: {:1.4f}'.format(metrics.accuracy_score(y_hat_cb, y0)))
+    
+    # target_names = ['0', '1']
+    # conf = plot_confusion(metrics.confusion_matrix(y_hat_clf, y0), target_names)
+    # plt.show()
+
 
 class GradientBoostingPartitionClassifier(object):
     def __init__(self,
@@ -165,6 +230,8 @@ class GradientBoostingPartitionClassifier(object):
             implied_tree = DirectImpliedTree(X0, y0, **impliedSolverKwargs)
         elif self.distill_method == 'DecisionTree':
             implied_tree = DecisionTreeImpliedTree(X0, y0, **impliedSolverKwargs)
+        elif self.distill_method == 'CatBoost':
+            implied_tree = CatBoostImpliedTree(X0, y0, **impliedSolverKwargs)
 
         return implied_tree
 
@@ -211,6 +278,9 @@ class GradientBoostingPartitionClassifier(object):
                                                   theano.function([],
                                                                   self.loss_without_regularization(
                                                                       clf.predict()))()))
+
+            # Summary statistics mid-training
+            oos_summary(self)
         print('Training finished')
 
     def fit_step(self):
@@ -407,6 +477,21 @@ class DecisionTreeImpliedTree(DecisionTreeClassifier):
     def predict(self, X):
         y_hat0 = super(DecisionTreeImpliedTree, self).predict(X.get_value())
         y_hat = T.as_tensor(np.array([self.class_to_val[x] for x in y_hat0]).reshape(-1, 1).astype(theano.config.floatX))
+        return y_hat
+
+class CatBoostImpliedTree(CatBoostClassifier):
+    def __init__(self, X=None, y=None, max_depth=2):
+        super(CatBoostImpliedTree, self).__init__(iterations=100,
+                                                  depth=2,
+                                                  learning_rate=1,
+                                                  loss_function='MultiClass',
+                                                  verbose=False)
+
+        self.fit(X, y)
+
+    def predict(self, X):
+        y_hat0 = super(CatBoostImpliedTree, self).predict(X.get_value())
+        y_hat = T.as_tensor(y_hat0.reshape(-1,1)).astype(theano.config.floatX)
         return y_hat
 
 class Task(object):
@@ -785,10 +870,10 @@ class Worker(multiprocessing.Process):
 
 # Test
 if __name__ == '__main__':
-    num_steps = 20
+    num_steps = 50
     num_classifiers = num_steps
-    min_partitions = 75
-    max_partitions = 76
+    min_partitions = 10
+    max_partitions = 26
 
     clf = GradientBoostingPartitionClassifier(X_train,
                                               y_train,
@@ -807,15 +892,15 @@ if __name__ == '__main__':
 
     clf.fit(num_steps)
 
+def oos_summary(clf):
     # Vanilla regression model
     from sklearn.linear_model import LinearRegression
-    from catboost import CatBoostClassifier, Pool
     X0 = clf.X.get_value()
     y0 = clf.y.get_value()
     reg = LinearRegression(fit_intercept=True).fit(X0, y0)
     logreg = LogisticRegression().fit(X0, y0)
     clf_cb = CatBoostClassifier(iterations=100,
-                                depth=2,
+                                depth=6,
                                 learning_rate=1,
                                 loss_function='CrossEntropy',
                                 verbose=False)
@@ -865,6 +950,6 @@ if __name__ == '__main__':
     print('OOS _accuracy_lr: {:1.4f}'.format(metrics.accuracy_score(y_hat_lr, y0)))
     print('OOS _accuracy_cb: {:1.4f}'.format(metrics.accuracy_score(y_hat_cb, y0)))
     
-    target_names = ['0', '1']
-    conf = plot_confusion(metrics.confusion_matrix(y_hat_clf, y0), target_names)
+    # target_names = ['0', '1']
+    # conf = plot_confusion(metrics.confusion_matrix(y_hat_clf, y0), target_names)
     # plt.show()

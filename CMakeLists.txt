@@ -15,6 +15,9 @@ find_package(PythonLibs REQUIRED)
 include(UseSWIG)
 # set(UseSWIG TARGET_NAME_PREFERENCE STANDARD)
 
+# Debug symbols
+set(CMAKE_BUILD_TYPE Debug)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 # Place SWIG shared lib in root directory with python, c++ bindings
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
@@ -26,11 +29,15 @@ set(CMAKE_SWIG_FLAGS "")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})
 
+# C++ executable proto
 add_library(graph OBJECT graph.cpp)
-
-# C++ executable
 add_executable(proto main.cpp)
 target_link_libraries(proto graph)
+
+# C++ executable test_partitions
+add_library(test_optimal_partition test_optimal_partition.cpp)
+add_executable(test_partitions test_partitions.cpp)
+target_link_libraries(test_partitions test_optimal_partition pthread)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)
