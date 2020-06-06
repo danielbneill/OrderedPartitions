@@ -1,5 +1,7 @@
 #include "test_optimal_partition.hpp"
 
+#include <iomanip>
+
 void
 PartitionTest::sort_by_priority_(std::vector<float>& a, std::vector<float>& b) {
   std::vector<int> ind(a_.size());
@@ -79,7 +81,7 @@ PartitionTest::print_partitions() const {
 
 void
 PartitionTest::print_pair(const resultPair& p) const {
-  std::cout << "ratio: " << p.first << " ";
+  std::cout << std::setprecision(12) << "ratio: " << p.first << " ";
   for (auto& el: p.second) {
     std::cout << "[ ";
     for (auto& pt: el) {
@@ -91,15 +93,17 @@ PartitionTest::print_pair(const resultPair& p) const {
 }
 
 void
-PartitionTest::init_() {
+PartitionTest::init_(bool formPartitions) {
   elements_ = std::vector<int>(numElements_);
   std::iota(elements_.begin(), elements_.end(), 0);
-  formPartitions_();
+  if (formPartitions) {
+    formPartitions_();
+  }
 }
 
 void
 PartitionTest::cleanup_() {
-  // results_queue_.clear();
+  results_queue_.clear();
   results_.clear();
 }
 
@@ -120,6 +124,7 @@ PartitionTest::optimize_(int b, int e) {
       }
       rSum += std::pow(paSum, 2)/pbSum;
     }
+    print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {
       rMax = rSum;
       partMax = *it;
@@ -204,4 +209,9 @@ PartitionTest::set_a(std::vector<float>&& a) {
 void
 PartitionTest::set_b(std::vector<float>&& b) { 
   b_ = b;
+}
+
+std::vector<std::vector<std::vector<int>>>
+PartitionTest::get_partitions() const {
+  return fList_;
 }

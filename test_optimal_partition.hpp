@@ -20,13 +20,24 @@ public:
     b_(b),
     T_(T),
     numElements_(a.size())
-  { init_(); }
+  { init_(true); }
+  PartitionTest(std::vector<float>& a, 
+		std::vector<float>& b,
+		int T,
+		std::vector<std::vector<std::vector<int>>> fList) :
+    a_(a),
+    b_(b),
+    T_(T),
+    fList_(fList)
+  { init_(false); }
+		
   void runTest();
   resultPair get_results() const;
   void print_pair(const resultPair&) const;
   void print_partitions() const;
   bool assertOrdered(const resultPair&) const;
   int numPartitions() const;
+  std::vector<std::vector<std::vector<int>>> get_partitions() const;
   void set_a(std::vector<float>&&);
   void set_b(std::vector<float>&&);
 
@@ -42,7 +53,7 @@ private:
   ThreadsafeQueue<resultPair> results_queue_;
   std::vector<ThreadPool::TaskFuture<void>> v_;
 
-  void init_();
+  void init_(bool);
   void cleanup_();
   resultPair optimize_(int, int);
   void formPartitions_();
