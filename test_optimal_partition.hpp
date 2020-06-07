@@ -11,18 +11,18 @@
 #include "threadpool.hpp"
 #include "threadsafequeue.hpp"
 
-using resultPair = std::pair<float, std::vector<std::vector<int>>>;
+using resultPair = std::pair<double, std::vector<std::vector<int>>>;
 
 class PartitionTest {
 public:
-  PartitionTest(std::vector<float>& a, std::vector<float>& b, int T) :
+  PartitionTest(std::vector<double>& a, std::vector<double>& b, int T) :
     a_(a),
     b_(b),
     T_(T),
     numElements_(a.size())
   { init_(true); }
-  PartitionTest(std::vector<float>& a, 
-		std::vector<float>& b,
+  PartitionTest(std::vector<double>& a, 
+		std::vector<double>& b,
 		int T,
 		std::vector<std::vector<std::vector<int>>> fList) :
     a_(a),
@@ -38,13 +38,13 @@ public:
   bool assertOrdered(const resultPair&) const;
   int numPartitions() const;
   std::vector<std::vector<std::vector<int>>> get_partitions() const;
-  void set_a(std::vector<float>&&);
-  void set_b(std::vector<float>&&);
+  void set_a(std::vector<double>&&);
+  void set_b(std::vector<double>&&);
 
 private:
   int numElements_;
-  std::vector<float> a_;
-  std::vector<float> b_;
+  std::vector<double> a_;
+  std::vector<double> b_;
   int T_;
   std::vector<int> elements_;
   std::vector<resultPair> results_;
@@ -57,7 +57,7 @@ private:
   void cleanup_();
   resultPair optimize_(int, int);
   void formPartitions_();
-  void sort_by_priority_(std::vector<float>&, std::vector<float>&);
+  void sort_by_priority_(std::vector<double>&, std::vector<double>&);
 };
 
 #endif

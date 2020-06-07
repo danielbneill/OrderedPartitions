@@ -3,27 +3,23 @@
 #include <iomanip>
 
 void
-PartitionTest::sort_by_priority_(std::vector<float>& a, std::vector<float>& b) {
+PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b) {
+  // TODO: Make this in-place, don't see a way with STL
+
   std::vector<int> ind(a_.size());
   std::iota(ind.begin(), ind.end(), 0);
   stable_sort(ind.begin(), ind.end(),
 	      [&a, &b](int i, int j) {
 		return (a[i]/b[i]) < (a[j]/b[j]);
 	      });
-  std::vector<float> a_s(a.size()), b_s(a.size());
+  std::vector<double> a_s(a.size()), b_s(a.size());
   for (size_t i=0; i<a.size(); ++i) {
     a_s[i] = a[ind[i]];
     b_s[i] = b[ind[i]];
   }
-
+  
   std::copy(a_s.begin(), a_s.end(), a.begin());
-  std::copy(b_s.begin(), b_s.end(), b.begin());
-
-  /*
-    for (size_t i=0; i<a.size(); ++i) {
-    std::cout << a[i] << " : " << b[i] << " : " << a[i]/b[i] << std::endl;
-    }
-  */
+  std::copy(b_s.begin(), b_s.end(), b.begin());  
 }
 
 void
@@ -109,8 +105,8 @@ PartitionTest::cleanup_() {
 
 resultPair
 PartitionTest::optimize_(int b, int e) {
-  float rSum, paSum, pbSum;
-  float rMax = std::numeric_limits<float>::min();
+  double rSum, paSum, pbSum;
+  double rMax = std::numeric_limits<double>::min();
   std::vector<std::vector<int>> partMax;
 
   for (auto it=fList_.cbegin(); it!=fList_.cend(); ++it) {
@@ -122,9 +118,9 @@ PartitionTest::optimize_(int b, int e) {
 	paSum += a_[*eit];
 	pbSum += b_[*eit];
       }
-      rSum += std::pow(paSum, 2)/pbSum;
+      rSum += std::pow(paSum, 2.0)/pbSum;
     }
-    print_pair(std::make_pair(rSum, *it));
+    // print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {
       rMax = rSum;
       partMax = *it;
@@ -202,12 +198,12 @@ PartitionTest::numPartitions() const {
 }
 
 void
-PartitionTest::set_a(std::vector<float>&& a) {
+PartitionTest::set_a(std::vector<double>&& a) {
   a_ = a;
 }
 
 void
-PartitionTest::set_b(std::vector<float>&& b) { 
+PartitionTest::set_b(std::vector<double>&& b) { 
   b_ = b;
 }
 
