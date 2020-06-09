@@ -2,6 +2,43 @@
 
 #include <iomanip>
 
+namespace combinatorics {
+  // Number of partitions of n of size k
+  unsigned long Bell_n_k(int n, int k) {
+    if (n == 0 or k == 0 or k > n)
+      return 0;
+    if (k == 1 or k == n)
+      return 1;
+    
+    return (k * Bell_n_k(n-1, k) + Bell_n_k(n-1, k-1));
+  }
+
+  unsigned long nChoosek( unsigned long n, unsigned long k )
+  {
+    if (k > n) return 0;
+    if (k * 2 > n) k = n-k;
+    if (k == 0) return 1;
+    
+    int result = n;
+    for( int i = 2; i <= k; ++i ) {
+      result *= (n-i+1);
+      result /= i;
+    }
+    return result;
+  }
+
+  unsigned long Mon_n_k(int n, int k) {
+    // Number of monotonic partitions of n of size k
+    return nChoosek(n-1, k-1);
+  }
+
+  double mon_to_all_ratio(int n, int k) {
+    return Mon_n_k(n, k)/Bell_n_k(n, k);
+  }
+
+} // namespace
+
+
 void
 PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b) {
   // TODO: Make this in-place, don't see a way with STL
@@ -118,7 +155,7 @@ PartitionTest::optimize_(int b, int e) {
 	paSum += a_[*eit];
 	pbSum += b_[*eit];
       }
-      rSum += std::pow(paSum, 2.0)/pbSum;
+      rSum += std::pow(paSum, gamma_)/pbSum;
     }
     // print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {
@@ -134,6 +171,12 @@ PartitionTest::optimize_(int b, int e) {
 
 void
 PartitionTest::formPartitions_() {
+  // This is slow, as it constrained to calculate k-size partitions from an 
+  // algorithm that in unconstrained form calculates all partitions.
+
+  std::cout << "THEORETICAL NUM PARTITONS: " << combinatorics::Bell_n_k(numElements_, T_) << std::endl;
+  std::cout << "COMPUTING PARTITIONGS...\n";
+
   std::vector<std::vector<int>> lists;
   std::vector<int> indexes(elements_.size(), 0);
   lists.emplace_back(std::vector<int>());
@@ -184,8 +227,8 @@ bool
 PartitionTest::assertOrdered(const resultPair& r) const {
   for (auto& list: r.second) {
     std::vector<int> v(list.size());
-    std::adjacent_difference(list.begin(), list.end(), v.begin());
-    if (std::adjacent_find(v.begin()+1, v.end(), std::not_equal_to<>()) != v.end()) {
+    std::adjacent_difference(list.begin(), list.end(), v.begin());    
+    if (std::find_if(v.begin()+1, v.end(), [](int a){return a!=1;}) != v.end()) {
       return false;
     }
   }

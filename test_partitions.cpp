@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <random>
 #include <algorithm>
@@ -10,10 +11,15 @@
 
 auto main(int argc, char **argv) -> int {
 
+  int N, T;
+  float gamma;
+  std::istringstream Nss(argv[1]), Tss(argv[2]), gammass(argv[3]);
+  Nss >> N; Tss >> T; gammass >> gamma;
+
   std::random_device rnd_device;
   std::mt19937 mersenne_engine {rnd_device()};
-  std::uniform_real_distribution<double> dista{-10., 10.};
-  std::uniform_real_distribution<double> distb{0., 10.};
+  std::uniform_real_distribution<double> dista{-10000., 10000.};
+  std::uniform_real_distribution<double> distb{0., 0.1};
 
   auto gena = [&dista, &mersenne_engine]() {
     return dista(mersenne_engine);
@@ -22,21 +28,21 @@ auto main(int argc, char **argv) -> int {
     return distb(mersenne_engine);
   };
 
-  std::vector<double> a(4);
-  std::vector<double> b(4);
+  std::vector<double> a(N);
+  std::vector<double> b(N);
 
   unsigned long count = 0;
 
-  PartitionTest pt{a, b, 3};
+  PartitionTest pt{a, b, T, gamma};
   auto partitions = pt.get_partitions();
-  std::cout << "NUM PARTITIONS: " << partitions.size() << std::endl;
   pt.print_partitions();
+  std::cout << "EMPIRCAL NUM PARTITIONS: " << partitions.size() << std::endl;
   
   while (true) {
     std::generate(a.begin(), a.end(), gena);
     std::generate(b.begin(), b.end(), genb);
 
-    PartitionTest pt{a, b, 3, partitions};
+    PartitionTest pt{a, b, T, gamma, partitions};
 
     pt.runTest();
     if (!pt.assertOrdered(pt.get_results())) {
@@ -51,7 +57,7 @@ auto main(int argc, char **argv) -> int {
     }
 
     count++;
-    if (!(count%100000)) {
+    if (!(count%1000)) {
       std::cout << "COUNT: " << count << std::endl;
     }
   }

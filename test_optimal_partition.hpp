@@ -15,19 +15,25 @@ using resultPair = std::pair<double, std::vector<std::vector<int>>>;
 
 class PartitionTest {
 public:
-  PartitionTest(std::vector<double>& a, std::vector<double>& b, int T) :
+  PartitionTest(std::vector<double>& a, 
+		std::vector<double>& b, 
+		int T, 
+		double gamma) :
     a_(a),
     b_(b),
     T_(T),
+    gamma_(gamma),
     numElements_(a.size())
   { init_(true); }
   PartitionTest(std::vector<double>& a, 
 		std::vector<double>& b,
 		int T,
+		double gamma,
 		std::vector<std::vector<std::vector<int>>> fList) :
     a_(a),
     b_(b),
     T_(T),
+    gamma_(gamma),
     fList_(fList)
   { init_(false); }
 		
@@ -46,6 +52,7 @@ private:
   std::vector<double> a_;
   std::vector<double> b_;
   int T_;
+  double gamma_;
   std::vector<int> elements_;
   std::vector<resultPair> results_;
   resultPair optimalResult_;
