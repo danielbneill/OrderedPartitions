@@ -41,7 +41,7 @@ namespace combinatorics {
 
 void
 PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b) {
-  // TODO: Make this in-place, don't see a way with STL
+  // TODO: Make this in-place, don't see a good way though
 
   std::vector<int> ind(a_.size());
   std::iota(ind.begin(), ind.end(), 0);
