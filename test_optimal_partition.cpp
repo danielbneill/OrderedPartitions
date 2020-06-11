@@ -33,7 +33,7 @@ namespace combinatorics {
   }
 
   double mon_to_all_ratio(int n, int k) {
-    return Mon_n_k(n, k)/Bell_n_k(n, k);
+    return static_cast<float>(Mon_n_k(n, k))/static_cast<float>(Bell_n_k(n, k));
   }
 
 } // namespace
@@ -175,6 +175,7 @@ PartitionTest::formPartitions_() {
   // algorithm that in unconstrained form calculates all partitions.
 
   std::cout << "THEORETICAL NUM PARTITONS: " << combinatorics::Bell_n_k(numElements_, T_) << std::endl;
+  std::cout << "MONOTONIC/ALL: " << std::setprecision(4) << combinatorics::mon_to_all_ratio(numElements_, T_) << std::endl;
   std::cout << "COMPUTING PARTITIONGS...\n";
 
   std::vector<std::vector<int>> lists;

@@ -19,7 +19,7 @@ auto main(int argc, char **argv) -> int {
   std::random_device rnd_device;
   std::mt19937 mersenne_engine {rnd_device()};
   std::uniform_real_distribution<double> dista{-10000., 10000.};
-  std::uniform_real_distribution<double> distb{0., 0.1};
+  std::uniform_real_distribution<double> distb{0., 1.0};
 
   auto gena = [&dista, &mersenne_engine]() {
     return dista(mersenne_engine);
@@ -57,7 +57,7 @@ auto main(int argc, char **argv) -> int {
     }
 
     count++;
-    if (!(count%1000)) {
+    if (!(count%1'000'000)) {
       std::cout << "COUNT: " << count << std::endl;
     }
   }
