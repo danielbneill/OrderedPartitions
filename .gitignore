@@ -4,4 +4,5 @@ proto.py
 protoPYTHON_wrap.cxx
 __pycache__
 _proto.so
+*.dat
 *~

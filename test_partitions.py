@@ -1,3 +1,5 @@
+import os
+import sys
 import numpy as np
 import pickle
 import multiprocessing
@@ -117,17 +119,6 @@ def slice_partitions(partitions):
     slices = [list(islice(partitions, *ind)) for ind in islice_on]
     return slices
 
-def test_exceptions(a_file):
-    b_file = '_'.join(['b'] + a_file.split('_')[1:])
-    rmax_file = '_'.join(['rmax'] + a_file.split('_')[1:])    
-    with open(a_file, 'rb') as f:
-        a = pickle.load(f)
-    with open(b_file, 'rb') as f:
-        b = pickle.load(f)
-    with open(rmax_file, 'rb') as f:
-        rmax = pickle.load(f)
-    return (a, b, rmax)
-
 def reduce(return_values, fn):
     return fn(return_values, key=lambda x: x[0])
 
@@ -168,8 +159,6 @@ class Task(object):
             print('    FINAL VAL: {}'.format(val))
         print('MAX_SUM: {}, MAX_PART: {!r}'.format(max_sum, arg_max))
         print()
-        import pdb
-        pdb.set_trace()
         return (max_sum, arg_max)
 
 class Worker(multiprocessing.Process):
@@ -192,7 +181,7 @@ class Worker(multiprocessing.Process):
             self.result_queue.put(result)
 
 # LTSS demonstration
-if __name__ == '__fake_news__':
+if __name__ == '__NOT_MAIN__':
     NUM_POINTS = 8
     POWER = 3.6
     NUM_WORKERS = multiprocessing.cpu_count() - 1
@@ -204,13 +193,8 @@ if __name__ == '__fake_news__':
 
     trial = 0
     while True:
-        a00 = rng.uniform(low=1.0,  high=50.0, size=int(NUM_POINTS/2))
-        a01 = rng.uniform(low=1.0,  high=50.0, size=NUM_POINTS-int(NUM_POINTS/2))    
-        b00 = rng.uniform(low=1.0,  high=50.0, size=int(NUM_POINTS/2))
-        b01 = rng.uniform(low=50.0, high=100.0, size=NUM_POINTS-int(NUM_POINTS/2))    
-        
-        a0 = np.concatenate([a00, a01])
-        b0 = np.concatenate([b00, b01])
+        a0 = rng.uniform(low=1.0, high=10.0, size=int(NUM_POINTS))
+        b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))        
         
         ind = np.argsort(a0/b0)
         (a,b) = (seq[ind] for seq in (a0,b0))
@@ -297,10 +281,12 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=max):
     
     return r_max
 
+# Maximal ordered partition demonstration
 if __name__ == '__main__':
-    NUM_POINTS = 3
-    PARTITION_SIZE = 2
-    POWER = 2.2
+    NUM_POINTS =        int(sys.argv[1]) or 3   # N
+    PARTITION_SIZE =    int(sys.argv[2]) or 2   # T
+    POWER =             float(sys.argv[3]) or 2.2      # gamma
+
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
     
     num_partitions = Bell_n_k(NUM_POINTS, PARTITION_SIZE)
@@ -318,64 +304,22 @@ if __name__ == '__main__':
         a0 = rng.uniform(low=1.0, high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
-        a0 = np.round(a0, 1)
-        b0 = np.round(b0, 1)
-
-        a0 = np.array([0.3373581 , 0.23898464, 0.2959268 ])
-        b0 = np.array([0.59529115, 0.42148619, 0.5216534 ])
-
-        # XXX
-        # Counterexample for $a \in \(-\infty, \infty\)$
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=1)
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=3)        
-        # a0 = np.array([-6., -8, -4., -10.])
-        # b0 = np.array([1., 3., 3., 10.])
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=4)                
-        # a0 = np.array([-10., 7., 7., .5])
-        # b0 = np.array([10., 5., 1.5, .25])
-        # a0 = np.array([8., 2., 9., 2.])
-        # b0 = np.array([9., 2., 6., 2.])
-        
-        # Counterexample for $a \in \(0, \infty\)$
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=1)
-        # a0 = np.array([0.28000646, 6.97468258, 8.51210092, 7.83160823])
-        # b0 = np.array([5.4085982 , 0.8478136 , 1.03353282, 2.89178694])
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=3)        
-        # a0 = np.array([5.18425727, 9.67691875, 2.7966528 , 5.61807798])
-        # b0 = np.array([8.05647034, 9.22466034, 3.90976294, 7.13989   ])
-        # (NUM_POINTS=4, PARTITION_SIZE=3, POWER=4)
-        # a0 = np.array([2.200595  , 3.61049965, 7.39838389, 9.9645569 ])
-        # b0 = np.array([3.16346978, 1.3654458 , 3.8398001 , 3.20519284])
-        # a0 = np.array([6.59506835, 4.67466026, 8.83880866, 7.1776444 ])
-        # b0 = np.array([5.88871027, 2.82525707, 4.85830833, 1.02209203])
-
-        # Counterexample for $a \in \(-\infty, \infty\)$ without length 1 subset
-        # (NUM_POINTS=4, PARTITION_SIZE=2, POWER=1)
-        # a0 = np.array([-1.54236861,  3.26701667, -1.0798663 ,  9.04501844])
-        # b0 = np.array([1.53368709, 3.11402404, 1.53708585, 7.59637874])
-        # (NUM_POINTS=4, PARTITION_SIZE=2, POWER=3)
-        # a0 = np.array([-1.02883599, -0.62152327, -8.83708256,  6.33207405])
-        # b0 = np.array([2.89341254, 6.51091349, 1.53705617, 5.28271074])
-        # (NUM_POINTS=5, PARTITION_SIZE=2, POWER=2) - close
-        # a0 = np.array([-9.92934036255, -4.26020002365, -9.73161029816, -8.90641021729, -0.671411991119])
-        # b0 = np.array([6.59366989136, 4.78853988647, 8.3982004071e-06, 6.82870006561, 1.29790997505])
-        
-        # r_max_abs = optimize(np.abs(a0), b0, PARTITION_SIZE, POWER, NUM_WORKERS)
-        # r_max_neg = optimize(-a0, -b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=min)        
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS)
         
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
-            # print('     : {} : max_neg: {:4.6f} pttn: {!r}'.format(trial, *r_max_neg))            
-            # print('     : {} : max_abs: {:4.6f} pttn: {!r}'.format(trial, *r_max_abs))
-
+            
         try:
             assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
         except AssertionError as e:
             # if any([len(x)==1 for x in r_max_abs[1]]):
             #     continue
+
+            # Stop if exception found
             import pdb
             pdb.set_trace()
+            if not os.path.exists('./violations'):
+                os.mkdir('./violations')
             with open('_'.join(['./violations/a', str(SEED),
                                 str(trial),
                                 str(PARTITION_SIZE)]), 'wb') as f:
@@ -396,33 +340,3 @@ if __name__ == '__main__':
         trial += 1
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pickle
-import multiprocessing
-from scipy.special import comb
-from functools import partial
-from itertools import chain, islice, combinations
-
-rng = np.random.RandomState(SEED)
-
-
-a0 = np.array([0.3373581 , 0.23898464, 0.2959268 ])
-b0 = np.array([0.59529115, 0.42148619, 0.5216534 ])
-
-a0 = rng.uniform(low=1.0, high=10.0, size=int(3))
-b0 = rng.uniform(low=1., high=10.0, size=int(3))
-
-sortind = np.argsort(a0/b0)
-a = a0[sortind]
-b = b0[sortind]
-
-part0 = [[0,1],[2]]
-part1 = [[0,2],[1]]
-gamma = 2.2
-x = np.arange(0, 2*gamma, .0001)
-y1 = np.array([np.sum([np.sum(a[p])**x0/np.sum(b[p]) for p in part0]) for x0 in x])
-y2 = np.array([np.sum([np.sum(a[p])**x0/np.sum(b[p]) for p in part1]) for x0 in x])
-
-plt.plot(x, y2-y1)
-plt.pause(1e-3)
