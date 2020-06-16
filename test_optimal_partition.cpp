@@ -73,7 +73,7 @@ PartitionTest::runTest() {
     results_queue_.push(optimize_(b, e));
   };
 
-  // submit work
+  // submit work if chunk size is large enough, otherwise single process
   if (window > 10000) {
     for (int i=0; i<NUM_TASKS; ++i) {
       v_.push_back(DefaultThreadPool::submitJob(task, i*window, (i+1)*window));
@@ -106,7 +106,7 @@ PartitionTest::print_partitions() const {
       for (auto& pt: el) {
 	std::cout << pt << " ";
       }
-      std::cout << " ]";
+      std::cout << "]";
     }
     std::cout << "\n";    
   }
@@ -114,13 +114,14 @@ PartitionTest::print_partitions() const {
 
 void
 PartitionTest::print_pair(const resultPair& p) const {
-  std::cout << std::setprecision(12) << "ratio: " << p.first << " ";
+  std::cout << std::setprecision(12) << "SUM OF SCORES: " << p.first << std::endl;
+  std::cout << "PARTITION: ";
   for (auto& el: p.second) {
     std::cout << "[ ";
     for (auto& pt: el) {
       std::cout << pt << " ";
     }
-    std::cout << " ]";
+    std::cout << "]";
   }
   std::cout << "\n";
 }
@@ -229,9 +230,7 @@ PartitionTest::assertOrdered(const resultPair& r) const {
   for (auto& list: r.second) {
     std::vector<int> v(list.size());
     std::adjacent_difference(list.begin(), list.end(), v.begin());    
-    if (std::find_if(v.begin()+1, v.end(), [](int a){return a!=1;}) != v.end()) {
-      return false;
-    }
+    return std::count(v.begin()+1, v.end(), 1) == (v.size() - 1);
   }
   return true;
 }

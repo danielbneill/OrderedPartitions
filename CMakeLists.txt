@@ -16,7 +16,7 @@ include(UseSWIG)
 # set(UseSWIG TARGET_NAME_PREFERENCE STANDARD)
 
 # Debug symbols
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 # Place SWIG shared lib in root directory with python, c++ bindings

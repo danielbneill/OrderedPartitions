@@ -40,6 +40,9 @@ auto main(int argc, char **argv) -> int {
   
   auto pg = PartitionGraph(n, T, a, b);
 
+  double base = -4.1;
+  std::cout << std::pow(base, 2.1) << std::endl;
+
   /*
   // extern c interface
   auto pg_c = PartitionGraph(n, T, a, b);

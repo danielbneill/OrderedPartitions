@@ -161,12 +161,15 @@ class Task(object):
                 part_sum = np.sum(a[p])**power/np.sum(b[p])
                 part_val[part_ind] = part_sum
                 val += part_sum
-                # print('    PART_INDEX: {} SUBSET: {!r} PART_VAL: {}'.format(part_ind, p, part_sum))
+                print('    PART_INDEX: {} SUBSET: {!r} PART_VAL: {}'.format(part_ind, p, part_sum))
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
             print('    FINAL VAL: {}'.format(val))
-        # print('MAX_SUM: {}, MAX_PART: {!r}'.format(max_sum, arg_max))
+        print('MAX_SUM: {}, MAX_PART: {!r}'.format(max_sum, arg_max))
+        print()
+        import pdb
+        pdb.set_trace()
         return (max_sum, arg_max)
 
 class Worker(multiprocessing.Process):
@@ -297,7 +300,7 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=max):
 if __name__ == '__main__':
     NUM_POINTS = 3
     PARTITION_SIZE = 2
-    POWER = 1.
+    POWER = 2.2
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
     
     num_partitions = Bell_n_k(NUM_POINTS, PARTITION_SIZE)
@@ -309,13 +312,6 @@ if __name__ == '__main__':
     trial = 0
     bad_cases = 0
     while True:
-        # a00 = rng.uniform(low=1.0,  high=50.0, size=int(NUM_POINTS/2))
-        # a01 = rng.uniform(low=50.0, high=100.0, size=NUM_POINTS-int(NUM_POINTS/2))    
-        # b00 = rng.uniform(low=1.0,  high=50.0, size=int(NUM_POINTS/2))
-        # b01 = rng.uniform(low=50.0, high=100.0, size=NUM_POINTS-int(NUM_POINTS/2))
-        # a0 = np.concatenate([a00, a01])
-        # b0 = np.concatenate([b00, b01])
-        
         # a0 = rng.choice(range(1,11), NUM_POINTS, True)
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
@@ -324,6 +320,9 @@ if __name__ == '__main__':
 
         a0 = np.round(a0, 1)
         b0 = np.round(b0, 1)
+
+        a0 = np.array([0.3373581 , 0.23898464, 0.2959268 ])
+        b0 = np.array([0.59529115, 0.42148619, 0.5216534 ])
 
         # XXX
         # Counterexample for $a \in \(-\infty, \infty\)$
@@ -375,6 +374,8 @@ if __name__ == '__main__':
         except AssertionError as e:
             # if any([len(x)==1 for x in r_max_abs[1]]):
             #     continue
+            import pdb
+            pdb.set_trace()
             with open('_'.join(['./violations/a', str(SEED),
                                 str(trial),
                                 str(PARTITION_SIZE)]), 'wb') as f:
@@ -393,3 +394,35 @@ if __name__ == '__main__':
                 sys.exit()
     
         trial += 1
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
+import multiprocessing
+from scipy.special import comb
+from functools import partial
+from itertools import chain, islice, combinations
+
+rng = np.random.RandomState(SEED)
+
+
+a0 = np.array([0.3373581 , 0.23898464, 0.2959268 ])
+b0 = np.array([0.59529115, 0.42148619, 0.5216534 ])
+
+a0 = rng.uniform(low=1.0, high=10.0, size=int(3))
+b0 = rng.uniform(low=1., high=10.0, size=int(3))
+
+sortind = np.argsort(a0/b0)
+a = a0[sortind]
+b = b0[sortind]
+
+part0 = [[0,1],[2]]
+part1 = [[0,2],[1]]
+gamma = 2.2
+x = np.arange(0, 2*gamma, .0001)
+y1 = np.array([np.sum([np.sum(a[p])**x0/np.sum(b[p]) for p in part0]) for x0 in x])
+y2 = np.array([np.sum([np.sum(a[p])**x0/np.sum(b[p]) for p in part1]) for x0 in x])
+
+plt.plot(x, y2-y1)
+plt.pause(1e-3)
