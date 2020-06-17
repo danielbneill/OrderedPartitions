@@ -1,7 +1,7 @@
 # OrderedPartitions
 Utilities for subset scanning/optimization over partitions of records. There are two sets of executables - optimal partition utilities, and optimizers for classification purposes. The latter are invoked through the Python driver ImpliedBoost.py. The utilities are described below.
 
-Requirements:
+# Requirements:
   * For partition testing utilities
     - cmake
     - c++17-compliant compiler
@@ -16,7 +16,7 @@ $cmake --build build -- -j4
 
 ## 
 
-binaries created in ./build/bin
+# binaries created in ./build/bin
 
   * test_partitions
     + usage example 
@@ -28,6 +28,6 @@ binaries created in ./build/bin
 
 ## 
 
-classifier
+# classifier
 
-  * ImpliedBoost.py, classifier based on bottom-up tree specification.
+  * ImpliedBoost.py, classifier based on bottom-up tree specification. Multiple T (partition size) are tested at each iteration step on different threads/tasks, optimal T chosen based on objective function. Work in progress.
