@@ -73,11 +73,6 @@ PartitionGraph::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 void 
 PartitionGraph::create() 
 {
-  // replace a with abs(a)
-  // std::transform(a_.begin(), a_.end(), a_.begin(), [](float f){
-  // 		   return f > 0 ? f : -f;
-  // 	 });
-
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
 

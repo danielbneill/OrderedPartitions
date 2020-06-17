@@ -32,7 +32,7 @@ import seaborn as sns
 from sklearn import metrics
 import matplotlib.pyplot as plt
 
-X,y = make_classification(random_state=551, n_samples=150)
+X,y = make_classification(random_state=551, n_samples=50)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 SEED = 144
@@ -289,6 +289,9 @@ class GradientBoostingPartitionClassifier(object):
         # SWIG optimizer, task-based C++ distribution
         num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
         results = Optimizer(num_partitions, g, h)()
+
+        import pdb
+        pdb.set_trace()
 
         x = T.dmatrix('x')
         loss = theano.function([x], self.loss_without_regularization(x))

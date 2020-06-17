@@ -276,6 +276,9 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=max):
             
     r_max = reduce(allResults, cond)
 
+    import pdb
+    pdb.set_trace()
+
     # summands = [np.sum(a[p])**2/np.sum(b[p]) for p in r_max[1]]
     # parts = [ind[el] for el in [p for p in r_max[1]]]
     
