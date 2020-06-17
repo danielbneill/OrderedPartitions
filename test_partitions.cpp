@@ -61,22 +61,28 @@ auto main(int argc, char **argv) -> int {
     // Print out problematic case
     if (!pt.assertOrdered(pt.get_results())) {
       std::cerr << "EXCEPTION\n";
-      std::cerr << "a = [ ";
+      std::cerr << "a   = [ ";
       for (auto& el : a)
 	std::cout << std::setprecision(16) << el << " ";
       std::cerr << "]" << std::endl;
 
-      std::cerr << "b = [ ";
+      std::cerr << "b   = [ ";
       for (auto& el : b)
 	std::cerr << std::setprecision(16) << el << " ";
       std::cerr << "]" << std::endl;
+
+      std::cerr << "a/b = [ ";
+      for (size_t i=0; i<a.size(); ++i)
+	std::cerr << std::setprecision(8) << a[i]/b[i] << " ";
+      std::cerr << "]" << std::endl;
+
       pt.print_pair(pt.get_results());
 
       exit(0);
     }
 
     count++;
-    if (!(count%10'000)) {
+    if (!(count%100)) {
       std::cout << "COUNT: " << count << std::endl;
     }
   }
