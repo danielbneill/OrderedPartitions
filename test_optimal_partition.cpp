@@ -33,7 +33,7 @@ namespace combinatorics {
   }
 
   double mon_to_all_ratio(int n, int k) {
-    return static_cast<float>(Mon_n_k(n, k))/static_cast<float>(Bell_n_k(n, k));
+    return static_cast<double>(Mon_n_k(n, k))/static_cast<double>(Bell_n_k(n, k));
   }
 
 } // namespace

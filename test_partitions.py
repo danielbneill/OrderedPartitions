@@ -7,7 +7,7 @@ from scipy.special import comb
 from functools import partial
 from itertools import chain, islice, combinations
 
-SEED = 124
+SEED = 127
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -152,12 +152,12 @@ class Task(object):
                 part_sum = np.sum(a[p])**power/np.sum(b[p])
                 part_val[part_ind] = part_sum
                 val += part_sum
-                print('    PART_INDEX: {} SUBSET: {!r} PART_VAL: {}'.format(part_ind, p, part_sum))
+                print('    INDEX: {} SUBSET: {!r} PART_VAL: {}'.format(part_ind, p, part_sum))
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
-            print('    FINAL VAL: {}'.format(val))
-        print('MAX_SUM: {}, MAX_PART: {!r}'.format(max_sum, arg_max))
+            print('    FINAL SCORE: {}'.format(val))
+        print('MAX_SUM: {}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
         print()
         return (max_sum, arg_max)
 
@@ -304,10 +304,25 @@ if __name__ == '__main__':
         # a0 = rng.choice(range(1,11), NUM_POINTS, True)
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
-        a0 = rng.uniform(low=1.0, high=10.0, size=int(NUM_POINTS))
-        b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
+        # a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
+        # b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
+        # gamma < 2.0
+        q = 1
+        epsilon = 1e-7
+        x = 1
+        b0 = np.array([1./(q*x-epsilon), 1./(q*epsilon), 1./(q*x+epsilon)])
+        a0 = np.array([1./x, 1./epsilon, 1./x])
+
+        # a0 = np.array([-5.64313, -5.11986,  9.99038,  1.93718])
+        # b0 = np.array([0.0772588, 1.22881  , 3.35838  , 0.0288292])
+
+        # a0 = np.array([-5.64, -5.12,  10.0,  1.94])
+        # b0 = np.array([0.077, 1.23, 3.36, 0.029])
+                      
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS)
+        a0 = -1 * a0
+        r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS)
         
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
@@ -342,4 +357,50 @@ if __name__ == '__main__':
     
         trial += 1
 
+if (False):
+#### Reconstruct ####
+    import numpy as np
+    def F(x,y):
+        return np.sum(x)**2/np.sum(y)
+    X1 = -3.70595
+    Y1 = 0.106088
+    X2 = 4.87052
+    Y2 = 4.58719
+    beta = 0.0772588
+    alpha = -5.64313
+    b = 3.35838
+    a = 9.99038
 
+    X1_val = X1
+    Y1_val = Y1
+    X2_val = X2
+    Y2_val = Y2
+    X1 = np.array([alpha, X1_val-alpha])
+    Y1 = np.array([beta, Y1_val-beta])
+    X2 = np.array([X2_val-a, a])
+    Y2 = np.array([Y2_val-b, b])
+    
+    X1_m_alpha = X1[1:]
+    Y1_m_beta  = Y1[1:]
+    X1_p_a     = np.concatenate([X1, np.array([a])])
+    Y1_p_b     = np.concatenate([Y1, np.array([b])])
+    X2_p_alpha = np.concatenate([X2, np.array([alpha])])
+    Y2_p_beta  = np.concatenate([Y2, np.array([beta])])
+    X2_m_a     = X2[:-1]
+    Y2_m_b     = Y2[:-1]
+    X1_m_alpha_p_a = np.concatenate([X1_m_alpha, np.array([a])])
+    Y1_m_beta_p_b = np.concatenate([Y1_m_beta, np.array([b])])
+    X2_p_alpha_m_a = np.concatenate([X2[:-1], np.array([alpha])])
+    Y2_p_beta_m_b = np.concatenate([Y2[:-1], np.array([beta])])
+    
+    assert (F(X1_m_alpha,Y1_m_beta)-F(X1,Y1)) > 0
+    assert (F(X1_p_a,Y1_p_b)-F(X1,Y1)) < 0
+    assert (F(X2_p_alpha,Y2_p_beta)-F(X2,Y2)) < 0
+    assert (F(X2_m_a,Y2_m_b)-F(X2,Y2)) > 0
+    
+    top_row = F(X1_m_alpha,Y1_m_beta)+F(X2_p_alpha,Y2_p_beta)-F(X1,Y1)-F(X2,Y2)
+    bot_row = F(X1_p_a,Y1_p_b)+F(X2_m_a,Y2_m_b)-F(X1,Y1)-F(X2,Y2)
+    plus_minus = F(X1_m_alpha_p_a,Y1_m_beta_p_b)+F(X2_p_alpha_m_a,Y2_p_beta_m_b)-F(X1,Y1)-F(X2,Y2)
+
+    a0 = np.array([X1[0], X2[0], X2[1], X1[1]])
+    b0 = np.array([Y1[0], Y2[0], Y2[1], Y1[1]])

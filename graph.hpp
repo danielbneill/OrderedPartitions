@@ -19,8 +19,8 @@
 //
              
 struct EdgeWeightProperty {
-  EdgeWeightProperty(float w) : weight(w) {}
-  float weight;
+  EdgeWeightProperty(double w) : weight(w) {}
+  double weight;
 };
 
 using graph_t = boost::adjacency_list<boost::listS,
@@ -36,7 +36,7 @@ using ipair = std::pair<int, int>;
 using ipairlist = std::list<ipair>;
 using ilist = std::list<int>;
 using ivec = std::vector<int>;
-using fvec = std::vector<float>;
+using fvec = std::vector<double>;
 using ivecvec = std::vector<std::vector<int>>;
 
 class PartitionGraph {
@@ -58,8 +58,8 @@ public:
 
   PartitionGraph(int n,
 		 int T,
-		 float *a,
-		 float *b
+		 double *a,
+		 double *b
 		 ):
     n_{n},
     T_{T},
@@ -80,7 +80,7 @@ public:
   ipairlist get_optimal_path() const;
   ivec get_optimal_path_extern() const;
   ivecvec get_optimal_subsets_extern() const;
-  float get_optimal_weight_extern() const;
+  double get_optimal_weight_extern() const;
   void write_dot() const;
 
 private:
@@ -92,7 +92,7 @@ private:
   ivec priority_sortind_;
   ipairlist optimalpath_;
   ilist optimalnodepath_;
-  float optimalweight_;
+  double optimalweight_;
   ilist optimaledgeweights_;
   ivecvec subsets_;
   graph_t G_;
@@ -100,8 +100,8 @@ private:
   inline int node_to_int(int,int);
   inline ipair int_to_node(int);
   void sort_by_priority(fvec&, fvec&);
-  float compute_weight(int, int);
-  float compute_weight(int, int, fvec&);
+  double compute_weight(int, int);
+  double compute_weight(int, int, fvec&);
   void add_edge_and_weight(int, int, fvec&&);
 };
 

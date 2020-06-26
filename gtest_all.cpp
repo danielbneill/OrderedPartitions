@@ -10,7 +10,7 @@
 
 #include "graph.hpp"
 
-void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
+void sort_by_priority(std::vector<double>& a, std::vector<double>& b) {
   std::vector<int> ind(a.size());
   std::iota(ind.begin(), ind.end(), 0);
   
@@ -18,7 +18,7 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 		   [&a, &b](int i, int j) {
 		     return (a[i]/b[i]) < (a[j]/b[j]);
 		   });
-  std::vector<float> a_s, b_s;
+  std::vector<double> a_s, b_s;
   for (auto i : ind) {
     a_s.push_back(a[i]);
     b_s.push_back(b[i]);
@@ -31,7 +31,7 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 
 TEST(PartitionGraphTest, Baselines) {
 
-  std::vector<float> a{0.0212651 , -0.20654906, -0.20654906, -0.20654906, -0.20654906,
+  std::vector<double> a{0.0212651 , -0.20654906, -0.20654906, -0.20654906, -0.20654906,
       0.0212651 , -0.20654906,  0.0212651 , -0.20654906,  0.0212651 ,
       -0.20654906,  0.0212651 , -0.20654906, -0.06581402,  0.0212651 ,
       0.03953075, -0.20654906,  0.16200014,  0.0212651 , -0.20654906,
@@ -39,7 +39,7 @@ TEST(PartitionGraphTest, Baselines) {
       -0.20654906,  0.16200014,  0.03953075, -0.20654906, -0.20654906,
       0.03953075,  0.20296943, -0.20654906,  0.0212651 ,  0.20296943,
       -0.20654906,  0.0212651 ,  0.03953075, -0.20654906,  0.03953075};
-  std::vector<float> b{0.22771114, 0.21809504, 0.21809504, 0.21809504, 0.21809504,
+  std::vector<double> b{0.22771114, 0.21809504, 0.21809504, 0.21809504, 0.21809504,
       0.22771114, 0.21809504, 0.22771114, 0.21809504, 0.22771114,
       0.21809504, 0.22771114, 0.21809504, 0.22682739, 0.22771114,
       0.22745816, 0.21809504, 0.2218354 , 0.22771114, 0.21809504,
@@ -79,9 +79,9 @@ TEST(PartitionGraphTest, OrderedProperty) {
   
   std::default_random_engine gen;
   gen.seed(std::random_device()());
-  std::uniform_real_distribution<float> dist(1., 10.);
+  std::uniform_real_distribution<double> dist(1., 10.);
 
-  std::vector<float> a(n), b(n);
+  std::vector<double> a(n), b(n);
 
   for (size_t i=0; i<5; ++i) {
     for (auto &el : a)

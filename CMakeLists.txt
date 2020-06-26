@@ -49,7 +49,7 @@ add_executable(test_partitions test_partitions.cpp)
 target_link_libraries(test_partitions test_optimal_partition pthread)
 
 # C++ executable test_lemma
-# add_executable(test_lemma test_lemma.cpp)
+add_executable(test_lemma test_lemma.cpp)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)

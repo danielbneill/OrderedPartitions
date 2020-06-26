@@ -12,7 +12,7 @@
 auto main(int argc, char **argv) -> int {
 
   int N, T;
-  float gamma;
+  double gamma;
   bool integer_gamma = false;
   std::istringstream Nss(argv[1]), Tss(argv[2]), gammass(argv[3]);
   Nss >> N; Tss >> T; gammass >> gamma;

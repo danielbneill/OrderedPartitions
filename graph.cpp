@@ -8,23 +8,23 @@
 
 #include "graph.hpp"
 
-float
+double
 PartitionGraph::compute_weight(int i, int j) {
-  float weight = -1. * std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
+  double weight = -1. * std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
     std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
   return weight;
 }
 
-float
-PartitionGraph::compute_weight(int i, int j, std::vector<float>& diffs) {
+double
+PartitionGraph::compute_weight(int i, int j, std::vector<double>& diffs) {
   return diffs[i*n_+j];
 }
 
 void 
-PartitionGraph::add_edge_and_weight(int j, int k, std::vector<float> &&diffs)
+PartitionGraph::add_edge_and_weight(int j, int k, std::vector<double> &&diffs)
 {
   int curr_node = node_to_int(j, k);
-  float weight;
+  double weight;
 
   if (k==1) {
     // level 1, just connect source to node
@@ -48,7 +48,7 @@ PartitionGraph::add_edge_and_weight(int j, int k, std::vector<float> &&diffs)
 }
 
 void
-PartitionGraph::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
+PartitionGraph::sort_by_priority(std::vector<double>& a, std::vector<double>& b) {
   std::vector<int> ind(a.size());
   std::iota(ind.begin(), ind.end(), 0);
   
@@ -60,7 +60,7 @@ PartitionGraph::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
   priority_sortind_ = ind;
 
   // Inefficient reordering
-  std::vector<float> a_s, b_s;
+  std::vector<double> a_s, b_s;
   for (auto i : ind) {
     a_s.push_back(a[i]);
     b_s.push_back(b[i]);
@@ -77,14 +77,14 @@ PartitionGraph::create()
   sort_by_priority(a_, b_);
 
   // partial sums for ease of weight calculation
-  std::vector<float> asum(n_), bsum(n_);
-  std::partial_sum(a_.begin(), a_.end(), asum.begin(), std::plus<float>());
-  std::partial_sum(b_.begin(), b_.end(), bsum.begin(), std::plus<float>());
+  std::vector<double> asum(n_), bsum(n_);
+  std::partial_sum(a_.begin(), a_.end(), asum.begin(), std::plus<double>());
+  std::partial_sum(b_.begin(), b_.end(), bsum.begin(), std::plus<double>());
 
   // create sparse matrix of differences
   int numDiff = (n_+1)*(n_);
-  float wt;
-  std::vector<float> diffs = std::vector<float>(numDiff);
+  double wt;
+  std::vector<double> diffs = std::vector<double>(numDiff);
   for (size_t j=1; j<=n_; ++j) { diffs[j] = -1. * std::pow(asum[j-1], 2)/bsum[j-1]; }
   for (size_t i=1; i<=n_; ++i) {
     for (size_t j=i+1; j<=n_; ++j) {
@@ -106,7 +106,7 @@ PartitionGraph::create()
   }
   
   // add sink, must add explicitly
-  float weight;
+  double weight;
   int curr_node = (T_-1) * per_level_ + 1;
   for (size_t j=T_-1; j<n_; ++j) {
     weight = compute_weight(j, n_, diffs);
@@ -121,11 +121,11 @@ PartitionGraph::optimize() {
   // std::cerr << "COMPUTING SHORTEST PATH\n";
 
   int nb_vertices = boost::num_vertices(G_);
-  boost::property_map<graph_t, float EdgeWeightProperty::*>::type weight_pmap;
+  boost::property_map<graph_t, double EdgeWeightProperty::*>::type weight_pmap;
   weight_pmap = boost::get(&EdgeWeightProperty::weight, G_);
   
   // init the distance
-  std::vector<float> distance(nb_vertices, (std::numeric_limits<float>::max)());
+  std::vector<double> distance(nb_vertices, (std::numeric_limits<double>::max)());
   distance[0] = 0.;
 
   // init the predecessors (identity function)
@@ -210,7 +210,7 @@ PartitionGraph::get_optimal_subsets_extern() const {
   return subsets_;
 }
 
-float
+double
 PartitionGraph::get_optimal_weight_extern() const {
   return optimalweight_;
 }
