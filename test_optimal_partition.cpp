@@ -40,14 +40,14 @@ namespace combinatorics {
 
 
 void
-PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b) {
+PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b, double delta) {
   // TODO: Make this in-place, don't see a good way though
 
   std::vector<int> ind(a_.size());
   std::iota(ind.begin(), ind.end(), 0);
   stable_sort(ind.begin(), ind.end(),
-	      [&a, &b](int i, int j) {
-		return (a[i]/b[i]) < (a[j]/b[j]);
+	      [&a, &b, delta](int i, int j) {
+		return (pow(a[i], delta)/b[i]) < (pow(a[j], delta)/b[j]);
 	      });
   std::vector<double> a_s(a.size()), b_s(a.size());
   for (size_t i=0; i<a.size(); ++i) {
@@ -67,7 +67,7 @@ PartitionTest::runTest() {
   int window = static_cast<int>(numPartitions/NUM_TASKS);
   int excess = numPartitions - window*NUM_TASKS;
 
-  sort_by_priority_(a_, b_);
+  sort_by_priority_(a_, b_, delta_);
 
   auto task = [this](int b, int e) {
     results_queue_.push(optimize_(b, e));

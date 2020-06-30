@@ -18,22 +18,26 @@ public:
   PartitionTest(std::vector<double>& a, 
 		std::vector<double>& b, 
 		int T, 
-		double gamma) :
+		double gamma,
+		double delta=1.0) :
     a_(a),
     b_(b),
     T_(T),
     gamma_(gamma),
+    delta_(delta),
     numElements_(a.size())
   { init_(true); }
   PartitionTest(std::vector<double>& a, 
 		std::vector<double>& b,
 		int T,
 		double gamma,
-		std::vector<std::vector<std::vector<int>>> fList) :
+		std::vector<std::vector<std::vector<int>>> fList,
+		double delta=1.0) :
     a_(a),
     b_(b),
     T_(T),
     gamma_(gamma),
+    delta_(delta),
     fList_(fList)
   { init_(false); }
 		
@@ -53,6 +57,7 @@ private:
   std::vector<double> b_;
   int T_;
   double gamma_;
+  double delta_;
   std::vector<int> elements_;
   std::vector<resultPair> results_;
   resultPair optimalResult_;
@@ -64,7 +69,7 @@ private:
   void cleanup_();
   resultPair optimize_(int, int);
   void formPartitions_();
-  void sort_by_priority_(std::vector<double>&, std::vector<double>&);
+  void sort_by_priority_(std::vector<double>&, std::vector<double>&, double);
 };
 
 #endif

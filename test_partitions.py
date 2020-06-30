@@ -242,8 +242,8 @@ if __name__ == '__NOT_MAIN__':
     
         trial += 1
 
-def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=max):
-    ind = np.argsort(a0/b0)
+def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=max):
+    ind = np.argsort(a0**PRIORITY_POWER/b0)
     (a,b) = (seq[ind] for seq in (a0,b0))
         
     if num_mon_partitions > 100:
@@ -276,8 +276,8 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, cond=max):
             
     r_max = reduce(allResults, cond)
 
-    import pdb
-    pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
 
     # summands = [np.sum(a[p])**2/np.sum(b[p]) for p in r_max[1]]
     # parts = [ind[el] for el in [p for p in r_max[1]]]
@@ -289,6 +289,7 @@ if __name__ == '__main__':
     NUM_POINTS =        int(sys.argv[1]) or 3   # N
     PARTITION_SIZE =    int(sys.argv[2]) or 2   # T
     POWER =             float(sys.argv[3]) or 2.2      # gamma
+    PRIORITY_POWER =    float(sys.argv[4]) or 1.0
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
     
@@ -304,15 +305,15 @@ if __name__ == '__main__':
         # a0 = rng.choice(range(1,11), NUM_POINTS, True)
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
-        # a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
-        # b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
+        a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
+        b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
         # gamma < 2.0
-        q = 1
-        epsilon = 1e-7
-        x = 1
-        b0 = np.array([1./(q*x-epsilon), 1./(q*epsilon), 1./(q*x+epsilon)])
-        a0 = np.array([1./x, 1./epsilon, 1./x])
+        # q = 1
+        # epsilon = 1e-5
+        # x = 1
+        # b0 = np.array([1./(q*x+epsilon), 1./(q*epsilon), 1./(q*x-epsilon)])
+        # a0 = np.array([1./x, 1./epsilon, 1./x])
 
         # a0 = np.array([-5.64313, -5.11986,  9.99038,  1.93718])
         # b0 = np.array([0.0772588, 1.22881  , 3.35838  , 0.0288292])
@@ -320,9 +321,9 @@ if __name__ == '__main__':
         # a0 = np.array([-5.64, -5.12,  10.0,  1.94])
         # b0 = np.array([0.077, 1.23, 3.36, 0.029])
                       
-        r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS)
+        r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
         a0 = -1 * a0
-        r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS)
+        r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
         
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))

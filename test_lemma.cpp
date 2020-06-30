@@ -29,6 +29,10 @@ double max_(double a, double b) {
   return a > b ? a : b;
 }
 
+double min_(double a, double b) {
+  return a < b ? a : b;
+}
+
 double max_vec(std::vector<double> v) {
   return *std::max_element(v.begin(), v.end());
 }
@@ -42,9 +46,9 @@ auto main(int argc, char **argv) -> int {
   std::random_device rnd_device;
   std::mt19937 mersenne_engine {rnd_device()};
   std::discrete_distribution<int> distdisc{-1, 1};
-  std::uniform_real_distribution<double> distunif(0.1, 1.0);
-  std::uniform_real_distribution<double> distX1(-10., 10.);
-  std::uniform_real_distribution<double> distY1(0.1, 10.);
+  std::uniform_real_distribution<double> distunif(0.00001, 1.0);
+  std::uniform_real_distribution<double> distX1(-1., 1.);
+  std::uniform_real_distribution<double> distY1(0.00001, 100.);
   std::uniform_real_distribution<double> dista(-1., 1.);
 
   // Free simulation
@@ -106,7 +110,7 @@ auto main(int argc, char **argv) -> int {
 			    // if ((t1+t2+t3+t4)<0.) { WORKS
 			    //if ((s1+s2+s3+s4)<0.) { WORKS
 
-			    if ((X1 >= 0.) && (X2 <= 0.)) {
+			    if ((X1 >= 0.) && (X2 >= 0.)) {
 					      
 				// This doesn't work
 				// if (((F(X1+(X2-a),Y1+(Y2-b))-F(X1,Y1)) <= 0.) || ((F(X2-(X2-a),Y2-(Y2-b))-F(X2,Y2)) <= 0.)) {
@@ -153,11 +157,78 @@ auto main(int argc, char **argv) -> int {
 
 			      // if (((X1/Y1) - (a/b)) <= 0.) {
 			      
-			      // if ((F(X1-alpha,Y1-beta)+F(X2+alpha,Y2+beta)-((beta/(Y2+beta))*F(X2,Y2))) < 0.) {
+			      // if (((alpha > 0 ) && (  (((-Y1*Y2)/(Y1+Y2))*((X1/Y1)-(X2/Y2))*((X1/Y1)-(X2/Y2))) +(s1+s3)) <= 0.)) {
+
+			      // Basis for subcase
+			      double max_alpha = min_(X1*(1-sqrt((Y1-beta)/Y1)), X2*(sqrt((Y2+beta)/Y2)-1));
+			      double max_alpha_approx = X2*sqrt(beta/Y2);
+			      double g = 2*(X2*Y1-X1*Y2)/(Y1*Y2);
+			      double h = (Y1+Y2)/(Y1*Y2);				
+			      double s1s3_bound = beta*(((X1*X1)/(Y1*Y1))-((X2*X2)/(Y2*Y2)));
+			      double s1s3_bound_approx = beta*(((2*a*2*a)/(b*b))-((X2*X2)/(Y2*Y2)));
+			      double s1s3_bound_approx_appox = beta*(((2*a*2*a)/(b*b))-((a*a)/(b*b)));
+			      // if ((alpha > 0) && ((h*max_alpha*max_alpha + g*max_alpha + (s1+s3)) <= 0.)) { 
+			      // if ((alpha > 0) && ((abs_(max_alpha)*abs_(max_alpha*h)) >= s1s3_bound)) { 
+			      // if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { 
+			      if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { // best so far
+
+			      // if ((alpha > 0.) && ((abs_(g) <= abs_(max_alpha*h)) || (abs_(max_alpha*(g+max_alpha*h)) >= abs_(s1s3_bound)))) {
+			      // if ((alpha > 0.) && (abs_(g+h*max_alpha) >= abs_(g))) {
+
+			      // if ((alpha*(g+h*alpha)) <= -beta*(((X1*X1)/(Y1*Y1)) - ((X2*X2)/(Y2*Y2)))) {
+			      double q_a = ((Y1/Y2)+(Y2/Y1))/((X2/Y2)-(X1/Y1));
+			      double q_b = 2.;
+			      double q_c = -beta*((X1/Y1)+(X2/Y2));
+			      double theta = (Y1/Y2)+(Y2/Y1);
+
+			      // if ((alpha > 0.) && (((((2/theta)-beta)*(X1/Y1) - ((2/theta)+beta)*(X2/Y2))) >= 0.)) {
+				
+
+			      // This summarizes things
+			      // if ((alpha > 0.) && ((-((q_b*q_b)/(2*q_a)) + q_c) >= 0.)) {
+			      std::cout << "TEST0: " << q_a << " : " << q_b << " : " << q_c << std::endl;
+			      std::cout << "TEST1: " 
+					<< -(q_b*q_b)/(2*q_a) + q_c << " : " 
+					<< q_b*q_b - 4*(q_a)*(q_c) << " : " 
+					<< alpha*(g+h*alpha) << std::endl;
+			      std::cout << "TEST2: " << s2+s4 << " : " << -(s1+s3) << std::endl;
+			      std::cout << "TEST3: " << s2+s4 << " : " << -s1s3_bound << std::endl;
+				
+				
+			      // double lhs = (F(X2,Y2)/F(X1,Y1))*((2*Y1+Y2)/(Y2));
+			      // double lhs_approx = (X2/(2*X1))*((2*Y1+Y2)/(Y2));
+			      // double rhs = 1.;
+			      // if ((alpha > 0.) && (lhs >= rhs)) {
+			      
+			      double X2Y2_bound = (X2*X2)/(Y2*Y2);
+			      double lhs = X2Y2_bound*((beta+Y2)/beta) + X2Y2_bound;
+			      double rhs = ((X1*X1)/(Y1*Y1));
+			      // if ((alpha > 0) && ((2*Y1+Y2)/(Y2))*X2Y2_bound >= rhs) {
+			      // if ((alpha > 0) && ((F(X2,Y2)/F(X1,Y1)) >= (b/(2*Y1+b)))) { 
+			      // if ((alpha > 0) && (((a*X2*Y1)/(b*X1*X1)) >= (b/(2*Y1+b)))) {
+			      double n = 1 - sqrt((Y2-b)/Y2);
+			      double d = 1 + sqrt((Y1+b)/Y1);
+			      double lhs_bound = (X2/X1)*(n/d);
+			      // if ((alpha > 0.) && (lhs_bound >= (Y2/(2*Y1+Y2)))) {
+			      // if ((alpha > 0.) && (lhs_bound >= (Y2/(2*Y1+Y2)))) {
+			      // if ((alpha > 0.) && (lhs_bound >= (b/(2*Y1+b)))) {
 
 
+				double f1 = F(X2,Y2)/F(X1,Y1);
+				double f2 = (X2/X1)*((1-sqrt((Y2-b)/Y2))/(1+sqrt((Y1+b)/Y1)));
+				double f3 = (b/(2*Y1+b));
+				double lhs_test = (X2/(Y2*X1)*((1-sqrt((Y2-b)/(Y2)))/(sqrt((2*Y1+b)/(Y1)))));
+				double rhs_test = 1/(2*Y1+b);			
+				// if ((alpha > 0.) && (lhs_test >= rhs_test)) {
+				
+				// double lhs1 = (X2/Y2)*(1/X1)*sqrt(2*Y1+b);
+				// double lhs2 = sqrt(Y1/Y2)*(sqrt(Y2)-sqrt(Y2-b));				
+				// if ((alpha > 0.) && (lhs1*lhs2 >= 1.)) { // left off here
+				  
+
+			      // for X1 >= 0, X2 <= 0 case
 			      // if ((alpha <= 0) && (s1+s2+s3+s4+t1+t2+t3+t4) <= 0.) {
-			      if ((((b - beta) >= 0.) && ((X1/Y1) - (X2/Y2)) <= 0.)) {
+			      // if ((((b - beta) >= 0.) && ((X1/Y1) - (X2/Y2)) <= 0.)) {
 
 			      // if (((s1+s3) <= 0.) && ((t1+t3) <= 0.) && (alpha <= 0.)) {
 			      // if (((s1+s3) >= 0.) && ((s1+s2+s3+s4) <= 0.) && (alpha <= 0.)) {
@@ -179,6 +250,11 @@ auto main(int argc, char **argv) -> int {
 				double tmp3 = F(X1-alpha,Y1) - F(X1,Y1);
 				double tmp4 = F(X2+alpha,Y2)-F(X2,Y2);
 				double alphaStar = (beta*(X1+X2)-(X2*Y1-X1*Y2))/(Y1+Y2);
+
+				// std::cout << "TEST1: " << ((-Y1*Y2)/(Y1+Y2))*((X1/Y1)-(X2/Y2))*((X1/Y1)-(X2/Y2)) << " : " << -(s1+s3) << std::endl;
+				// std::cout << "TEST2: " << h*alpha*alpha + g*alpha << " : " << -(s1+s3) << std::endl;
+				// std::cout << "TEST3: " << h*max_alpha*max_alpha + g*max_alpha + (s1+s3) << std::endl;
+				// std::cout << "TEST4: " << abs_(alpha) << " : " << abs_(alpha*h + g) << " : " << -(s1+s3) << std::endl;
 				// std::cout << "TEST: " << (beta/(Y1-beta))*F(X1,Y1) - (beta/(Y2+beta))*F(X2,Y2) << " : " << s1+s3 << std::endl;
 				// std::cout << "TEST: " << FAll(X1,Y1,X2,Y2,alphaStar,beta) << std::endl;
 				// std::cout << "TEST: " << s1+s2+s3+s4 << " : " << FAll(X1,Y1,X2,Y2,alpha,beta) << std::endl;
