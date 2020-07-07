@@ -156,7 +156,7 @@ class Task(object):
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
-            print('    FINAL SCORE: {}'.format(val))
+            print('    FINAL SCORE: {:4.12}'.format(val))
         print('MAX_SUM: {}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
         print()
         return (max_sum, arg_max)
@@ -276,8 +276,8 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=ma
             
     r_max = reduce(allResults, cond)
 
-    # import pdb
-    # pdb.set_trace()
+    import pdb
+    pdb.set_trace()
 
     # summands = [np.sum(a[p])**2/np.sum(b[p]) for p in r_max[1]]
     # parts = [ind[el] for el in [p for p in r_max[1]]]
@@ -308,9 +308,18 @@ if __name__ == '__main__':
         a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
+        # gamma == 2.0, lambda > 1.0
+        x = 1e10
+        delta = 10
+        a0 = np.array([x-delta, delta, x+delta])
+        b0 = np.array([x, delta, x])
+
+        # import pdb
+        # pdb.set_trace()
+        
         # gamma < 2.0
         # q = 1
-        # epsilon = 1e-5
+        # epsilon = 1e-3
         # x = 1
         # b0 = np.array([1./(q*x+epsilon), 1./(q*epsilon), 1./(q*x-epsilon)])
         # a0 = np.array([1./x, 1./epsilon, 1./x])
@@ -322,8 +331,8 @@ if __name__ == '__main__':
         # b0 = np.array([0.077, 1.23, 3.36, 0.029])
                       
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
-        a0 = -1 * a0
-        r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
+        # a0 = -1 * a0
+        # r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
         
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
@@ -405,3 +414,24 @@ if (False):
 
     a0 = np.array([X1[0], X2[0], X2[1], X1[1]])
     b0 = np.array([Y1[0], Y2[0], Y2[1], Y1[1]])
+
+if (False):
+    import numpy as np
+
+    # gamma == 2.0, lambda > 1.0
+    x = 1e6
+    delta = 10.01
+    theta = 2.0
+    gamma = 2.0
+    a0 = np.array([x-delta, delta, x+delta])
+    b0 = np.array([x, delta, x])
+
+    sortind = np.argsort(a0**theta/b0)
+    a = a0[sortind]
+    b = b0[sortind]
+
+    part0 = [[0],[1,2]]
+    part1 = [[0,1],[2]]
+    part2 = [[0,2],[1]]
+
+    sum([np.sum(a[part])**gamma/np.sum(b[part]) for part in part0])

@@ -2,6 +2,8 @@
 
 \usepackage{latexsym}
 \usepackage{fancyhdr}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
@@ -34,19 +36,23 @@
 \newenvironment{claim}[1]{\par\noindent\underline{Claim:}\space#1}{}
 \newenvironment{claimproof}[1]{\par\noindent\underline{Proof:}\space#1}{\hfill $\blacksquare$}
 
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
 \begin{document}
 
 Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ will be called a $\textit{record}$ and denoted by $R_i$. The set of records will be denoted by $\mathcal{D}$. We will generally regard the sequences $X$, $Y$ as sets and study orderings on the records.
 
 \begin{definition}
-A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x}{y}$ as the standard priority function. The ordering on the sequences $X$, $Y$ induced by $G$ is indicated by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
+A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x\tau}{y}$ as a power priority function, the case $\tau = 1$ the standard priority function. The ordering on the sequences $X$, $Y$ induced by $G$ is indicated by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
 \end{definition}
 
 \begin{definition}
 A score function is a function $F\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$, $(x,y)\mapsto F(x,y)$ that is increasing in $x$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
 \end{definition}
 
-We extend the functions $F$, $G$ to subsets of $X_i \in X$, $Y_i \in Y$ by defining $F(X_i, Y_i) = F(\sum_{x_i \in X_i} x_i, \sum_{y_i \in Y_i} y_i)$. It is often implicit that the tuple $\left(x_i, y_i\right)$ is associated with the record $R_i$.
+We extend the functions $F$, $G$ to subsets of $X_i \in X$, $Y_i \in Y$ by defining $F(X_i, Y_i) = F(\sum_{x_i \in X_i} x_i, \sum_{y_i \in Y_i} y_i)$. It is often implicit that the tuple $\left(x_i, y_i\right)$ is associated with the record $R_i$. We also use the notation $X_1 = \sum_{x_i \in X_i}x_i$, $Y_1 = \sum_{y_i \in Y_i}y_i$, etc.
 
 Let $\mathcal{P} = \{P_1, \dots, P_T\}$ be a partition of the set $\{1, \dots, n\}$, so that $P_1 \cup \dots \cup P_T = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. In this case $\mathcal{P}$ is a partition of $N$ of size $T$ and we write $\vert \mathcal{P} \vert = T$. We will sometimes consider $\mathcal{P}$ as a partition of $N$, or one or both of the sequences $X$, $Y$, or of the records $\left\lbrace R_i\right\rbrace$, and write $j \in P_i$, f or $x_i \in \mathcal{P}$, as fits the situation. In this way a subset $X_i \in X$ can be considered as an element of a partition determined by the indices present in the subset, etc.
 
@@ -68,7 +74,7 @@ then $\mathcal{P}$ is a maximal ordered partition for the power score function $
 \end{definition}
 
 \begin{thm}
-For the dataset $\mathcal{D} = \{R_1, \dots, R_N\}$, standard priority function $G(R_i) = \frac{x_i}{y_i}$, let $F$ be a score function $F(x_i, y_i) = \frac{x_i^\gamma}{y_i}$, for $\gamma > 0$. The for any fixed $T \in \mathbf{N}, T < N$, there is a maximal ordered partition $\mathcal{P}$ of size $T$ for $F$ iff $\gamma = 2$.
+For the dataset $\mathcal{D} = \{R_1, \dots, R_N\}$, priority function $G(R_i) = \frac{x_i^\tau}{y_i}$, let $F$ be a score function $F(x_i, y_i) = \frac{x_i^\gamma}{y_i}$, for $\gamma > 0$. The for any fixed $T \in \mathbf{N}, T < N$, there is a maximal ordered partition $\mathcal{P}$ of size $T$ for $F$ iff $\gamma = 2$, $\tau = 1$.
 \end{thm}
 
 The set of partitions is greatly reduced by the requirement that $\mathcal{P}$ be ordered. The set of all partitions of $n$ is the Bell number of order $T$, exponentially increasing with $n$ for any $T > 1$. The set of all size $T$ partitions is a Stirling number of the second kind $\stirlingii{n}{T}$. The $n$th Bell number $B_n$ is given by the identity
@@ -80,9 +86,58 @@ and have asymptotic growth rate
 So, for example, for $\left(n,T\right) = \left(20, 10\right)$, we have $B_n \approx 5.9e12$, $\mathcal{O} = 92378$, while for $\left(n,T\right) = \left(30, 10\right)$, we have $B_n \approx 1.73e22$, $\mathcal{O} = 10,015,005$.
 
 \begin{proof}
-For sufficiency, let $\gamma = 2$, and suppose the partition $\mathcal{P} = \left\lbrace P_1, \dots, P_T\right\rbrace$ is the argmax solution to \ref{eq1}. Let $R_1 = (X_1, Y_1)$ be the set of records in $\mathcal{P}$ that contains the maximal element $R_{(1)}$ of $\mathcal{D}$, and define $R_1^{in} = \argmin_{R_j \in P_1} G(x_i, y_i)$, $R_1^{out} = \argmax_{R_j \not\in P_1} G(x_i, y_i)$. Note that $X_1$ is an ordered subset if and only if $R_1^{in} <= R_1^{out}$, so that there are no "holes" in $X_1$. This can be made precise by defining $I_1^{in} = j \text{such that} R_{(j)} = R_1^{in}$, $I_1^{out} = j \text{such that} R_{(j)} = R_1^{out}$, and $D_1 = I_1^{in} - I_1^{out}$. It is then the case that $D_1 \geq 0$, and $X_1$ is ordered if and only iff $D_1 = 0$.
+For sufficiency, let $\gamma = 2$, and suppose the partition $\mathcal{P} = \left\lbrace P_1, \dots, P_T\right\rbrace$ is the argmax solution to \ref{eq1}. Let $R_1 = (X_1, Y_1)$ be the set of records in $\mathcal{P}$ that contains the maximal element $R_{(1)}$ of $\mathcal{D}$, and define $R_1^{in} = \argmin_{R_j \in X_1} G(x_i, y_i)$, $R_1^{out} = \argmax_{R_j \not\in X_1} G(x_i, y_i)$. Note that $X_1$ is an ordered subset if and only if $R_1^{in} <= R_1^{out}$, so that there are no "holes" in $X_1$. This is not true if $X_1$ does not contain the maximal element. This can be made precise by defining $I_1^{in} = j \text{ such that} R_{(j)} = R_1^{in}$, $I_1^{out} = j \text{ such that} R_{(j)} = R_1^{out}$, and $D_1 = I_1^{in} - I_1^{out}$. It is then the case that $D_1 \geq 1$, and $X_1$ is ordered if and only iff $D_1 < 0$.
 
- Without loss of generality, assume $R_1^{out} \in P_2$. We will assume that $G(x_1^{in}, y_1^{in}) < G(x_1^{out}, y_1^{out})$, and show that we can obtain an improvement in the sum $F(X_1, Y_1) + F(X_2, Y_2)$ by exchanging elements of $X_1$, $X_2$. In this way the elements of the subset $X_1$ are sucessively swapped out until it is ordered. Since $X_1$ is the partition with maximal element, we can remove it from consideration, and find the maximal remaining element, and apply the same procedure. In this way we obtain a partition all of whose subsets are ordered.
+Set $D = D_1$ and assume $D_1 \geq 0$. We describe an iterative procedure that swaps elements between $X_1$ and the remaining subsets, such that each step does not decrease the overall score of the partition, and decreases the value of $D$ by at least 1. In this way the procedure can be stopped when $X_1$ is ordered. We can then remove $X_1$ from the partition, regarding the remaining subsets as a partition of $\left\lbrace 1, \dots N-\vert X_1 \vert\right\rbrace$, and apply the same procedure to the remaining subset containing the maximal element. The process terminates with a maximal ordered partition.
+
+\begin{algorithm}
+\caption{Ordering Algorithm: Single Subset}
+\begin{algorithmic}[1]
+\State $\textit{Select } X_1 \textit{ containing maximal element of } \mathcal{D}$
+\State $\left( \alpha , \beta \right) \gets R_1^{in}, \left( a,b \right) \gets R_1^{out}$
+\State $D \gets I_1^{in} - I_1^{out}$
+\While{$D \geq 0$}
+\If{$X_1, X_2 \geq 0$}
+\State $X_1^\prime \gets X_1\setminus \left\lbrace x_1^{in}\right\rbrace$, $Y_1^{\prime} \gets X_1\setminus \left\lbrace y_1^{in}\right\rbrace$
+\State $X_2^{\prime} \gets X_2\cup \left\lbrace x_1^{in}\right\rbrace$, $Y_2^{\prime} \gets X_2\cup \left\lbrace y_1^{in}\right\rbrace$
+\EndIf
+\If{$X_1, X_2 \leq 0$}
+\State $X_1^{\prime\prime} \gets X_1\cup \left\lbrace x_1^{out}\right\rbrace$, $Y_1^{\prime\prime} \gets X_1\cup \left\lbrace y_1^{out}\right\rbrace$
+\State $X_2^{\prime\prime} \gets X_2\setminus \left\lbrace x_1^{out}\right\rbrace$, $Y_2^{\prime\prime} \gets X_2\setminus \left\lbrace y_1^{out}\right\rbrace$
+\EndIf
+\If{$X_1 \leq 0, X_2 \geq 0 \textit{ or } r X_1 \geq 0, X_2 \leq 0$}
+\State $\left\lbrace X_1, Y_1, X_2, Y_2 \right\rbrace \gets \textit{one of } \left\lbrace X_1^{\prime}, Y_1^{\prime}, X_2^{\prime}, Y_2^{\prime}\right\rbrace, \left\lbrace X_1^{\prime\prime}, Y_1^{\prime\prime}, X_2^{\prime\prime}, Y_2^{\prime\prime}\right(\rbrace$
+\EndIf
+\State {$D \gets I_1^{in} - I_1^{out}$}
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+% \begin{algorithm}
+% \caption{Ordering Algorithm}\label{Algorithm}
+% \begin{algorithmic}[1]
+% \Procedure{MyProcedure}{}
+% \State $\textit{stringlen} \gets \text{length of }\textit{string}$
+% \State $i \gets \textit{patlen}$
+% \BState \emph{top}:
+% \If {$i > \textit{stringlen}$} \Return false
+% \EndIf
+% \State $j \gets \textit{patlen}$
+% \BState \emph{loop}:
+% \If {$\textit{string}(i) = \textit{path}(j)$}
+% \State $j \gets j-1$.
+% \State $i \gets i-1$.
+% \State \textbf{goto} \emph{loop}.
+% \State \textbf{close};
+% \EndIf
+% \State $i \gets i+\max(\textit{delta}_1(\textit{string}(i)),\textit{delta}_2(j))$.
+% \State \textbf{goto} \emph{top}.
+% \EndProcedure
+% \end{algorithmic}
+% \end{algorithm}
+
+
+ Without loss of generality, assume $R_1^{out} \in X_2$. We will assume that $G(x_1^{in}, y_1^{in}) < G(x_1^{out}, y_1^{out})$, and show that we can obtain an improvement in the sum $F(X_1, Y_1) + F(X_2, Y_2)$ by exchanging elements of $X_1$, $X_2$. In this way the elements of the subset $X_1$ are sucessively swapped out until it is ordered. Since $X_1$ is the partition with maximal element, we can remove it from consideration, and find the maximal remaining element, and apply the same procedure. In this way we obtain a partition all of whose subsets are ordered.
 
 Assume the tuples $R_1^{in}$, $R_1^{out}$ are composed of $R_1^{in} = \left(x_1^{in}, y_1^{in}\right), R_1^{out} = \left(x_1^{out}, y_1^{out}\right)$.
 
@@ -99,12 +154,12 @@ Since $G(x_1^{in}, y_1^{in}) < G(x_1^{out}, y_1^{out})$, $\frac{y_1^{in}x_1^{out
 \begin{align} \label{eq2}
 F(X_1, Y_1) \leq F(X^\prime\left( \lambda \right), Y_1) \leq \lambda\left( F(X_1-x_1^{in},Y_1-y_1^{in})\right) + \left( 1 + \lambda\right)\left( F(X_1+x_1^{out},Y_1+y_1^{out})\right)
 \end{align}
-where the second inequality is from quasiconvexity of $F$ for $\gamma = 2$. From \ref{eq2} it follows that 
+where the second inequality is from the quasiconvexity of $F$ for $\gamma = 2$. From \ref{eq2} it follows that 
 \begin{align} \label{eq3}
 F(X_1, Y_1) \leq \max{\left(F(X_1-x_1^{in},Y_1-y_1^{in}), F(X_1+x_1^{out},Y_1+y_1^{out})\right)}
 \end{align}
 
-To get a similar result for the sets $X_2$, $Y_2$, define the transformed sequences $\bar{x} = \left\lbrace x_1, \dots, x_n\right\rbrace$, $\bar{y} = \left\lbrace y_1, \dots, y_n\right\rbrace$. The sets $\bar{X_1}, \bar{X_2}, \bar{Y_1}, \bar{Y_2}$ are similarly defined, and we can define $\bar{R_2}^{in} = \argmin_{\bar{R_j} \in \bar{P_2}} G(\bar{x_i}, \bar{y_i})$, $\bar{R_1}^{out} = \argmax_{\bar{R_j} \not\in \bar{P_1}} G(\bar{x_i}, \bar{y_i})$. Assuming the correspondence between record and underlying sequences $\bar{R}_i = \left(\bar{x_i}, \bar{y_i}\right)$, we then have $x_1^{in} = -\bar{x}_2^{out}$, $y_1^{in} = \bar{y_2}^{out}$, and $x_1^{out} = -\bar{x}_2^{in}$, $y_1^{out} = \bar{y_2}^{in}$. 
+To get a similar result for the sets $X_2$, $Y_2$, define the transformed sequences $\bar{X} = \left\lbrace -x_1, \dots, -x_n\right\rbrace$, $\bar{Y} = \left\lbrace y_1, \dots, y_n\right\rbrace$. The sets $\bar{X_1}, \bar{X_2}, \bar{Y_1}, \bar{Y_2}$ are similarly defined, and we can define $\bar{R_2}^{in} = \argmin_{\bar{R_j} \in \bar{X_2}} G(\bar{x_i}, \bar{y_i})$, $\bar{R_1}^{out} = \argmax_{\bar{R_j} \not\in \bar{X_1}} G(\bar{x_i}, \bar{y_i})$. Assuming the correspondence between record and underlying sequences $\bar{R}_i = \left(\bar{x_i}, \bar{y_i}\right)$, we then have $x_1^{in} = -\bar{x}_2^{out}$, $y_1^{in} = \bar{y_2}^{out}$, and $x_1^{out} = -\bar{x}_2^{in}$, $y_1^{out} = \bar{y_2}^{in}$. 
 
 Define
 \begin{align*}
@@ -149,12 +204,7 @@ Expand
 \[
 F(X - \alpha, Y - \beta) - F(X, Y) = \frac{\beta X^2 - 2\alpha XY + \alpha^2 Y}{Y\left( Y-\beta\right)}
 \]
-and note that for $Y  > 0$, $0 < \beta < Y$, 
-\begin{align}
-F(X - \alpha, Y - \beta) - F(X, Y) \geq 0 \iff \beta \geq \frac{\alpha Y\left(2X - \alpha\right)}{X^2}
-\end{align}
-
-We write
+and write
 \begin{align*}
 F(X_1 - x_1^{in}, Y_1 - y_1^{in}) + F(X_2 + x_1^{in}, Y_2 + y_1^{in}) - \left( F(X_1, Y_1) + F(X_2, Y_2)\right) = \\
 \left( F(X_1 - x_1^{in}, Y_1 - y_1^{in}) - F(X_1 - x_1^{in}, Y_1)\right) + \left( F(X_1 - x_1^{in}, Y_1) - F(X_1 , Y_1)\right) + \\
@@ -186,11 +236,12 @@ t_3 & = \frac{\left( X_2 - a\right)^2b}{Y_2\left( Y_2 - b\right)} \\
 t_4 & = \frac{a\left( a - 2X_2\right)}{Y_2}
 \end{align*}
 
-We will show that one of the rows of our table give in improvement to the sum over partitions, i.e., that one of
+We will show that the that one of
 \begin{align} \label{eq5}
 F(X_1 - \alpha, Y_1 - \beta) + F(X_2 + \alpha, Y_2 + \beta) - F(X_1, Y_1) - F(X_2, Y_2) & \geq 0 \\
 F(X_1 + a, Y_2 +b) + F(X_2 - a, Y_2 - b) - F(X_1, Y_1) - F(X_2, Y_2) & \geq 0
 \end{align}
+holds.
 
 
 \begin{case} 
@@ -204,9 +255,9 @@ We will show that the top row in \ref{eq5} is positive.
 $\frac{X_1}{Y_1} \geq \frac{X_2}{Y_2}$, $\frac{X_1}{Y_1} \geq \frac{2a}{b}$, $\frac{X_2}{Y_2} \geq \frac{2\alpha }{\beta}$.
 \end{claim}
 \begin{claimproof}
-Since $F(X - \alpha, Y - \beta) - F(X, Y) = \frac{\beta X^2 - 2\alpha XY + \alpha^2 Y}{Y\left( Y-\beta\right)}$ is a polynomial in $X_1$, we have
+Since $F(X - \alpha, Y - \beta) - F(X, Y) = \frac{\beta X^2 - 2\alpha XY + \alpha^2 Y}{Y\left( Y-\beta\right)}$ is a polynomial in $X$, we have
 \begin{align*}
-F(X_1+a, Y_1+b) - F(X_1,Y_1) \leq 0 & \implies X_1 \not \in \left( \frac{a}{b}Y_1 \pm \vert \frac{a}{b} \vert \sqrt{Y_1\left( Y1+b\right) } \right) \\
+F(X_1+a, Y_1+b) - F(X_1,Y_1) \leq 0 & \implies X_1 \not \in \left( \frac{a}{b}Y_1 \pm \vert \frac{a}{b} \vert \sqrt{Y_1\left( Y_1+b\right) } \right) \\
 & \implies \frac{X_1}{Y_1} \not \in \left( \frac{a}{b} \left( 1 \pm \frac{\sqrt{Y_1\left( Y_1+b\right) }}{Y_1}\right) \right)
 \end{align*}
 Since $\frac{X_1}{Y_1} \geq 0$, it follows that $\frac{X_1}{Y_1} \geq \frac{2a}{b}$. By similar reasoning, 
@@ -214,7 +265,7 @@ Since $\frac{X_1}{Y_1} \geq 0$, it follows that $\frac{X_1}{Y_1} \geq \frac{2a}{
 F(X_2+\alpha, Y_2+\beta) - F(X_2,Y_2) \leq 0 & \implies X_2 \not \in \left( \frac{\alpha}{\beta}Y_2 \pm \vert \frac{\alpha}{\beta} \vert \sqrt{Y_2\left( Y_2+\beta \right) } \right) \\
 & \implies \frac{X_2}{Y_2} \not \in \left( \frac{\alpha}{\beta} \left( 1 \pm \frac{\sqrt{Y_2\left( Y_2+\beta \right) }}{Y_2}\right) \right)
 \end{align*}
-so that $\frac{X_2}{Y_2} \geq \frac{2\alpha}{\beta}$. Now since $\frac{2\alpha}{\beta} \leq \frac{X_1}{Y_2}$, $\frac{a}{b} \geq \frac{X_2}{Y_2}$ by definition, and $\frac{\alpha}{\beta} \leq \frac{a}{b}$ by supposition, the result follows.
+so that $\frac{X_2}{Y_2} \geq \frac{2\alpha}{\beta}$. Now since $\frac{2\alpha}{\beta} \leq \frac{X_1}{Y_2}$ and $\frac{\alpha}{\beta} \leq \frac{a}{b}$, it follows that $\frac{X_1}{Y_1} \geq \frac{X_2}{Y_2}$.
 \end{claimproof}
 
 \begin{claim}
@@ -242,7 +293,7 @@ s_1 + s_3 & \geq \frac{\beta}{Y_1 - \beta}\left( F(X_1, Y_1) - \frac{\beta}{Y_1}
 & = \beta \left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right) \\
 & \geq 0,
 \end{align*}
-by the previous claim, and all quantities are positive.
+by the previous claim, and that all quantities are positive.
 
 \end{claimproof}
 \begin{claim}
@@ -274,7 +325,7 @@ so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\
 \begin{case}
 $X_1$,  $X_2 \leq 0$
 \end{case}
-Writing the transformed sets $\bar{X_1} = -X_1$, $\bar{Y_1} = Y_1$, $\bar{X_2} = -X_2$, $\bar{Y_2} = Y_2$, and defining $\eta = \bar{x_2}^{in}$, $\theta = \bar{y_2}^in$, we have $a = -\eta$, $b = \theta$ by definition. Assume that $\bar{X_2}$ has the maximal element; if it is contained in $\bar{X_1}$ the reasoning is similar. We proceed as in case 1:
+Writing the transformed sets $\bar{X_1} = -X_1$, $\bar{Y_1} = Y_1$, $\bar{X_2} = -X_2$, $\bar{Y_2} = Y_2$, and defining $\eta = \bar{x_2}^{in}$, $\theta = \bar{y_2}^{in}$, we have $a = -\eta$, $b = \theta$ by definition. Assume that $\bar{X_2}$ has the maximal element. We proceed as in case 1:
 \begin{align*}
 F(X_1, Y_1) + F(X_2, Y_2) = F(\bar{X_2}, \bar{Y_2}) + F(\bar{X_1}, \bar{Y_1}) & \leq F(\bar{X_2} - \eta, \bar{Y_2} - \theta) + F(\bar{X_1} + \eta, \bar{Y_1} + \theta) \\
 & = F(-\left( \bar{X_2} - \eta\right), Y_2 - \theta) + F(-\left( \bar{X_1} + \eta \right), Y+2 + \theta) \\
@@ -282,6 +333,17 @@ F(X_1, Y_1) + F(X_2, Y_2) = F(\bar{X_2}, \bar{Y_2}) + F(\bar{X_1}, \bar{Y_1}) & 
 & = F(X_2 - a, Y_2 - b) + F(X_1 + a, Y_1 + b)
 \end{align*}
 so that the bottom row represents an improvement to the original partition.
+Note that if the maximal element lies in $\bar{X_1}$, then defining $\lambda = \bar{x_1}^{in}$, $\epsilon = \bar{y_1}^{in}$, we have $\lambda = x_{max}$, $\epsilon = y_{max}$, where $x_{max}$, $y_{max}$ are associated with the maximum priority record $R_{(1)}$ in $\mathcal{D}$. Then
+\begin{align*}
+F(X_1, Y_1) + F(X_2, Y_2) = F(\bar{X_2}, \bar{Y_2}) + F(\bar{X_1}, \bar{Y_1}) & \leq F(\bar{X_1} - \lambda, \bar{Y_1} - \epsilon) + F(\bar{X_2} + \lambda, \bar{Y_2} + \epsilon) \\
+& = F(-\left( \bar{X_1} - \lambda\right), Y_1 - \epsilon) + F(-\left( \bar{X_2} + \lambda \right), Y_2 + \epsilon) \\
+& = F(X_1 + \lambda, Y_1 - \epsilon) + F(X_2 - \lambda, Y_2 + \epsilon) \\
+& = F(X_1 - x_{max}, Y_1 - y_{max}) + F(X_2 + x_{max}, Y_2 + y_{max})
+\end{align*}
+Now defining $X_1 = X_1\setminus\left\lbrace \right\rbrace$ If $X_1, X_2 \geq 0$, the previous argument applies, and 
+
+
+After exchanging the maximal record between $X_1$, $X_2$, define the new partitions $X_1 = X_2\cup \left\lbrace x_{max}\right\rbrace$, $Y_1 = Y_2\cup \left\lbrace y_{max}\right\rbrace$, $X_2 = X_1\setminus \left\lbrace x_{max}\right\rbrace$, $Y_2 = Y_1\setminus \left\lbrace y_{max}\right\rbrace$, it follows that $X_1 \geq 0$. If $X_2 \geq 0$, the previous argument applies and $F(X_1, Y_1) + F(X_2, Y_2) \leq F(X_1 - x_{max}, Y_1 - y_{max}) + F(X_2 + x_{max}, Y_2 + y_{max})$. If $X_2 \leq 0$, we retain $X_1$ as the partition containing the maximal record, and since it no longer contains the miminal record, we must only make this change of designation once, and continue element exchange as in the remaining cases. Note that the swapping out of the maximal element only occurs once, then necessarily the new $X_1$ does not contain the minimal record.
 
 \begin{case}
 $X_1 \geq 0$, $X_2 \leq 0$
@@ -342,10 +404,12 @@ For $\alpha \geq 0$. note that this condition implies that all elements of $X_1$
 \begin{case}
 $X_1 \leq 0$, $X_2 \geq 0$
 \end{case}
-Defining $\bar{X_1} = -X_1$, $\bar{Y_1} = Y_1$, and $\bar{X_2} = -X_2$, $\bar{Y_2} = Y_2$ will allow us to use the previous case, if the minimal element $\bar{R_{(n)}}$ lies in $\bar{X_1}$, so that the maximal element is in the positive partition in that case. This is true if and only if the minimal element of the original partition, $m = R_{(n)}$, does not lie in $X_2$. If it did, then direct computation of $F(X_1 + m, Y_1 + m) - F(X_1, Y_1)$, $F(X_2 - m, Y_2 + m) - F(X_2, Y_2)$ shows that the sum $F(X_1 + m, Y_1 + m) + F(X_2 - m, Y_2 - m)$ is positive, and represents an improvement to the original partition. So we can assume that $m \not \in X_2$, and the positive partition $\bar{X_1}$ contains the maximal element, and the previous case can be applied.
+Defining $\bar{X_1} = -X_1$, $\bar{Y_1} = Y_1$, and $\bar{X_2} = -X_2$, $\bar{Y_2} = Y_2$ will allow us to use the previous case, if the minimal element $\bar{R_{(n)}}$ lies in $\bar{X_1}$, so that the maximal element is in the positive partition in that case. This is true if and only if the minimal element of the original partition, $m = R_{(n)}$, does not lie in $X_2$. If it did, then direct computation of $F(X_1 + m, Y_1 + n) - F(X_1, Y_1)$, $F(X_2 - m, Y_2 + n) - F(X_2, Y_2)$ shows that the sum $F(X_1 + m, Y_1 + m) + F(X_2 - m, Y_2 - m)$ is positive, and represents an improvement to the original partition. So we can assume that $m \not \in X_2$, and the positive partition $\bar{X_1}$ contains the maximal element, and the previous case can be applied.
+
+In this way the maximal subset $X_1$ is altered, without a decrease in the partition score, until $D_1 < 0$. $X_1$ is then ordered, and the partition $\mathcal{P} \setminus X_1$ of the set $\left\lbrace 1, \dots, N - \vert X_1\vert\right\rbrace$ is used in the next iteration.
 
 \vspace{16pt}
-For the necessity, choose $\gamma = 2 + \epsilon$, for $\epsilon > 0$. Set
+For the necessity, assume $\tau = 1$ and choose $\gamma = 2 + \epsilon$, for $\epsilon > 0$. Set
 \[
 X = \left[ 1-\delta, \delta, 1 + \delta\right], Y = \left[ 1, \delta, 1\right]
 \] 
@@ -362,28 +426,70 @@ X = \left[ 1, \frac{1}{\delta}, 1\right], Y = \left[ \frac{1}{1+\delta}, \frac{1
 \] 
 we have
 \begin{align*}
-\text{Score}\left(\mathcal{P}_1\right) & = \frac{1^\gamma}{\frac{1}{1+\delta}} + \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) }  = \mathcal{O}\left( \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + \left( 1 + \delta \right)\right) \\
-\text{Score}\left(\mathcal{P}_2\right) & = \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)}  + \frac{1^\gamma}{\frac{1}{1-\delta}}= \mathcal{O}\left( \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + \left( 1 - \delta \right)\right) \\
-\text{Score}\left(\mathcal{P}_3\right) & = \frac{\left( 1 + 1\right)^\gamma}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)}  + \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} = \mathcal{O}\left( \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + 2^{\gamma-1}\right) 
+\text{Score}\left(\mathcal{P}_1\right) & = \frac{1^\gamma}{\frac{1}{1+\delta}} + \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) }  = \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) } + \left( 1 + \delta \right)\\
+\text{Score}\left(\mathcal{P}_2\right) & = \frac{1^\gamma}{\frac{1}{1-\delta}} + \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)}  = \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)} + \left( 1 - \delta \right)\\
+\text{Score}\left(\mathcal{P}_3\right) & = \frac{\left( 1 + 1\right)^\gamma}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)}  + \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} = \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + 2^{\gamma - 1}\left( 1 - \delta^2\right) 
 \end{align*}
-and letting $\delta \rightarrow 0$ gives the result.
+and letting $\delta \rightarrow 0$ gives the result, as the first summands in each score can be made arbitrarily close to each other.
 
 To extend these examples to larger $\vert \mathcal{D} \vert = M > N$, $S \geq T$, simply add $M-N$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $S \geq T$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $S - T$ of the indices $N+1, \dots, M$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
 \[
 \left( 1-\delta\right)^\gamma + \frac{\delta^\gamma}{\delta} + \left( 1+\delta\right)^\gamma
 \]
-which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\gamma < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\gamma > 0$ and $\left( N, T\right)$.
+which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\gamma < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\gamma > 0$ and $\left( N, T\right)$. Therefore $\gamma = 2$.
+
+Now let $\gamma = 2$ and set
+\[
+X = \left[ x-\delta, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
+\] 
+for $x, \delta > 0$, and consider the three partitions $\mathcal{P}_i$, $i=1, 2, 3$ as above. We have
+\begin{align*}
+& \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_2\right) \\
+& \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_2\right) = \frac{-\delta^2\left( 2x + \delta\right)}{x\left( x + \delta\right)}
+\end{align*}
+The power priority $G(x,y) = \frac{x^\tau}{y}$ places the priorty on the records:
+\begin{align} \label{eq8}
+\left( G(x_1, y_1), G(x_2, y_2), G(x_3, y_3)\right) = \left( \frac{\left( x - \delta \right)^{\tau}}{x}, \delta^{\tau-1},  \frac{\left( x + \delta \right)^{\tau}}{x}\right).
+\end{align}
+For $\tau > 1$, choosing $x$ large relative to delta gives $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$. So the partitions $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ become $\mathcal{P}_1 = \left\lbrace \left[ 1 \right], \left[ 0, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 1, 2 \right], \left[ 0 \right]\right\rbrace$, maintaining the partition scores above. The maximum score is shared by $\mathcal{P}_1$, $\mathcal{P}_2$, the first being unordered. In order to force $\text{Score}\left(\mathcal{P}_1\right) > \text{Score}\left(\mathcal{P}_2\right)$, we perturb the original $X$, $Y$ by
+\[
+X\left(\epsilon\right) = \left[ x-\delta+\epsilon, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
+\]
+and denoting by $\text{Score}\left(\epsilon \right)\left(\mathcal{P}_i \right)$ the score of the partition $\mathcal{P}_i$ on the records $\left\lbrace \left(x\left(\epsilon\right)_1, y_1\right),\left(x\left(\epsilon\right)_2, y_2\right),\left(x\left(\epsilon\right)_3, y_3\right) \right\rbrace$, it follows that
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \epsilon - \delta\right)^2}{x} - \frac{\left( x - \delta\right)^2}{x} = \frac{2\epsilon\left( x - \delta\right) + \epsilon^2}{x} \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + \epsilon\right)^2}{x + \delta}  - \frac{x^2}{x+\delta}= \frac{2\epsilon x + \epsilon^2}{x+\delta}
+\end{align*}
+Choosing, e.g. $x = 1$, $\delta = .25$ gives 
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{3}{2}\epsilon + \epsilon^2 \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= 2\epsilon + \epsilon^2
+\end{align*}
+By choosing $epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
+
+
+For $ 0 \leq \tau < 1$ and the priority function $G(X,Y) = \frac{x^{\tau}}{y}$, choose $x$ large relative to $\delta$ forces the priority ordering $G(x_0, y_0) \leq G(x_2, y_2) \leq G(x_1, y_1)$. So the  highest and second highest records exchange priority ordering, and the partition $\mathcal{P}_1$ stays the same, while $\mathcal{P}_1$ now corresponds to $\left\lbrace \left[ 0, 2\right], \left[ 1\right]\right\rbrace$, $\mathcal{P}_2$ to $\left\lbrace \left[ 0, 1\right], \left[ 2\right]\right\rbrace$, only the last being ordered. Perturbing the original sequences by
+\[
+X\left(\epsilon\right) = \left[ x-\delta, \delta, x + \delta + \epsilon\right], Y = \left[ x, \delta, x\right]
+\]
+yields
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + 2\delta + \epsilon\right)^2}{x + \delta}  - \frac{\left( x + 2\delta\right)^2}{x + \delta} = \frac{2\epsilon\left( x + 2\delta\right) + \epsilon^2}{x + \delta} \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \delta + \epsilon\right)^2}{x} - \frac{\left( x + \delta\right)}{x} = \frac{2\epsilon\left( x + \delta \right) + \epsilon^2}{x} \\
+\end{align*}
+We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
+
 \end{proof} 
 
 \vspace{16pt}
 
-The membership of the maximal element in the last case is essential. Namely, for partitions $X_1 \leq 0$, $X_2 \geq 0$ for which the minimal element $m = R_{(n)}$ is in $X_2$, we reject as suboptimal out of hand. If the minimal element lies in $X_2$, it becomes maximal in $\bar{X_2}$, and we cannot directly apply any of the substitutions of elements across partition subsets that are used in the proof. For example, consider the case for $\left( N, T\right) = \left( 4, 2\right)$, with $X = [-5.64, -5.12, 10.0,  1.94]$, $Y = [0.077, 1.23 , 3.36, 0.029]$, and improvements to the suboptimal, unordred partition $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right] = \left[ X_2, X_1\right]$. The sequences are already sorted according to the standard priority. There are 6 partitions of $\left\lbrace 1, 2, 3, 4\right\rbrace$, and in this case $R_1^{in}$, $R_1^{out}$ correspond to the indices 0, 2, respectively. The substitutions considered in the previous cases are
+The attention to subset membership of maximal and minimal records seems necessary. For the case $X1 \leq 0$, $X2 \leq 0$ (Case 2 above) for which the maximal element is in $X_1$ while the minimal element $m = R_{(n)}$ lies in $X_2$, we may not be able to effect an improvement in score by transferring any of the records $\left( x_1^{in}, y_1^{in}\right)$ or $\left( x_1^{out}, y_1^{out}\right)$. between the two subsets. For example, consider the case for $\left( N, T\right) = \left( 4, 2\right)$, with $X = [-5.64, -5.12, 10.0,  1.94]$, $Y = [0.077, 1.23 , 3.36, 0.029]$, and the suboptimal, unordred partition $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right] = \left[ X_2, X_1\right]$. The sequences are already sorted according to the standard priority. There are 6 partitions of $\left\lbrace 1, 2, 3, 4\right\rbrace$, and in this case $R_1^{in}$, $R_1^{out}$ correspond to the indices 0, 2, respectively. The normal substitutions considered in the proof are
 \begin{align*}
 \left[ X_2 + R_1^{in}, X_1 - R_1^{in}\right] & = \left[ \left[0,1,2] \right], \left[ 3\right] \right] \\
 \left[ X_2 - R_1^{out}, X_1 + R_1^{out}\right] & = \left[ \left[ 1 \right], \left[ 0, 2, 3 \right] \right]
 \end{align*}
 
-In this case neither of the two partitions represent an improvement. The optimal partition is $\left\lbrace \left[ 0 \right], \left[ 1, 2, 3\right]\right\rbrace$ and represents the only improvement over the partition considered:
+In this case neither of the two partitions represent an improvement. The optimal partition is $\left\lbrace \left[ 0 \right], \left[ 1, 2, 3\right]\right\rbrace$ and represents the only improvement over the original partition:
 
 \begin{verbatim}
 SEQUENCES:
@@ -431,7 +537,9 @@ It is not clear how to achieve the optimal partition in one step. Even the subst
 \]
 does not represent an improvemnt. The improvement is obtained by substition to obtain $\left[ \left[ 0 \right], \left[ 1, 2, 3\right]\right]$, from the original $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right]$, by moving the maximal item from $X_1$ to $X_2$, and doesn't touch $R_1^{in}$ nor $R_1^{out}$.
 
-In this case it is seems necessary to consider the partition $\bar{X_1}$, $\bar{X_2}$. for which we have
+In this case it is seems necessary to remove the maximal element from $X_1$ to get to $\left[ \left[ 0 \right], \left[ 1, 2, 3\right]\right]$, which is the operation perfomed in that case above. The partition is then ordered, so the algorithm halts, but if it weren't, we would have $X_1 \leq 0$, $X_2 \geq 0$, the maximal record now in $X_2$, which would become the new $X_1$, and the algorithm would proceed. 
+
+Examining the partition resulting from negating all $X$-terms, results in
 
 \begin{verbatim}
 SEQUENCES:
@@ -470,19 +578,19 @@ INDEX: 6 PARTITION: [[0, 2, 3], [1]]
 MAX_SUM: 423.1814869694064, MAX_PARTITION: [[0, 1, 2], [3]]
 \end{verbatim}
 
-The partition becomes $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right] = \left[ X_2, X_1\right]$ in the new setting, and
+The original partition becomes $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right] = \left[ X_2, X_1\right]$ in the new setting, and
 \begin{align*}
 \left[ X_2 + R_1^{in}, X_1 - R_1^{in}\right]  &= \left[ \left[0,1,2] \right], \left[ 3\right] \right] \\
 \left[ X_2 - R_1^{out}, X_1 + R_1^{out}\right] & = \left[ \left[ 1 \right], \left[ 0, 2, 3 \right] \right]
 \end{align*}
 
-which both provide an improvement.
+which both provide an improvement. This 
 
 \cleardoublepage
 \appendix
 \section{Appendix}
 \begin{lemma}
-For $X_1$, $X_2 > 0$, $alpha > 0$, $s1 + s3 \geq 0$, we have $\sum_i s_i \geq 0$
+For $X_1$, $X_2 > 0$, $alpha \geq 0$, $s1 + s3 \geq 0$, we have $\sum_i s_i \geq 0$
 \end{lemma}
 \begin{proof}
 We can write

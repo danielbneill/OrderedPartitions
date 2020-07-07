@@ -50,6 +50,8 @@ public:
   std::vector<std::vector<std::vector<int>>> get_partitions() const;
   void set_a(std::vector<double>&&);
   void set_b(std::vector<double>&&);
+  std::vector<double> get_a() const;
+  std::vector<double> get_b() const;
 
 private:
   int numElements_;

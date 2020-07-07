@@ -170,7 +170,10 @@ auto main(int argc, char **argv) -> int {
 			      // if ((alpha > 0) && ((h*max_alpha*max_alpha + g*max_alpha + (s1+s3)) <= 0.)) { 
 			      // if ((alpha > 0) && ((abs_(max_alpha)*abs_(max_alpha*h)) >= s1s3_bound)) { 
 			      // if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { 
-			      if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { // best so far
+			      // if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { // best so far
+
+			      if ((alpha > 0) && (abs_(h*max_alpha_approx) >= 2*abs_(g))) {
+			      // if ((alpha > 0) && ((abs_(alpha)*abs_(g + alpha*h)) >= abs_(alpha*g))) { // best so far
 
 			      // if ((alpha > 0.) && ((abs_(g) <= abs_(max_alpha*h)) || (abs_(max_alpha*(g+max_alpha*h)) >= abs_(s1s3_bound)))) {
 			      // if ((alpha > 0.) && (abs_(g+h*max_alpha) >= abs_(g))) {

@@ -250,6 +250,16 @@ PartitionTest::set_b(std::vector<double>&& b) {
   b_ = b;
 }
 
+std::vector<double>
+PartitionTest::get_a() const {
+  return a_;
+}
+
+std::vector<double>
+PartitionTest::get_b() const {
+  return b_;
+}
+
 std::vector<std::vector<std::vector<int>>>
 PartitionTest::get_partitions() const {
   return fList_;
