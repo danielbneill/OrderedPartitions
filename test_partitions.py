@@ -309,10 +309,10 @@ if __name__ == '__main__':
         b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
         # gamma == 2.0, lambda > 1.0
-        x = 1e10
-        delta = 10
-        a0 = np.array([x-delta, delta, x+delta])
-        b0 = np.array([x, delta, x])
+        # x = 1e10
+        # delta = 10
+        # a0 = np.array([x-delta, delta, x+delta])
+        # b0 = np.array([x, delta, x])
 
         # import pdb
         # pdb.set_trace()
@@ -329,7 +329,10 @@ if __name__ == '__main__':
 
         # a0 = np.array([-5.64, -5.12,  10.0,  1.94])
         # b0 = np.array([0.077, 1.23, 3.36, 0.029])
-                      
+
+        a0 = np.array([0.48, 0.38, 0.76])
+        b0 = np.array([0.9, 0.51, 0.67])
+
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
         # a0 = -1 * a0
         # r_max_neg = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)

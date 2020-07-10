@@ -81,7 +81,7 @@ public:
   ivec get_optimal_path_extern() const;
   ivecvec get_optimal_subsets_extern() const;
   double get_optimal_weight_extern() const;
-  void write_dot() const;
+  void write_dot();
 
 private:
   int n_;

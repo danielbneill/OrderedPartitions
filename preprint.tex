@@ -41,6 +41,7 @@
 \makeatother
 
 \begin{document}
+\section{Problem Description}
 
 Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ will be called a $\textit{record}$ and denoted by $R_i$. The set of records will be denoted by $\mathcal{D}$. We will generally regard the sequences $X$, $Y$ as sets and study orderings on the records.
 
@@ -539,52 +540,33 @@ does not represent an improvemnt. The improvement is obtained by substition to o
 
 In this case it is seems necessary to remove the maximal element from $X_1$ to get to $\left[ \left[ 0 \right], \left[ 1, 2, 3\right]\right]$, which is the operation perfomed in that case above. The partition is then ordered, so the algorithm halts, but if it weren't, we would have $X_1 \leq 0$, $X_2 \geq 0$, the maximal record now in $X_2$, which would become the new $X_1$, and the algorithm would proceed. 
 
-Examining the partition resulting from negating all $X$-terms, results in
+\section{Implementation, Emprirical Results}
+The brute-force optimization in $\ref{eq1}$ has cost that grows exponentially with $n$. A constrained optimization over the set of all size $T$ ordered partitions has cost that grows as $\binom{n-1}{T-1}$, i.e., as a polynomail of degree $T-1$. In particular, the $T = 2$ problem grows linearly in $n$. There is an improvement that can be made to this approach.
 
-\begin{verbatim}
-SEQUENCES:
-x = array([ -1.94, -10.0, 5.12, 5.64])
-y = array([0.029, 3.36, 1.23, 0.077])
-x/y = array([-66.89655172,  -2.97619048,   4.16260163,  73.24675325])
+Consider a graph $\mathcal{G} = \left( V, E\right)$ with vertices denoted by $\left( i, j\right)$, for $i \in \left\lbrace 1, \dots, n\right\rbrace$, $j \in \left\lbrace 1, \dots, T\right\rbrace$. Add a source node $\left( 1, 1\right)$ and a terminal sink node labeled $\left( n+1, T+1\right)$, Add directed edges from node $\left( i,k \right)$ to $\left( i, k+1\right)$, for each $i < j$, with edge cost $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$. The interpretation is that a path from node $\left( i, j\right)$ to $\left( k, j+1\right)$ represents choice of the subset $\left\lbrace i, \dots, k\right\rbrace$ as the $i^{th}$ subset in the candidate partition. One can then solve for the shortest path by finding a shortest path by the Bellman-Ford algorithm. 
 
-INDEX: 0 PARTITION: [[0, 1, 2], [3]]
-    SUBSET: [0, 1, 2] SCORE: 10.06979865771812
-    SUBSET: [3]       SCORE: 413.1116883116883
-    FINAL SCORE: 423.1814869694064
-INDEX: 1 PARTITION: [[0, 2], [1, 3]]
-    SUBSET: [0, 2]    SCORE: 8.032088959491661
-    SUBSET: [1, 3]    SCORE: 5.530869944719233
-    FINAL SCORE: 13.562958904210895
-INDEX: 2 PARTITION: [[0], [1, 2, 3]]
-	SUBSET: [0]       SCORE: 129.77931034482756
-    SUBSET: [1, 2, 3] SCORE: 0.12376258838654375
-    FINAL SCORE: 129.9030729332141
-INDEX: 3 PARTITION: [[0, 1], [2, 3]]
-	SUBSET: [0, 1]    SCORE: 42.06656830923576
-    SUBSET: [2, 3] 	 SCORE: 88.58270849273144
-    FINAL SCORE: 130.6492768019672
-INDEX: 4 PARTITION: [[0, 1, 3], [2]]
-	SUBSET: [0, 1, 3] SCORE: 11.45124062319677
-    SUBSET: [2] 	     SCORE: 21.312520325203252
-    FINAL SCORE: 32.76376094840002
-INDEX: 5 PARTITION: [[0, 3], [1, 2]]
-	SUBSET: [0, 3] 	 SCORE: 129.1509433962264
-    SUBSET: [1, 2]    SCORE: 5.188322440087146
-    FINAL SCORE: 134.33926583631356
-INDEX: 6 PARTITION: [[0, 2, 3], [1]]
-	SUBSET: [0, 2, 3] SCORE: 58.227844311377254
-    SUBSET: [1]       SCORE: 29.761904761904763
-    FINAL SCORE: 87.98974907328201
-MAX_SUM: 423.1814869694064, MAX_PARTITION: [[0, 1, 2], [3]]
-\end{verbatim}
 
-The original partition becomes $\left[ \left[ 1, 2\right], \left[ 0, 3\right] \right] = \left[ X_2, X_1\right]$ in the new setting, and
+% \includepdf[pages=-]{12_4_unlabeled.pdf}
+\begin{figure}
+  \includegraphics[scale=.22]{16_6_unlabeled.pdf}
+  \caption{Graph connectivity, (N, T) = (16, 6)}  
+\end{figure}
+
+\vspace{16pt}
+\begin{figure}
+  \includegraphics[scale=.11]{12_4_labeled.pdf}
+  \caption{Labeled (N, T) = (12, 4) case displaying optimal path SOURCE -- (0, 3) -- (3, 6) -- (6, 9) -- (9, 12) --  SINK corresponding to ordered partition [[0 1 2 ], [3 4 5 ], [6 7 8 ], [9 10 11 ]]}
+\end{figure}
+
+For the graph $\mathcal{G} = \left( V, E\right)$, we have 
 \begin{align*}
-\left[ X_2 + R_1^{in}, X_1 - R_1^{in}\right]  &= \left[ \left[0,1,2] \right], \left[ 3\right] \right] \\
-\left[ X_2 - R_1^{out}, X_1 + R_1^{out}\right] & = \left[ \left[ 1 \right], \left[ 0, 2, 3 \right] \right]
+\vert V \vert & = \left( T-1\right)\left(N-T-1\right) + 2 \\
+\vert E \vert & = 2\left( N-T+1\right) + \left( T-1\right)\sum_{i=1}^{N-T+1} i = 2\left( N-T+1\right) + \frac{T-1}{2}\left( N-T+1\right)\left( N-T+2\right)
 \end{align*}
 
-which both provide an improvement. This 
+The Bellman-Ford algorithm requires $\mathcal{O}\left( V\cdot E\right)$ operations, which for $N >> T$ is $\mathcal{O}\left( TN^2\right)$. A naive search of all ordered partitions requires $\binom{n-1}{T-1}$ operations, a polynomial of order $T-1$ in $N$. We have effectively reduced large cases to be no worse than quadratic in N. The time savings is at the expense of memory footprint; all partial sums of the form $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$ must be stored (although sequential calculation cost is still $\mathcal{O}\left( N\right)$). This may be the most significant feature of this approach - all partial sums are cached on a computation tree that is easily traversed. For example, for a sample size of 10,000 points, with T = 100, there are approximately 4.8530e9 edges, with a storage cost of approximately 19.4119 Gb. Running times are quite fast, however, and we are currently exploring a distributed version of the algorithm.
+
+\section{Applications}
 
 \cleardoublepage
 \appendix

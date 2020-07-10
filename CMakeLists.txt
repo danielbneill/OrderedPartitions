@@ -51,6 +51,15 @@ target_link_libraries(test_partitions test_optimal_partition pthread)
 # C++ executable test_lemma
 add_executable(test_lemma test_lemma.cpp)
 
+# C++ executable graph_to_dot
+add_executable(graph_to_dot graph_to_dot.cpp)
+target_link_libraries(graph_to_dot graph)
+
+# C++ executable solver_timer
+add_library(timer OBJECT timer.cpp)
+add_executable(solver_timer solver_timer.cpp)
+target_link_libraries(solver_timer graph timer)
+
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)
 # set_source_files_properties(proto.i PROPERTIES SWIG_FLAGS "-includeall")

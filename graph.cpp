@@ -176,7 +176,7 @@ PartitionGraph::optimize() {
     std::cout << "[" << i.first << ", " << i.second << ") --> ";
     });
     std::cout << " >>SINK<< \n";
-
+    
     std::cout << "SORTIND\n";
     std::copy(priority_sortind_.begin(), priority_sortind_.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << "\n";
@@ -215,9 +215,50 @@ PartitionGraph::get_optimal_weight_extern() const {
   return optimalweight_;
 }
 
+template <class NameProp>
+class name_label_writer {
+public:
+  name_label_writer(NameProp nameprop) : nameprop_(nameprop) {}
+  template <class VertexOrEdge>
+  void operator()(std::ostream& out, const VertexOrEdge& v) const {
+    out << "[label=\"" << nameprop_[v] << "\"]";
+  }
+private:
+  NameProp nameprop_;
+};
+
+template<typename WeightProp>
+class weight_label_writer {
+public:
+  weight_label_writer(WeightProp weightprop) : weightprop_(weightprop) {}
+  template<typename VertexOrEdge>
+  void operator()(std::ostream& out, const VertexOrEdge& v) const {
+    out << "[label=\"" << get(weightprop_, v) << "\", color=\"grey\"]";    
+  }
+private:
+  WeightProp weightprop_;
+};
+
 void
-PartitionGraph::write_dot() const {
-  write_graphviz(std::cout, G_);
+PartitionGraph::write_dot() {
+
+  int nb_vertices = boost::num_vertices(G_);
+  std::vector<std::string> nameProp(nb_vertices);
+  for(size_t i=0; i<nb_vertices; ++i) {
+    auto p = int_to_node(i);
+    nameProp[i] = "(" + std::to_string(p.first) + ", " + std::to_string(p.second) + ")";
+  }
+
+  auto weightProp = boost::get(&EdgeWeightProperty::weight, G_);
+
+  // Full labeling
+  write_graphviz(std::cout, G_, name_label_writer(nameProp), weight_label_writer(weightProp));
+
+  // Only node name labeling
+  // write_graphviz(std::cout, G_, name_label_writer(nameProp));
+
+  // No labeling
+  // write_graphviz(std::cout, G_);
 }
 
 std::vector<int>

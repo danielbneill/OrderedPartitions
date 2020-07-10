@@ -96,8 +96,8 @@ auto main(int argc, char **argv) -> int {
 			    double new_sum1 = F(X1-(X1-alpha),Y1-(Y1-beta)) + F(X2+(X1-alpha), Y2+(Y1-beta)) - F(X1,Y1) - F(X2,Y2);
 			    double new_sum2 = F(X1+(X2-a), Y1+(Y2-b)) + F(X2-(X2-a), Y2-(Y2-b)) - F(X1,Y1) - F(X2,Y2);
 
-			    double new_sum11 = F(X1-(X1-alpha), Y1-(Y1-beta))-F(X1,Y1);
-			    double new_sum12 = F(X2+(X1-alpha), Y2+(Y1-beta))-F(X2,Y2);
+			    // double new_sum11 = F(X1-(X1-alpha), Y1-(Y1-beta))-F(X1,Y1);
+			    // double new_sum12 = F(X2+(X1-alpha), Y2+(Y1-beta))-F(X2,Y2);
 					
 			    // This works
 			    // if ((new_sum11 <= 0.) || (new_sum12 <= 0.)) {
@@ -161,18 +161,130 @@ auto main(int argc, char **argv) -> int {
 
 			      // Basis for subcase
 			      double max_alpha = min_(X1*(1-sqrt((Y1-beta)/Y1)), X2*(sqrt((Y2+beta)/Y2)-1));
-			      double max_alpha_approx = X2*sqrt(beta/Y2);
+			      // double max_alpha_approx = X2*sqrt(beta/Y2);
 			      double g = 2*(X2*Y1-X1*Y2)/(Y1*Y2);
 			      double h = (Y1+Y2)/(Y1*Y2);				
 			      double s1s3_bound = beta*(((X1*X1)/(Y1*Y1))-((X2*X2)/(Y2*Y2)));
-			      double s1s3_bound_approx = beta*(((2*a*2*a)/(b*b))-((X2*X2)/(Y2*Y2)));
-			      double s1s3_bound_approx_appox = beta*(((2*a*2*a)/(b*b))-((a*a)/(b*b)));
+			      // double s1s3_bound_approx = beta*(((2*a*2*a)/(b*b))-((X2*X2)/(Y2*Y2)));
+			      // double s1s3_bound_approx_appox = beta*(((2*a*2*a)/(b*b))-((a*a)/(b*b)));
 			      // if ((alpha > 0) && ((h*max_alpha*max_alpha + g*max_alpha + (s1+s3)) <= 0.)) { 
 			      // if ((alpha > 0) && ((abs_(max_alpha)*abs_(max_alpha*h)) >= s1s3_bound)) { 
 			      // if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { 
 			      // if ((alpha > 0) && ((abs_(max_alpha_approx)*abs_(max_alpha_approx*h)) >= s1s3_bound)) { // best so far
 
-			      if ((alpha > 0) && (abs_(h*max_alpha_approx) >= 2*abs_(g))) {
+			      /*
+if ((alpha > 0) && (abs_(h*max_alpha_approx) >= abs_(g))) { // best so far <<< THIS SHOULD BE SIMPLE
+TEST0: -780.751 : 2 : -1.26131
+TEST1: -1.25875 : -3935.09 : -0.000291544
+TEST2: -0.000291544 : -0.144514
+TEST3: -0.000291544 : -0.00928458
+******************** VIOLATION TYPE 1 *******************
+s1: 0.1451
+s2: -0.000585164
+s3: -0.000585649
+s4: 0.000293621
+t1: -0.0021889
+t2: 0.00208967
+t3: 0.00279439
+t4: -0.000404213
+S2+s4: -0.000291544
+t2+t4: 0.00168546
+F(X1,Y1) - F(X2,Y2): 0.0118868
+F(X1-alpha, Y1-beta) - F(X1,Y1): (>0)0.144515
+F(X1+a, Y1+b) - F(X1,Y1):        (<0)-9.92264e-05
+F(X2+alpha, Y2+beta) - F(X2,Y2): (<0)-0.000292029
+F(X2-a,Y2-b) - F(X2,Y2):         (>0)0.00239018
+a/b - alpha/beta:                (>0)0.00552553
+
+top_row: 0.144223
+bot_row: 0.00229095
+plus_minus: 0.0413974
+new_sum1: 0.0409033
+new_sum2: -6.47574e-05
+X1 = 0.954096
+Y1 = 74.0534
+X2 = 0.0734594
+Y2 = 13.301
+beta = 68.5245
+alpha = 0.022986
+b = 13.2939
+a = 0.0779149
+TEST0: -1226.44 : 2 : -1.15666
+TEST1: -1.15503 : -5670.34 : -0.000371963
+TEST2: -0.000371963 : -0.102899
+TEST3: -0.000371963 : -0.00675013
+******************** VIOLATION TYPE 1 *******************
+s1: 0.103681
+s2: -0.00106616
+s3: -0.000781577
+s4: 0.000694192
+t1: -0.00122983
+t2: 0.00120684
+t3: 0.000841607
+t4: -0.000202204
+S2+s4: -0.000371963
+t2+t4: 0.00100464
+F(X1,Y1) - F(X2,Y2): 0.00849217
+F(X1-alpha, Y1-beta) - F(X1,Y1): (>0)0.102615
+F(X1+a, Y1+b) - F(X1,Y1):        (<0)-2.2985e-05
+F(X2+alpha, Y2+beta) - F(X2,Y2): (<0)-8.73842e-05
+F(X2-a,Y2-b) - F(X2,Y2):         (>0)0.000639403
+a/b - alpha/beta:                (>0)0.00400147
+
+top_row: 0.102527
+bot_row: 0.000616418
+plus_minus: 0.0328008
+new_sum1: 0.0319204
+new_sum2: -9.11247e-05
+X1 = 0.881621
+Y1 = 89.3482
+X2 = 0.0513483
+Y2 = 12.7371
+beta = 83.2214
+alpha = 0.0557902
+b = 12.6649
+a = 0.0591684
+TEST0: -8574.37 : 2 : -0.880974
+TEST1: -0.88074 : -30211.2 : -3.27188e-05
+TEST2: -3.27188e-05 : -0.0342418
+TEST3: -3.27188e-05 : -0.00469083
+******************** VIOLATION TYPE 1 *******************
+s1: 0.0345046
+s2: -0.000285465
+s3: -0.000262833
+s4: 0.000252746
+t1: -0.000134979
+t2: 0.000126874
+t3: 9.49825e-05
+t4: -1.52107e-05
+S2+s4: -3.27188e-05
+t2+t4: 0.000111664
+F(X1,Y1) - F(X2,Y2): 0.00625681
+F(X1-alpha, Y1-beta) - F(X1,Y1): (>0)0.0342191
+F(X1+a, Y1+b) - F(X1,Y1):        (<0)-8.1042e-06
+F(X2+alpha, Y2+beta) - F(X2,Y2): (<0)-1.00869e-05
+F(X2-a,Y2-b) - F(X2,Y2):         (>0)7.97718e-05
+a/b - alpha/beta:                (>0)0.00360473
+
+top_row: 0.034209
+bot_row: 7.16676e-05
+plus_minus: 0.0297883
+new_sum1: 0.0295362
+new_sum2: -1.96364e-05
+X1 = 0.765797
+Y1 = 93.4774
+X2 = 0.0058744
+Y2 = 2.04846
+beta = 79.6537
+alpha = 0.0176255
+b = 2.01378
+a = 0.00770473
+
+			      */
+			      if ((alpha > 0) && (abs_(h*max_alpha) >= abs_(g)) || (top_row < 0)) { //
+				// if ((alpha > 0) && (abs_(h*alpha) >= abs_(g)) || (top_row < 0)) { // best so far <<< THIS SHOULD BE SIMPLE
+
+
 			      // if ((alpha > 0) && ((abs_(alpha)*abs_(g + alpha*h)) >= abs_(alpha*g))) { // best so far
 
 			      // if ((alpha > 0.) && ((abs_(g) <= abs_(max_alpha*h)) || (abs_(max_alpha*(g+max_alpha*h)) >= abs_(s1s3_bound)))) {

@@ -10,6 +10,11 @@
 
 #include "test_partitions.hpp"
 
+double round(double a, unsigned places) {
+  double rad = std::pow(10., places);
+  return std::ceil(a * rad)/rad;
+}
+
 auto main(int argc, char **argv) -> int {
 
   int N, T;
@@ -30,10 +35,10 @@ auto main(int argc, char **argv) -> int {
   std::uniform_real_distribution<double> distb{lower_limit_b, upper_limit_b};
 
   auto gena = [&dista, &mersenne_engine]() {
-    return dista(mersenne_engine);
+    return round(dista(mersenne_engine), 6);
   };
   auto genb = [&distb, &mersenne_engine]() {
-    return distb(mersenne_engine);
+    return round(distb(mersenne_engine), 6);
   };
 
   std::vector<double> a(N);
