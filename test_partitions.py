@@ -14,6 +14,9 @@ def subsets(ns):
     return list(chain(*[[[list(x)] for x in combinations(range(ns), i)] for i in range(1,ns+1)]))
 
 def knuth_partition(ns, m):
+    if m == 1:
+        return [[ns]]
+    
     def visit(n, a):
         ps = [[] for i in range(m)]
         for j in range(n):
@@ -144,21 +147,20 @@ class Task(object):
         arg_max = -1
         
         for ind,part in enumerate(partitions):
-
             val = 0
             part_val = [0] * len(part)
-            print('INDEX: {} PARTITION: {!r}'.format(ind, part))
+            print('PARTITION: {!r}'.format(part))
             for part_ind, p in enumerate(part):
                 part_sum = np.sum(a[p])**power/np.sum(b[p])
                 part_val[part_ind] = part_sum
                 val += part_sum
-                print('    INDEX: {} SUBSET: {!r} PART_VAL: {}'.format(part_ind, p, part_sum))
+                print('    SUBSET: {!r} SUBSET SCORE: {:4.4f}'.format(p, part_sum))
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
-            print('    FINAL SCORE: {:4.12}'.format(val))
-        print('MAX_SUM: {}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
-        print()
+            print('    PARTITION SCORE: {:4.4f}'.format(val))
+        print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
+        # print()
         return (max_sum, arg_max)
 
 class Worker(multiprocessing.Process):
@@ -193,10 +195,11 @@ if __name__ == '__NOT_MAIN__':
 
     trial = 0
     while True:
-        a0 = rng.uniform(low=1.0, high=10.0, size=int(NUM_POINTS))
+        a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))        
         
         ind = np.argsort(a0/b0)
+
         (a,b) = (seq[ind] for seq in (a0,b0))
         
         tasks = multiprocessing.JoinableQueue()
@@ -245,8 +248,10 @@ if __name__ == '__NOT_MAIN__':
 def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=max):
     ind = np.argsort(a0**PRIORITY_POWER/b0)
     (a,b) = (seq[ind] for seq in (a0,b0))
-        
-    if num_mon_partitions > 100:
+
+    # XXX
+    # if num_mon_partitions > 100:
+    if False:
         tasks = multiprocessing.JoinableQueue()
         results = multiprocessing.Queue()
         workers = [Worker(tasks, results) for i in range(NUM_WORKERS)]
@@ -276,8 +281,8 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=ma
             
     r_max = reduce(allResults, cond)
 
-    import pdb
-    pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
 
     # summands = [np.sum(a[p])**2/np.sum(b[p]) for p in r_max[1]]
     # parts = [ind[el] for el in [p for p in r_max[1]]]
@@ -308,15 +313,26 @@ if __name__ == '__main__':
         a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=1., high=10.0, size=int(NUM_POINTS))
 
+        a0 = np.round(a0, 1)
+        b0 = np.round(b0, 1)
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]    
+
+        # a0 = np.array([8, 2, 9])
+        # b0 = np.array([8, 1, 3])
+        
         # gamma == 2.0, lambda > 1.0
         # x = 1e10
         # delta = 10
         # a0 = np.array([x-delta, delta, x+delta])
         # b0 = np.array([x, delta, x])
 
-        # import pdb
-        # pdb.set_trace()
-        
+        delta = 1
+        a0 = np.array([delta, 2*delta, 3*delta])
+        b0 = np.array([1, 1, 1])
+
         # gamma < 2.0
         # q = 1
         # epsilon = 1e-3
@@ -330,8 +346,17 @@ if __name__ == '__main__':
         # a0 = np.array([-5.64, -5.12,  10.0,  1.94])
         # b0 = np.array([0.077, 1.23, 3.36, 0.029])
 
-        a0 = np.array([0.48, 0.38, 0.76])
-        b0 = np.array([0.9, 0.51, 0.67])
+        # a0 = np.array([ 0.37, 0.17, 0.50 ])
+        # b0 = np.array([ 0.87, 0.37, 0.39 ])
+
+        # a0 = np.array( [ 0.267532, 0.179856, 0.068246, 0.4343, 0.92863 ])
+        # b0 = np.array( [ 0.6126, 0.312329, 0.090831, 0.566307, 0.566294 ] )
+        a0 = np.array([0.992819, 0.04904, 0.622353, 0.464107, 0.608956, 0.984192])
+        b0 = np.array([0.935323, 0.02541, 0.279373, 0.205452, 0.24599, 0.315633])
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]
 
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
         # a0 = -1 * a0
@@ -339,34 +364,48 @@ if __name__ == '__main__':
         
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
-            
+
+        import pdb
+        pdb.set_trace()
+        
         try:
             assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
         except AssertionError as e:
             # if any([len(x)==1 for x in r_max_abs[1]]):
             #     continue
+            
+            # r_max_raw_minus_1 = optimize(a0, b0, PARTITION_SIZE-1, POWER, NUM_WORKERS, PRIORITY_POWER)
 
             # Stop if exception found
-            import pdb
-            pdb.set_trace()
-            if not os.path.exists('./violations'):
-                os.mkdir('./violations')
-            with open('_'.join(['./violations/a', str(SEED),
-                                str(trial),
-                                str(PARTITION_SIZE)]), 'wb') as f:
-                pickle.dump(a0, f)
-            with open('_'.join(['./violations/b', str(SEED),
-                                str(trial),
-                                str(PARTITION_SIZE)]), 'wb') as f:
-                pickle.dump(b0, f)
-            with open('_'.join(['./violations/rmax', str(SEED),
-                                str(trial),
-                                str(PARTITION_SIZE)]), 'wb') as f:
-                pickle.dump(r_max_raw, f)
-            bad_cases += 1
-            if bad_cases == 10:
-                import sys
-                sys.exit()
+
+            r_max_raw_less = optimize(a0, b0, PARTITION_SIZE-1, POWER, NUM_WORKERS, PRIORITY_POWER)
+
+            if (r_max_raw[0] > r_max_raw_less[0]) or (not all(np.diff(list(chain.from_iterable(r_max_raw_less[1]))))):
+                import pdb
+                pdb.set_trace()
+                
+            # import pdb
+            # pdb.set_trace()
+
+            if False:
+                if not os.path.exists('./violations'):
+                    os.mkdir('./violations')
+                with open('_'.join(['./violations/a', str(SEED),
+                                    str(trial),
+                                    str(PARTITION_SIZE)]), 'wb') as f:
+                    pickle.dump(a0, f)
+                with open('_'.join(['./violations/b', str(SEED),
+                                    str(trial),
+                                    str(PARTITION_SIZE)]), 'wb') as f:
+                    pickle.dump(b0, f)
+                with open('_'.join(['./violations/rmax', str(SEED),
+                                    str(trial),
+                                    str(PARTITION_SIZE)]), 'wb') as f:
+                    pickle.dump(r_max_raw, f)
+                bad_cases += 1
+                if bad_cases == 10:
+                    import sys
+                    sys.exit()
     
         trial += 1
 
@@ -438,3 +477,25 @@ if (False):
     part2 = [[0,2],[1]]
 
     sum([np.sum(a[part])**gamma/np.sum(b[part]) for part in part0])
+
+if (False):
+    import numpy as np
+    import matplotlib.pyplot as plot
+    
+    gamma = 4.0
+    delta = 1e-3
+    C1 = 1
+    C2 = 1
+
+    def F(x,y,gamma):
+        return x**gamma/y + (C1-x)*gamma/(C2-y)
+
+    xaxis = np.linspace(-100., 100., 1000)
+    yaxis = np.linspace(.00000001, .000001, 1000)
+    X,Y = np.meshgrid(xaxis, yaxis)
+    Z = F(X,Y,gamma)
+
+    fig,ax = plot.subplots(1,1)
+    cp = ax.contourf(X, Y, Z)
+    fig.colorbar(cp)
+    plot.show()

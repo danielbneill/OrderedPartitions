@@ -11,6 +11,16 @@
 #include "threadpool.hpp"
 #include "threadsafequeue.hpp"
 
+class Score {
+public:
+  static double power_(double a, double b, double gamma) {
+    return std::pow(a, gamma)/b;
+  }
+  static double power_plus_c(double a, double b, double gamma) {
+    return std::pow(a, gamma)/b + 1.0;
+  }
+};
+
 using resultPair = std::pair<double, std::vector<std::vector<int>>>;
 
 class PartitionTest {
@@ -50,6 +60,7 @@ public:
   std::vector<std::vector<std::vector<int>>> get_partitions() const;
   void set_a(std::vector<double>&&);
   void set_b(std::vector<double>&&);
+  void set_T(int);
   std::vector<double> get_a() const;
   std::vector<double> get_b() const;
 

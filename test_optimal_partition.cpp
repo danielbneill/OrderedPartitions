@@ -61,6 +61,7 @@ PartitionTest::sort_by_priority_(std::vector<double>& a, std::vector<double>& b,
 
 void
 PartitionTest::runTest() {
+  
   int NUM_TASKS = 10;
 
   int numPartitions = fList_.size();
@@ -74,28 +75,35 @@ PartitionTest::runTest() {
   };
 
   // submit work if chunk size is large enough, otherwise single process
-  if (window > 10000) {
+  // DISABLED
+  if (false) {
     for (int i=0; i<NUM_TASKS; ++i) {
       v_.push_back(DefaultThreadPool::submitJob(task, i*window, (i+1)*window));
     }
     // submit remainder of work, if any
-    if (excess) { v_.push_back(DefaultThreadPool::submitJob(task, NUM_TASKS*window, numPartitions)); }
+    if (excess) { 
+      v_.push_back(DefaultThreadPool::submitJob(task, NUM_TASKS*window, numPartitions)); 
+    }
     
   } else {
     v_.push_back(DefaultThreadPool::submitJob(task, 0, numPartitions));
   }
-
+  
   for (auto& item : v_)
     item.get();
+
+  int count = 0;
+  double maxScore = std::numeric_limits<double>::min();
 
   resultPair result;
   while (!results_queue_.empty()) {
     bool valid = results_queue_.waitPop(result);
-    if (valid) {
-      results_.push_back(result);
+    if (valid && (result.first > maxScore)) {
+      maxScore = result.first;
+      optimalResult_ = result;
     }
   }
-  optimalResult_ = results_[0];
+
 }
 
 void
@@ -114,7 +122,6 @@ PartitionTest::print_partitions() const {
 
 void
 PartitionTest::print_pair(const resultPair& p) const {
-  std::cout << std::setprecision(12) << "SUM OF SCORES: " << p.first << std::endl;
   std::cout << "PARTITION: ";
   for (auto& el: p.second) {
     std::cout << "[ ";
@@ -124,6 +131,7 @@ PartitionTest::print_pair(const resultPair& p) const {
     std::cout << "]";
   }
   std::cout << "\n";
+  std::cout << std::setprecision(12) << "SUM OF SCORES: " << p.first << std::endl;
 }
 
 void
@@ -147,7 +155,7 @@ PartitionTest::optimize_(int b, int e) {
   double rMax = std::numeric_limits<double>::min();
   std::vector<std::vector<int>> partMax;
 
-  for (auto it=fList_.cbegin(); it!=fList_.cend(); ++it) {
+  for (auto it=fList_.cbegin()+b; it!=fList_.cbegin()+e; ++it) {
     rSum = 0.;
     for (auto pit=(*it).cbegin(); pit!=(*it).cend(); ++pit) {
       paSum = 0.;
@@ -156,7 +164,7 @@ PartitionTest::optimize_(int b, int e) {
 	paSum += a_[*eit];
 	pbSum += b_[*eit];
       }
-      rSum += std::pow(paSum, gamma_)/pbSum;
+      rSum += Score::power_(paSum, pbSum, gamma_);
     }
     // print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {
@@ -183,7 +191,11 @@ PartitionTest::formPartitions_() {
   std::vector<int> indexes(elements_.size(), 0);
   lists.emplace_back(std::vector<int>());
   lists[0].insert(lists[0].end(), elements_.begin(), elements_.end());
-  
+
+  if (T_ == 1) {
+    fList_.emplace_back(lists);
+  }
+
   int counter = -1;
   
   for(;;){
@@ -248,6 +260,13 @@ PartitionTest::set_a(std::vector<double>&& a) {
 void
 PartitionTest::set_b(std::vector<double>&& b) { 
   b_ = b;
+}
+
+void
+PartitionTest::set_T(int T) {
+  T_ = T;
+  cleanup_();
+  formPartitions_();
 }
 
 std::vector<double>

@@ -7,26 +7,56 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <memory>
 
 #include "test_partitions.hpp"
+
+template<class C, typename T>
+bool contains_no(const C& c, const T& value) {
+  return std::find(c.begin(), c.end(), value) == c.end();
+}
+
+template<class C, typename T, typename... Ts>
+bool contains_no(const C& c, const T a, Ts... args) {
+  return contains_no(c, a) && contains_no(c, args...);
+}
 
 double round(double a, unsigned places) {
   double rad = std::pow(10., places);
   return std::ceil(a * rad)/rad;
 }
 
+bool assertMixedSign(const std::vector<double>& a) {
+  bool hasPos = std::find_if(a.begin(), a.end(), [](double x){ return x > 0;}) != a.end();
+  bool hasNeg = std::find_if(a.begin(), a.end(), [](double x){ return x < 0;}) != a.end();
+  return hasPos && hasNeg;
+}
+
 auto main(int argc, char **argv) -> int {
+
+  const bool TEST_STRONGLY_CONSECUTIVE = true;
 
   int N, T;
   double gamma, delta;
   std::istringstream Nss(argv[1]), Tss(argv[2]), gammass(argv[3]), deltass(argv[4]);
   Nss >> N; Tss >> T; gammass >> gamma; deltass >> delta;
 
-  double lower_limit_a, lower_limit_b = 0.;
+  bool aMixedSign = false;
+  if (argc > 5) {
+    std::istringstream aMixedSignss(argv[5]);
+    aMixedSignss >> aMixedSign;
+  }
+
+  double lower_limit_a = 0., lower_limit_b = 0.;
   double upper_limit_a = 1., upper_limit_b = 1.;
-  if ((gamma - static_cast<int>(gamma) <= 0.) &&
-      (delta - static_cast<int>(delta) <= 0.)) {
+  if ((gamma - std::floor(gamma) <= 0.) &&
+      (delta - std::floor(delta) <= 0.)) {
     lower_limit_a = -1.;
+  }
+
+  if (aMixedSign && !(lower_limit_a < 0)) {
+    std::cerr << "aMixedSign incompatible with lower limit for a" << std::endl;
+    return -1;
   }
 
   std::random_device rnd_device;
@@ -58,44 +88,73 @@ auto main(int argc, char **argv) -> int {
     std::generate(a.begin(), a.end(), gena);
     std::generate(b.begin(), b.end(), genb);
 
+    if (aMixedSign) {
+      while (not assertMixedSign(a)) {
+	std::generate(a.begin(), a.end(), gena);
+      }
+    }
+
     // Instantiate PartitionTest object with precalculated partitions
     PartitionTest pt{a, b, T, gamma, partitions, delta};
 
     // Optimize
     pt.runTest();
-    
-    // Print out problematic case
+
+    // Print out problematic case    
     if (!pt.assertOrdered(pt.get_results())) {
-      auto a_sorted = std::move(pt.get_a()), b_sorted = std::move(pt.get_b());
+      bool T_less_one_consecutive = true;
 
-      std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
-      std::cerr << "a   = [ ";
-      for (auto& el : a_sorted)
-	std::cout << std::setprecision(16) << el << " ";
-      std::cerr << "]" << std::endl;
-
-      std::cerr << "b   = [ ";
-      for (auto& el : b_sorted)
-	std::cerr << std::setprecision(16) << el << " ";
-      std::cerr << "]" << std::endl;
-
-      std::cerr << "a^delta/b = [ ";
-      for (size_t i=0; i<a_sorted.size(); ++i)
-	std::cerr << std::setprecision(8) << pow(a_sorted[i], delta)/b_sorted[i] << " ";
-      std::cerr << "]" << std::endl;
-
-      pt.print_pair(pt.get_results());
-
-      exit(0);
+      // Replay everything
+      std::vector<std::unique_ptr<PartitionTest>> pt_vec(T+1);
+      std::vector<bool> isConsecutive(T+1, false);
+      for (int i=T; i>=1; --i) {
+	pt_vec[i] = std::make_unique<PartitionTest>(a, b, i, gamma, delta);
+      }
+      
+      if (TEST_STRONGLY_CONSECUTIVE) {
+	for(size_t i=T; i>= 1; --i) {
+	  pt_vec[i]->runTest();
+	  if (!pt_vec[i]->assertOrdered(pt_vec[i]->get_results()))
+	    continue;
+	  else if (i > 1)
+	    isConsecutive[i] = true;
+	}
+	if (contains_no(isConsecutive, true)) {
+	  auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
+	  
+	  std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
+	  std::cerr << "a   = [ ";
+	  for (auto& el : a_sorted)
+	    std::cout << std::setprecision(16) << el << " ";
+	  std::cerr << "]" << std::endl;
+	  
+	  std::cerr << "b   = [ ";
+	  for (auto& el : b_sorted)
+	    std::cerr << std::setprecision(16) << el << " ";
+	  std::cerr << "]" << std::endl;
+	  
+	  std::cerr << "a^delta/b = [ ";
+	  for (size_t i=0; i<a_sorted.size(); ++i)
+	    std::cerr << std::setprecision(8) << pow(a_sorted[i], delta)/b_sorted[i] << " ";
+	  std::cerr << "]" << std::endl;
+	  
+	  for (size_t i=T; i>=1; --i) {
+	    std::cerr << "Maximal " << i << "-partition" << std::endl;
+	    pt_vec[i]->print_pair(pt_vec[i]->get_results());
+	    std::cerr << std::endl;
+	  }
+	  
+	  exit(0);
+	}
+      }
     }
-
+      
     count++;
-    if (!(count%100)) {
+    if (!(count%1000)) {
       std::cout << "COUNT: " << count << std::endl;
-    }
+    }  
   }
   
   return 0;
 
 }
-
