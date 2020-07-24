@@ -7,7 +7,7 @@ from scipy.special import comb
 from functools import partial
 from itertools import chain, islice, combinations
 
-SEED = 127
+SEED = 349
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -245,6 +245,81 @@ if __name__ == '__NOT_MAIN__':
     
         trial += 1
 
+def plot_polytope(a0, b0):
+    import matplotlib.pyplot as plot
+    from scipy.spatial import ConvexHull, Delaunay
+
+    ind = np.argsort(a0**PRIORITY_POWER/b0)
+    (a,b) = (seq[ind] for seq in (a0,b0))
+
+    pi = subsets(len(a0))
+    X = list()
+    Y = list()
+    txt = list()
+
+    for subset in pi:
+        s = subset[0]
+        X.append(np.sum(a[s]))
+        Y.append(np.sum(b[s]))
+        txt.append(str(s))
+
+    Xm, XM = np.min(X), np.max(X)
+    Ym, YM = np.min(Y), np.max(Y)
+    Cx, Cy = np.sum(a), np.sum(b)
+
+    points = np.stack([X,Y]).transpose()
+    hull = ConvexHull(points)
+    vertices = [points[v] for v in hull.vertices]
+    dhull = Delaunay(vertices)
+
+    fig, ax = plot.subplots(1,1)
+    
+    PLOT_LEVEL_SETS = True
+    
+    if (PLOT_LEVEL_SETS):
+        def in_hull(dhull, x, y):
+            return dhull.find_simplex((x,y)) >= 0
+    
+        def F(x,y, gamma, dhull):
+            return x**gamma/y + (Cx-x)**gamma/(Cy-y)
+    
+        xaxis = np.linspace(Xm, XM, 201)
+        yaxis = np.linspace(Ym, YM, 201)
+        xaxis, yaxis = xaxis[:-1], yaxis[:-1]
+        Xgrid,Ygrid = np.meshgrid(xaxis, yaxis)
+        Zgrid = F(Xgrid, Ygrid, POWER, dhull)
+        
+        for xi,xv in enumerate(xaxis):
+            for yi,yv in enumerate(yaxis):
+                if in_hull(dhull, xv, yv):
+                    continue
+                else:
+                    Zgrid[yi,xi] = 0.
+
+        cp = ax.contourf(Xgrid, Ygrid, Zgrid)
+        fig.colorbar(cp)
+        plot.pause(1e-3)
+
+    ax.scatter(X, Y)
+    for i,t in enumerate(txt):
+        if i in hull.vertices:
+            t = t.replace('[','<').replace(']','>')
+        else:
+            t = t.replace('[','').replace(']','')
+        ax.annotate(t, (X[i], Y[i]))
+
+    for simplex in hull.simplices:
+        ax.plot(points[simplex,0], points[simplex,1], 'k-')
+
+    vertices_txt = [txt[v] for v in hull.vertices]
+    
+    plot.pause(1e-3)
+
+    import pdb
+    pdb.set_trace()
+    
+    plot.close()
+
 def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=max):
     ind = np.argsort(a0**PRIORITY_POWER/b0)
     (a,b) = (seq[ind] for seq in (a0,b0))
@@ -329,9 +404,9 @@ if __name__ == '__main__':
         # a0 = np.array([x-delta, delta, x+delta])
         # b0 = np.array([x, delta, x])
 
-        delta = 1
-        a0 = np.array([delta, 2*delta, 3*delta])
-        b0 = np.array([1, 1, 1])
+        # delta = 1
+        # a0 = np.array([delta, 2*delta, 3*delta])
+        # b0 = np.array([1, 1, 1])
 
         # gamma < 2.0
         # q = 1
@@ -351,8 +426,17 @@ if __name__ == '__main__':
 
         # a0 = np.array( [ 0.267532, 0.179856, 0.068246, 0.4343, 0.92863 ])
         # b0 = np.array( [ 0.6126, 0.312329, 0.090831, 0.566307, 0.566294 ] )
-        a0 = np.array([0.992819, 0.04904, 0.622353, 0.464107, 0.608956, 0.984192])
-        b0 = np.array([0.935323, 0.02541, 0.279373, 0.205452, 0.24599, 0.315633])
+        # a0 = np.array([0.992819, 0.04904, 0.622353, 0.464107, 0.608956, 0.984192])
+        # b0 = np.array([0.935323, 0.02541, 0.279373, 0.205452, 0.24599, 0.315633])
+        # a0 = np.array([ -0.937353, -0.09833699999999999, -0.668365, 0.731261 ])
+        # b0 = np.array([ 0.267252, 0.09030100000000001, 0.811923, 0.91252 ])
+        # a0 = np.array([ 0.445962, 0.105416, 0.905763, 0.919112 ])
+        # b0 = np.array([ 0.616067, 0.092109, 0.702833, 0.642663 ])
+        # a0 = np.array([ 0.96563, 0.530856, 0.446896, 0.748362, 0.438265 ])
+        # b0 = np.array([ 0.896815, 0.473519, 0.374769, 0.142674, 0.039357 ])
+                      
+        # a0 = np.array([.75, .25, 1.25])
+        # b0 = np.array([1, .25, 1])
 
         sortind = np.argsort(a0/b0)
         a0 = a0[sortind]
@@ -365,9 +449,6 @@ if __name__ == '__main__':
         if True:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
 
-        import pdb
-        pdb.set_trace()
-        
         try:
             assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
         except AssertionError as e:
@@ -377,6 +458,8 @@ if __name__ == '__main__':
             # r_max_raw_minus_1 = optimize(a0, b0, PARTITION_SIZE-1, POWER, NUM_WORKERS, PRIORITY_POWER)
 
             # Stop if exception found
+
+            plot_polytope(a0, b0)
 
             r_max_raw_less = optimize(a0, b0, PARTITION_SIZE-1, POWER, NUM_WORKERS, PRIORITY_POWER)
 
@@ -482,16 +565,17 @@ if (False):
     import numpy as np
     import matplotlib.pyplot as plot
     
-    gamma = 4.0
-    delta = 1e-3
-    C1 = 1
-    C2 = 1
+    gamma = 2.0
+    delta = 1e-1
+    C1 = 2+delta
+    C2 = 2+delta
+    epsilon = delta/2
 
     def F(x,y,gamma):
         return x**gamma/y + (C1-x)*gamma/(C2-y)
 
-    xaxis = np.linspace(-100., 100., 1000)
-    yaxis = np.linspace(.00000001, .000001, 1000)
+    xaxis = np.linspace(0.01, 2+delta-epsilon, 1000)
+    yaxis = np.linspace(0.25, 2+delta-epsilon, 1000)
     X,Y = np.meshgrid(xaxis, yaxis)
     Z = F(X,Y,gamma)
 

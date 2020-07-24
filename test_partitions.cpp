@@ -34,7 +34,7 @@ bool assertMixedSign(const std::vector<double>& a) {
 
 auto main(int argc, char **argv) -> int {
 
-  const bool TEST_STRONGLY_CONSECUTIVE = true;
+  const bool TEST_STRONGLY_CONSECUTIVE = false;
 
   int N, T;
   double gamma, delta;
@@ -102,8 +102,6 @@ auto main(int argc, char **argv) -> int {
 
     // Print out problematic case    
     if (!pt.assertOrdered(pt.get_results())) {
-      bool T_less_one_consecutive = true;
-
       // Replay everything
       std::vector<std::unique_ptr<PartitionTest>> pt_vec(T+1);
       std::vector<bool> isConsecutive(T+1, false);
@@ -111,6 +109,7 @@ auto main(int argc, char **argv) -> int {
 	pt_vec[i] = std::make_unique<PartitionTest>(a, b, i, gamma, delta);
       }
       
+      // Successively check smaller partition sizes
       if (TEST_STRONGLY_CONSECUTIVE) {
 	for(size_t i=T; i>= 1; --i) {
 	  pt_vec[i]->runTest();
@@ -146,6 +145,31 @@ auto main(int argc, char **argv) -> int {
 	  
 	  exit(0);
 	}
+      }
+      else {
+	auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
+
+	std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
+	std::cerr << "a   = [ ";
+	for (auto& el : a_sorted)
+	  std::cout << std::setprecision(16) << el << " ";
+	std::cerr << "]" << std::endl;
+	
+	std::cerr << "b   = [ ";
+	for (auto& el : b_sorted)
+	  std::cerr << std::setprecision(16) << el << " ";
+	std::cerr << "]" << std::endl;
+	
+	std::cerr << "a^delta/b = [ ";
+	for (size_t i=0; i<a_sorted.size(); ++i)
+	    std::cerr << std::setprecision(8) << pow(a_sorted[i], delta)/b_sorted[i] << " ";
+	std::cerr << "]" << std::endl;	
+
+	std::cerr << "Maximal partition" << std::endl;
+	pt.print_pair(pt.get_results());
+	std::cerr << std::endl;
+
+	exit(0);
       }
     }
       

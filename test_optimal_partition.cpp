@@ -185,7 +185,7 @@ PartitionTest::formPartitions_() {
 
   std::cout << "THEORETICAL NUM PARTITONS: " << combinatorics::Bell_n_k(numElements_, T_) << std::endl;
   std::cout << "MONOTONIC/ALL: " << std::setprecision(4) << combinatorics::mon_to_all_ratio(numElements_, T_) << std::endl;
-  std::cout << "COMPUTING PARTITIONGS...\n";
+  std::cout << "COMPUTING PARTITIONS...\n";
 
   std::vector<std::vector<int>> lists;
   std::vector<int> indexes(elements_.size(), 0);
