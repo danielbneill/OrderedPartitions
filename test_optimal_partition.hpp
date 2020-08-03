@@ -19,6 +19,15 @@ public:
   static double power_plus_c(double a, double b, double gamma) {
     return std::pow(a, gamma)/b + 1.0;
   }
+  static double neg_log_(double a, double b) {
+    return -std::log(a)/b;
+  }
+  static double log_(double a, double b) {
+    return std::log(a)/b;
+  }
+  static double exp_(double a, double b) {
+    return std::exp(-a)/b;
+  }
 };
 
 using resultPair = std::pair<double, std::vector<std::vector<int>>>;

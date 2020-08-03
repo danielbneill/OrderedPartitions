@@ -18,6 +18,9 @@ find_package(SWIG REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 
+# Boost
+find_package(Boost REQUIRED)
+
 include(UseSWIG)
 
 # Debug symbols
@@ -41,6 +44,8 @@ set(CMAKE_SWIG_FLAGS "")
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIR})
 
 # C++ executable proto
 add_library(graph OBJECT graph.cpp)
@@ -63,6 +68,10 @@ target_link_libraries(graph_to_dot graph)
 add_library(timer OBJECT timer.cpp)
 add_executable(solver_timer solver_timer.cpp)
 target_link_libraries(solver_timer graph timer)
+
+# C++ executable multiprecisision
+add_executable(multiprecision multiprecision.cpp)
+target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)

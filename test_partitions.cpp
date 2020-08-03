@@ -34,7 +34,7 @@ bool assertMixedSign(const std::vector<double>& a) {
 
 auto main(int argc, char **argv) -> int {
 
-  const bool TEST_STRONGLY_CONSECUTIVE = false;
+  const bool TEST_STRONGLY_CONSECUTIVE = true;
 
   int N, T;
   double gamma, delta;
@@ -65,10 +65,10 @@ auto main(int argc, char **argv) -> int {
   std::uniform_real_distribution<double> distb{lower_limit_b, upper_limit_b};
 
   auto gena = [&dista, &mersenne_engine]() {
-    return round(dista(mersenne_engine), 6);
+    return dista(mersenne_engine);
   };
   auto genb = [&distb, &mersenne_engine]() {
-    return round(distb(mersenne_engine), 6);
+    return distb(mersenne_engine);
   };
 
   std::vector<double> a(N);
@@ -118,7 +118,10 @@ auto main(int argc, char **argv) -> int {
 	  else if (i > 1)
 	    isConsecutive[i] = true;
 	}
+	// XXX
+	// Look at all cases <= T
 	if (contains_no(isConsecutive, true)) {
+	// if (true) {
 	  auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
 	  
 	  std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
@@ -174,7 +177,7 @@ auto main(int argc, char **argv) -> int {
     }
       
     count++;
-    if (!(count%1000)) {
+    if (!(count%1)) {
       std::cout << "COUNT: " << count << std::endl;
     }  
   }
