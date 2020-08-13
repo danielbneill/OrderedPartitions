@@ -14,7 +14,7 @@
 \usepackage{pdfpages}
 \usepackage[margin=1.2in]{geometry}
 \lhead{Charles Pehlivanian}
-\rhead{Optimal Partitions For Power Score Functions}
+\rhead{Consecutive Partitions For Power Score Functions}
 \cfoot{\thepage}
 \pagestyle{fancy}
 
@@ -33,6 +33,8 @@
 \DeclareMathOperator*{\argmin}{argmin} % thin space, limits underneath in displays
 \newcommand{\stirlingii}{\genfrac{\{}{\}}{0pt}{}}
 
+\newenvironment{example}[1]{\par\noindent\underline{Example:}\space#1}{}
+
 \newenvironment{claim}[1]{\par\noindent\underline{Claim:}\space#1}{}
 \newenvironment{claimproof}[1]{\par\noindent\underline{Proof:}\space#1}{\hfill $\blacksquare$}
 
@@ -41,42 +43,66 @@
 \makeatother
 
 \begin{document}
-\section{Problem Description}
+\sloppy
 
-Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ will be called a $\textit{record}$ and denoted by $R_i$. The set of records will be denoted by $\mathcal{D}$. We will generally regard the sequences $X$, $Y$ as sets and study orderings on the records.
+\begin{abstract}
+This is an abstract.
+\end{abstract}
+
+\section{Preliminaries}
+
+Throughout $n \in \mathbb{N}$ is positive and $N = \{1, \dots, n\}$. A partition $\mathcal{P}$ size $T$ of $N$ is specified by a set of subsets $\mathcal{P} = \{ \pi_1, \dots, \pi_T \}, \pi_i \subseteq N$, $i = 1, \dots, T$. Each subset $\pi$ can be identified with a point $P_\pi = () \in \mathbb{R}^2$,  
+
+
+\section{Background}
+
+If the object is to optimize \eqref{eq0} over partitions of strict size $T$, these results are not of much help. There is no guarantee that a strictly maximal partition exists, and the search space cannot be reduced. If the object is to find a consecutive partition of strict size $S \le T$, we are in worse shape; all partitions of size $T$ must be examined. If the optimizing partition is consecutive, we're done. Otherwise, we must repeat the process for size $T$ - 1. 
+
+\vspace{4pt}
+
+It will be shown that, for the class $\mathcal{F}_{\gamma} \times \mathcal{G}_{\tau}$, the guaranteed existence of a strongly consecutive maximal partition is rare. \ref{thm0}. An improved, efficient determination of the optimal consecutive partition, weak or not, is described, allowing for a search over a smaller subset and a worst-case $O(N^2)$ algorithm. Applications to $<\dots>$ are given in Section 3.
+
+\begin{thm} \label{thm0}
+Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition $\rho$ of size $T$ iff $(\gamma, \tau) = (2,1)$.
+\end{thm}
+
+Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ is called a $\textit{record}$ and denoted by $R_i$. The set of records is denoted by $\mathcal{D}$. We will generally regard the sequences $X$, $Y$ as sets and study orderings on the records induced by a $\textit{priority function}$.
 
 \begin{definition}
-A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x\tau}{y}$ as a power priority function, the case $\tau = 1$ the standard priority function. The ordering on the sequences $X$, $Y$ induced by $G$ is indicated by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
+A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x^{\tau}}{y}$ as a power priority function, the case $\tau = 1$ the standard priority function. The ordering on the sequences $X$, $Y$ induced by $G$ is denoted by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
 \end{definition}
 
 \begin{definition}
-A score function is a function $F\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$, $(x,y)\mapsto F(x,y)$ that is increasing in $x$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
+A score function is a function $F\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$, $(x,y)\mapsto F(x,y)$ that is increasing in $x$ and decreasing in $y$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
 \end{definition}
 
-We extend the functions $F$, $G$ to subsets of $X_i \in X$, $Y_i \in Y$ by defining $F(X_i, Y_i) = F(\sum_{x_i \in X_i} x_i, \sum_{y_i \in Y_i} y_i)$. It is often implicit that the tuple $\left(x_i, y_i\right)$ is associated with the record $R_i$. We also use the notation $X_1 = \sum_{x_i \in X_i}x_i$, $Y_1 = \sum_{y_i \in Y_i}y_i$, etc.
+We extend the functions $F$, $G$ to subsets of $X_i \in X$, $Y_i \in Y$ by defining $F(X_i, Y_i) = F(\sum_{x_i \in X_i} x_i, \sum_{y_i \in Y_i} y_i)$. We also use the notation $X_1 = \sum_{x_i \in X_i}x_i$, $Y_1 = \sum_{y_i \in Y_i}y_i$, etc. So any score function can be regarded as a function $F \colon 2^X \to \mathbf{R}$.
 
-Let $\mathcal{P} = \{P_1, \dots, P_T\}$ be a partition of the set $\{1, \dots, n\}$, so that $P_1 \cup \dots \cup P_T = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. In this case $\mathcal{P}$ is a partition of $N$ of size $T$ and we write $\vert \mathcal{P} \vert = T$. We will sometimes consider $\mathcal{P}$ as a partition of $N$, or one or both of the sequences $X$, $Y$, or of the records $\left\lbrace R_i\right\rbrace$, and write $j \in P_i$, f or $x_i \in \mathcal{P}$, as fits the situation. In this way a subset $X_i \in X$ can be considered as an element of a partition determined by the indices present in the subset, etc.
+\vspace{4pt}
+
+Let $\mathcal{P} = \{P_1, \dots, P_T\}$ be a partition of the set $N = \{1, \dots, n\}$, so that $P_1 \cup \dots \cup P_T = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. In this case $\mathcal{P}$ is a partition of $N$ of size $T$ and we write $\vert \mathcal{P} \vert = T$. It is sometimes convenient to consider $\mathcal{P}$ as a partition of the underlying $N$, but more often the induced partition on $\mathcal{R}$ through the indices, and assume the $x_i$, $y_i$ are ordered according to the score function. So after reordering, we can assume that $G(x_1, y_1) \leq G(x_2, y_2) \leq \dots \leq G(x_n, y_n)$. In this way a subset $X_i \in X$ can be considered as an element of a partition determined by the indices present in the subset, etc.
 
 We are interested in solutions to the optimization problem
+\begin{align} \label{eq0}
+\mathcal{P} = \max_{\mathcal{P}, \vert \mathcal{P} \vert = T} {\sum\limits_{j=1}^{T}F\left( X_j, Y_j\right)}
+\end{align}
+which for a power score function becomes
 \begin{align} \label{eq1}
 \mathcal{P} = \max_{\mathcal{P}, \vert \mathcal{P} \vert = T}\sum_{j=1}^{T}\frac{(\sum_{R_i \in P_j}x_i)^\gamma}{\sum_{R_i \in P_j}y_i}
 \end{align}
 
-For $\gamma \geq 0$. For example, given a set of quadratic polynomials $f_i(x) = \frac{1}{2}h_ix^2 + g_ix + c_i$, with $h_i >0$ for all $i$, the $x$ values of the vertices are given by $\frac{-g_i}{h_i}$, with minimum values $\frac{-g_i^2}{2h_i}$. The standard priorty function puts an ordering on the vertices $\left(\frac{-g_i}{h_i},\frac{-g_i^2}{2h_i}\right)$ by considering their $x$-valus. For $T = 1$, since the sum of all $f_i$ is a quadratic, we can minimize the sum $\sum_i f_i(x)$. For $T >= 2$ the optimizaiton in $\ref{eq1}$ finds the partitioning of the $f_i$ that minimizes the sum $\sum_{j=1}^T \sum_{i \in P_j} f_i$. This can also be viewed in the context of boosting, in which the maximal partition represents optimal leaf values for a classifier that can take at most $T$ values.
+For $\gamma \geq 0$. For example, given a set of quadratic polynomials $f_i(x) = \frac{1}{2}h_ix^2 + g_ix + c_i$, with $h_i >0$ for all $i$, the $x$ values of the vertices are given by $\frac{-g_i}{h_i}$, with minimum values $\frac{-g_i^2}{2h_i}$. The standard priorty function puts an ordering on the vertices sequences $\left\lbrace g_i\right\rbrace$, $\left\lbrace h_i  \right\rbrace$ which is equivalent to projection onto the x-coordinate of the vertex $\left(\frac{-g_i}{h_i},\frac{-g_i^2}{2h_i}\right)$. For $T = 1$, we can easily minimize the sum $\sum_{i=1}^{n} f_i(x)$. For $T >= 2$ the optimization in $\ref{eq1}$ with $\gamma = 2$ finds the $x$-values $\left\lbrace x_1, \dots x_T\right\rbrace$ and the partition that minimize the sum $\sum_{j=1}^T \sum_{i \in P_j} f_i\left( x_j\right)$. This can also be viewed in the context of gradient boosting, in which the maximal partition represents optimal leaf values for a classifier that can take at most $T$ values.
 
-It will be necessary to constrain the optimization in \ref{eq1} and restrict our attention to subsets of the set of all partitions of $n$, itself a large set.
+It is well-known that the optimization in $\ref{eq1}$ is NP-complete, for general score functions, even for power score functions. It will be necessary to constrain the optimization in \ref{eq1} and restrict our attention to subsets of the set of all partitions of $n$, itself a large set.
 
 \begin{definition}
-A partition $\mathcal{P}$ such that each $P_i$ is an ordered subset of records, so tbat $P_i = \{R_{(j)}, \dots, R_{(j+l_i)}\}$, for some $j$, is called an ordered partition. If in addition the partition satisfies
+A partition $\mathcal{P}$ such that each $P_i$ is an ordered subsequence of $\left\lbrace 1, \dots N\right\rbrace$, so that $P_i = \{R_{(j)}, \dots, R_{(j+l_i)}\}$, for some $j$, is called a consecutive partition. If every subset of a consecutive partition is nonempty, then it is strongly consecutive. 
+If in addition the (strongly) partition satisfies
 \[
-\mathcal{P} = \argmax_{\mathcal{P}, \vert \mathcal{P} \vert = T}\sum_{j=1}^{T}\frac{(\sum_{R_i \in P_j}x_i)^\gamma}{\sum_{R_i \in P_j}y_i}
+\mathcal{P} = \argmax_{\mathcal{P}, \vert \mathcal{P} \vert = T}\sum_{j=1}^{T}F\left( X_j, Y_j \right)
 \]
-then $\mathcal{P}$ is a maximal ordered partition for the power score function $F(x,y) = \frac{x^\gamma}{y}$, or a maximal ordered partition of power $\gamma$.
+then $\mathcal{P}$ is a maximal (strongly) consecutive partition for the power score function $F(x,y) = \frac{x^\gamma}{y}$.
 \end{definition}
-
-\begin{thm}
-For the dataset $\mathcal{D} = \{R_1, \dots, R_N\}$, priority function $G(R_i) = \frac{x_i^\tau}{y_i}$, let $F$ be a score function $F(x_i, y_i) = \frac{x_i^\gamma}{y_i}$, for $\gamma > 0$. The for any fixed $T \in \mathbf{N}, T < N$, there is a maximal ordered partition $\mathcal{P}$ of size $T$ for $F$ iff $\gamma = 2$, $\tau = 1$.
-\end{thm}
 
 The set of partitions is greatly reduced by the requirement that $\mathcal{P}$ be ordered. The set of all partitions of $n$ is the Bell number of order $T$, exponentially increasing with $n$ for any $T > 1$. The set of all size $T$ partitions is a Stirling number of the second kind $\stirlingii{n}{T}$. The $n$th Bell number $B_n$ is given by the identity
 \[B_n = \sum_{k=0}^{n} \binom{n}{k} B_k\]
@@ -85,6 +111,74 @@ The Stirling numbers follow the recursion
 and have asymptotic growth rate 
 \[\stirlingii{n}{k} \sim \frac{k^n}{k!}\]
 So, for example, for $\left(n,T\right) = \left(20, 10\right)$, we have $B_n \approx 5.9e12$, $\mathcal{O} = 92378$, while for $\left(n,T\right) = \left(30, 10\right)$, we have $B_n \approx 1.73e22$, $\mathcal{O} = 10,015,005$.
+
+It is known (see $\cite{article1}$, $\cite{article2}$) that if $F$ is convex in all of its arguments, and 
+$y \geq 0$ (by convention $\frac{x_i}{0} = \infty$), that a weakly consecutive partition exists for the standard priority function. Unfortunately the weakly consecutive partitions can collapse spectacularly to the degenerate case $T=1$ without additional assumptions.
+
+\begin{example}
+Let $X = \left\lbrace 8, 2, 9\right\rbrace$, $Y = \left\lbrace  8, 1, 3\right\rbrace$, $G$ the standard priority function and $F$ the power score function with $\gamma = 4$. It is clear that $F$ is argument-wise convex. There are 3 partitions of the set $N = \left\lbrace 1,2,3 \right\rbrace$ and direct evaluation gives
+\begin{verbatim}
+      PARTITION: [[1, 2], [3]]
+          SUBSET: [1, 2] SUBSET SCORE: 1111.1111
+          SUBSET: [3] SUBSET SCORE: 2187.0
+          PARTITION SCORE: 3298.1111
+      PARTITION: [[1], [2, 3]]
+          SUBSET: [1] SUBSET_SCORE: 512.0
+          SUBSET: [2, 3] SUBSET SCORE: 3660.25
+          PARTITION SCORE: 4172.25
+      PARTITION: [[1, 3], [2]]
+          SUBSET: [1, 3] SUBSET SCORE: 7592.8182
+          SUBSET: [2] SUBSET SCORE: 16.0
+          PARTITION SCORE: 7608.8182
+      MAX PARTITION SCORE: 7608.8182, MAX_PARTITION: [[1, 3], [2]]
+\end{verbatim}
+In this case no strongly consecutive partition of size 2 exists as the optimal partition is nonconsecutive. A weakly consecutive partition of size $T = 1$ exists consisiting of the trivial partition of $N$ with dominating score
+\begin{verbatim}
+      PARTITION: [[1, 2, 3]]
+          SUBSET: [1, 2, 3] SUBSET SCORE: 10860.0833
+          PARTITION SCORE: 10860.0833
+      MAX PARTITION SCORE: 10860.0833, MAX_PARTITION: [[0, 1, 2]].
+\end{verbatim}  
+\end{example}
+
+\begin{example}
+Let 
+\begin{align*}
+X & = \left\lbrace 0.992819 0.04904 0.622353 0.464107 0.608956 0.984192 \right\rbrace \\
+Y & = \left\lbrace 0.935323 0.02541 0.279373 0.205452 0.24599 0.315633 \right\rbrace,
+\end{align*}
+$G$ the standard priority and $\gamma = 4$. $\frac{X}{Y} = \left\lbrace 1.0614718 1.9299488 2.2276777 2.2589559 2.4755315 3.118153 \right\rbrace$. $F$ is convex in each of its arguments, but the only maximal consecutive partition of size $T = 5$ is the trival size-1 partition. We have
+
+\begin{verbatim}
+    Maximal 5-partition
+    PARTITION: [ 0 5 ][ 1 ][ 2 ][ 3 ][ 4 ]
+    SUM OF SCORES: 13.5342629367
+
+    Maximal 4-partition
+    PARTITION: [ 0 4 5 ][ 1 ][ 2 ][ 3 ]
+    SUM OF SCORES: 30.6365105858
+
+    Maximal 3-partition
+    PARTITION: [ 0 2 4 5 ][ 1 ][ 3 ]
+    SUM OF SCORES: 59.8732051128
+
+    Maximal 2-partition
+    PARTITION: [ 0 2 3 4 5 ][ 1 ]
+    SUM OF SCORES: 91.7825870559
+
+    Maximal 1-partition
+    PARTITION: [ 0 1 2 3 4 5 ]
+    SUM OF SCORES: 95.5586821397
+\end{verbatim}
+In fact the trivial partition is the optimal partition of size $T \leq 5$, and there are no strongly consecutive maximal partitions for any $T \in \left\lbrace 1, 2, 3, 4, 5\right\rbrace$.
+
+\end{example}
+In fact for any pair $\left( N, T\right)$ a maximally-degenerate collapsing exists for most score functions. This degeneracy is alluded to in the proof of the main result in $\cite{article1}$, $\cite{article2}$, although it is more prevalent than the authors indicate. In particular, any search over the consecutive partitions of size $T$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, in which case, the only way to determine this is to search over $\textit{all}$ partitions, consecutive or otherwise, at top level, to determine whether indeed the the optimal consecutive partition is truly of size $T$. If not, if a nonconsecutive partition exists at size $T$ that is optimal, one must do the entire search at level $T-1$ again. There is no efficiency gain if one knows in advance only that the optimal partition is weakly consecutive. 
+
+
+\begin{thm}
+For the dataset $\mathcal{D} = \{R_1, \dots, R_N\}$, priority function $G(R_i) = \frac{x_i^\tau}{y_i}$, let $F$ be a score function $F(x_i, y_i) = \frac{x_i^\gamma}{y_i}$, for $\gamma > 0$. The for any fixed $T \in \mathbf{N}, T < N$, there is a maximal ordered partition $\mathcal{P}$ of size $T$ for $F$ iff $\left(\gamma, \tau\right) = \left( 2, 1\right)$.
+\end{thm}
 
 \begin{proof}
 For sufficiency, let $\gamma = 2$, and suppose the partition $\mathcal{P} = \left\lbrace P_1, \dots, P_T\right\rbrace$ is the argmax solution to \ref{eq1}. Let $R_1 = (X_1, Y_1)$ be the set of records in $\mathcal{P}$ that contains the maximal element $R_{(1)}$ of $\mathcal{D}$, and define $R_1^{in} = \argmin_{R_j \in X_1} G(x_i, y_i)$, $R_1^{out} = \argmax_{R_j \not\in X_1} G(x_i, y_i)$. Note that $X_1$ is an ordered subset if and only if $R_1^{in} <= R_1^{out}$, so that there are no "holes" in $X_1$. This is not true if $X_1$ does not contain the maximal element. This can be made precise by defining $I_1^{in} = j \text{ such that} R_{(j)} = R_1^{in}$, $I_1^{out} = j \text{ such that} R_{(j)} = R_1^{out}$, and $D_1 = I_1^{in} - I_1^{out}$. It is then the case that $D_1 \geq 1$, and $X_1$ is ordered if and only iff $D_1 < 0$.
@@ -597,4 +691,15 @@ so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\
 By the claim, we have $\frac{X_1}{Y_1} \geq \frac{\alpha}{\beta}$, $\frac{X_2}{Y_2} \geq \frac{2\alpha}{\beta}$, which proves the lemma.
 
 \end{proof}
+
+\begin{thebibliography}{1}
+
+   \bibitem{article1} Chakravarty, A. K., J. B. Orlin, and U. G. Rothblum. A partitioning problem with additive objective with an application to optimal inventory groupings for joint replenishment. {\em Operations Research}. 30, no. 5 (1982):
+1018-1022.
+
+    \bibitem{article2} Chakravarty, Amiya K., James B. Orlin, and Uriel G. Rothblum. Consecutive optimizers for a partitioning problem with applications to optimal inventory groupings for joint replenishment. {\em Operations Research}. 33, no. 4 (1985):
+820-834
+
+\end{thebibliography}
+
 \end{document}
