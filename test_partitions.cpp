@@ -34,7 +34,7 @@ bool assertMixedSign(const std::vector<double>& a) {
 
 auto main(int argc, char **argv) -> int {
 
-  const bool TEST_STRONGLY_CONSECUTIVE = true;
+  const bool TEST_STRONGLY_CONSECUTIVE = false;
 
   int N, T;
   double gamma, delta;
