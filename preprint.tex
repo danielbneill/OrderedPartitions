@@ -48,67 +48,51 @@
 \sloppy
 
 \begin{abstract}
-This is an abstract.
+	This is a study consecutive partitions in the context of combinatorial optimization problems that occur in clustering, image recognition, and spatial scan statistics.
 \end{abstract}
 
 \section{Preliminaries}
 
-Throughout $n \in \mathbb{N}$ is positive and $N = \{1, \dots, n\}$. A partition $\mathcal{P}$ size $T$ of $N$ is specified by a set of subsets $\mathcal{P} = \{ \pi_1, \dots, \pi_T \}, \pi_i \subseteq N$, $i = 1, \dots, T$. Each subset $\pi$ can be identified with a point $P_\pi = () \in \mathbb{R}^2$, with $P_0 = (0,0)$ by convention.
+Throughout $n \in \mathbb{N}$ is positive and $N = \{1, \dots, n\}$. A partition $\mathcal{P}$ of size $T$ of $N$ is specified by a set of subsets $\mathcal{P} = \{ \pi_1, \dots, \pi_T \}$, $\pi_i \subseteq N$, $i = 1, \dots, T$, such that $P_1 \cup \dots \cup P_T = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. Each subset $\pi$ can be identified with a point $P_\pi = (\sum_{i \in \pi} x_i, \sum_{i \in \pi}y_i) \in \mathbb{R}^2$, with $P_{\emptyset} = (0,0)$ by convention.
 
 \begin{definition}
-For $\mathcal{P}_0$ partition of $N$, the partition polytope $\mathcal{C}$ of $\mathcal{P}$ is defined by $\mathcal{C} = convexhull(\{P_\pi : \pi \in \mathcal{P}\})$. 
-The constrained partition polytope is defined by $\underline{\mathcal{C}} = convexhull(\{P_\pi : \pi \in \mathcal{P}$, $\pi \neq \varnothing$, $\pi \neq N\} \subseteq \mathcal{C}$. 
+For $\mathcal{P}$ partition of $N$, the partition polytope $\mathcal{C}$ of $\mathcal{P}$ is defined by $\mathcal{C} = convhull(\{P_\pi : \pi \in \mathcal{P}\})$. 
+The constrained partition polytope of $\mathcal{P}$ is defined by $\underline{\mathcal{C}} = convhull(\{P_\pi : \pi \in \mathcal{P}$, $\pi \neq \varnothing$, $\pi \neq N\} \subseteq \mathcal{C}$. 
 \end{definition}
-
-The notion of consecutive subset needs to be refined in order to distinguish strongly consecutive partitions from weakly consecutive ones. 
-
-\begin{definition}
-A consecutive subset $\pi \subseteq N$ is non-splitting if both $\pi$, $N  \backslash \pi$ are consecutive. Otherwise, it is splitting.\\
-Designate
-\begin{align*}
-C &= C_N = \{ \pi \subseteq N : \pi \textrm{is consecutive \} }\\
-U &= U_N = \{ \pi \subseteq N : \pi \textrm{is consecutive, non-splitting \}} \\
-S &= S_N = C \backslash U = \{ \pi \subseteq N : \pi \textrm{is consecutive, splitting} \}
-\end{align*}
-\end{definition}
-
-\newtheorem{prop}{Proposition}
-\textbf{Proposition} Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
-\begin{enumerate}[(i)]
-	\item $\mathcal{E} = \{P_\pi$ : $\pi \in U_N$\}
-	\item $\underline{mathcal{E}} \supseteq \{P_\pi$ : $\pi \in U_N$\}, with the possible addition of singleton splitting pairs, so that $\underline{\mathcal{E}}$ may contain non-consecutive elements.
-\end{enumerate}
-
-It is easy to see that $| U_N | = 2n - 1$, $| S_N | = \frac{(n-1)(n-2)}{2}$, with $|C_N| = |U_N| + |S_N| = \frac{n(n+1)}{2}$. A search over consecutive non-splitting portfolios can be performed in linear time. If a singleton subset $\{ i \} \subseteq N$ is splitting (i.e.\ if $1 < i < n$), then we call the pair $\{ \{i\}, N\backslash_{\{i\}} \}$ a singleton splitting pair.
-\section{Background}
-
-If the object is to optimize \eqref{eq0} over partitions of strict size $T$, these results are not of much help. There is no guarantee that a strictly maximal partition exists, and the search space cannot be reduced. If the object is to find a consecutive partition of strict size $S \le T$, we are in worse shape; all partitions of size $T$ must be examined. If the optimizing partition is consecutive, we're done. Otherwise, we must repeat the process for size $T$ - 1. 
-
-\vspace{4pt}
-
-It will be shown that, for the class $\mathcal{F}_{\gamma} \times \mathcal{G}_{\tau}$, the guaranteed existence of a strongly consecutive maximal partition is rare. \ref{thm0}. An improved, efficient determination of the optimal consecutive partition, weak or not, is described, allowing for a search over a smaller subset and a worst-case $O(N^2)$ algorithm. Applications to $<\dots>$ are given in Section 3.
-
-\begin{thm} \label{thm0}
-Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition $\rho$ of size $T$ iff $(\gamma, \tau) = (2,1)$.
-\end{thm}
 
 Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ is called a $\textit{record}$ and denoted by $R_i$. The set of records is denoted by $\mathcal{D}$. We will generally regard the sequences $X$, $Y$ as sets and study orderings on the records induced by a $\textit{priority function}$.
 
 \begin{definition}
-A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x^{\tau}}{y}$ as a power priority function, the case $\tau = 1$ the standard priority function. The ordering on the sequences $X$, $Y$ induced by $G$ is denoted by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
+A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x^{\tau}}{y}$ as a power priority function, the case $\tau = 1$ being the standard priority function. The ordering induced on the sequences $X$, $Y$ induced by $G$ is denoted by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc. 
 \end{definition}
 
+The elements $x_i$ and $y_i$ can be thought of as contributing to a score for the record $R_{\left( i\right)}$, possibly through an excess ratio $\frac{x_i}{y_i}$, where $y_i$ represents a baseline, $x_i$ a realization, or as a normalized central moment $\frac{x_i^{\tau}}{y_i}$, weighted distance to a centroid, etc. In the area of $\textit{spatial scan}$ statistics, each record gives rise to a spatial scan statistic $\cite{article3}$ it is used by epidemiologists to detect and track ``hot spots`` or outbreaks of disease, based on diagnoses over a baseline, often assumed distributed as Poisson or Gaussian, although parametric considerations don't enter into our analysis. The notion of frequency, or realizations over a baseline motivate the properties of a score function.
+
 \begin{definition}
-A score function is a function $F\colon \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$, $(x,y)\mapsto F(x,y)$ that is increasing in $x$ and decreasing in $y$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
+A score function is a continuous function $F\colon \Omega \subseteq \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that is increasing in $x$ and decreasing in $y$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
 \end{definition}
+
+Several additional properties have been associated with score functions, namely quasi-convexity, marginal convexity in the individual variables, or a marginal contribution constraint $\frac{x}{y} \frac{\partial F}{\partial x} + \frac{\partial F}{\partial y} \geq 0$ related to submodularity. In particular we do not assume smoothness beyond continuity, nor convexity, unless explicitly stated.
 
 We extend the functions $F$, $G$ to subsets of $X_i \in X$, $Y_i \in Y$ by defining $F(X_i, Y_i) = F(\sum_{x_i \in X_i} x_i, \sum_{y_i \in Y_i} y_i)$. We also use the notation $X_1 = \sum_{x_i \in X_i}x_i$, $Y_1 = \sum_{y_i \in Y_i}y_i$, etc. So any score function can be regarded as a function $F \colon 2^X \to \mathbf{R}$.
 
 \vspace{4pt}
 
-Let $\mathcal{P} = \{P_1, \dots, P_T\}$ be a partition of the set $N = \{1, \dots, n\}$, so that $P_1 \cup \dots \cup P_T = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. In this case $\mathcal{P}$ is a partition of $N$ of size $T$ and we write $\vert \mathcal{P} \vert = T$. It is sometimes convenient to consider $\mathcal{P}$ as a partition of the underlying $N$, but more often the induced partition on $\mathcal{R}$ through the indices, and assume the $x_i$, $y_i$ are ordered according to the score function. So after reordering, we can assume that $G(x_1, y_1) \leq G(x_2, y_2) \leq \dots \leq G(x_n, y_n)$. In this way a subset $X_i \in X$ can be considered as an element of a partition determined by the indices present in the subset, etc.
+The notion of consecutive subset needs to be refined in order to distinguish strongly consecutive partitions from weakly consecutive ones. 
 
-We are interested in solutions to the optimization problem
+\begin{definition}
+A subset $S \subseteq N$ is consecutive if it is of the form $\left\lbrace j, j+1, \dots k\right\rbrace$, for $1 \leq j \leq k \leq n$. A consecutive subset $\pi \subseteq N$ is non-splitting if both $\pi$, $N  \backslash \pi$ are consecutive. Otherwise, it is splitting. Designate
+\begin{align*}
+C &= C_N = \{ \pi \subseteq N : \pi \textrm{ is consecutive} \}\\
+U &= U_N = \{ \pi \subseteq N : \pi \textrm{ is consecutive, non-splitting}\} \\
+S &= S_N = C \backslash U = \{ \pi \subseteq N : \pi \textrm{ is consecutive, splitting} \}
+\end{align*}
+\end{definition}
+
+A special case of a splitting subset occurs when one of $S$, $N$ is a singleton, which we call a singleton splitting pair. It is easy to see that $| U_N | = 2n - 1$, $| S_N | = \frac{(n-1)(n-2)}{2}$, with $|C_N| = |U_N| + |S_N| = \frac{n(n+1)}{2}$. Therefore, a search over consecutive non-splitting portfolios can be performed in linear time. If a singleton subset $\{ i \} \subseteq N$ is splitting (i.e.\ if $1 < i < n$), then we call the pair $\{ \{i\}, N\backslash_{\{i\}} \}$ a singleton splitting pair.
+
+
+Let $\mathcal{P}$ be a partition of the set $N = \{1, \dots, n\}$. We are interested in solutions to the optimization problem
 \begin{align} \label{eq0}
 \mathcal{P} = \max_{\mathcal{P}, \vert \mathcal{P} \vert = T} {\sum\limits_{j=1}^{T}F\left( X_j, Y_j\right)}
 \end{align}
@@ -127,7 +111,7 @@ If in addition the (strongly) partition satisfies
 \[
 \mathcal{P} = \argmax_{\mathcal{P}, \vert \mathcal{P} \vert = T}\sum_{j=1}^{T}F\left( X_j, Y_j \right)
 \]
-then $\mathcal{P}$ is a maximal (strongly) consecutive partition for the power score function $F(x,y) = \frac{x^\gamma}{y}$.
+then $\mathcal{P}$ is a maximal (strongly) consecutive partition for the power score function $F(x,y) = \frac{x^\gamma}{y}$. A maximal partition that contains only consecutive non-splitting and at least one splitting subset is called a maximal splitting partition.
 \end{definition}
 
 The set of partitions is greatly reduced by the requirement that $\mathcal{P}$ be ordered. The set of all partitions of $n$ is the Bell number of order $T$, exponentially increasing with $n$ for any $T > 1$. The set of all size $T$ partitions is a Stirling number of the second kind $\stirlingii{n}{T}$. The $n$th Bell number $B_n$ is given by the identity
@@ -137,6 +121,13 @@ The Stirling numbers follow the recursion
 and have asymptotic growth rate 
 \[\stirlingii{n}{k} \sim \frac{k^n}{k!}\]
 So, for example, for $\left(n,T\right) = \left(20, 10\right)$, we have $B_n \approx 5.9e12$, $\mathcal{O} = 92378$, while for $\left(n,T\right) = \left(30, 10\right)$, we have $B_n \approx 1.73e22$, $\mathcal{O} = 10,015,005$.
+
+If the object is to optimize \eqref{eq0} over partitions of strict size $T$, these results are not of much help. There is no guarantee that a strictly maximal partition exists, and the search space cannot be reduced. If the object is to find a consecutive partition of strict size $S \le T$, we are in worse shape; all partitions of size $T$ must be examined. If the optimizing partition is consecutive, we're done. Otherwise, we must repeat the process for size $T$ - 1. 
+
+\vspace{4pt}
+
+It will be shown that, for the class $\mathcal{F}_{\gamma} \times \mathcal{G}_{\tau}$, the guaranteed existence of a strongly consecutive maximal partition is rare. \ref{thm0}. An improved, efficient determination of the optimal consecutive partition, weak or not, is described, allowing for a search over a smaller subset and a worst-case $O(N^2)$ algorithm. Applications to $<\dots>$ are given in Section 3.
+
 
 It is known (see $\cite{article1}$, $\cite{article2}$) that if $F$ is convex in all of its arguments, and 
 $y \geq 0$ (by convention $\frac{x_i}{0} = \infty$), that a weakly consecutive partition exists for the standard priority function. Unfortunately the weakly consecutive partitions can collapse spectacularly to the degenerate case $T=1$ without additional assumptions.
@@ -201,12 +192,64 @@ In fact the trivial partition is the optimal partition of size $T \leq 5$, and t
 \end{example}
 In fact for any pair $\left( N, T\right)$ a maximally-degenerate collapsing exists for most score functions. This degeneracy is alluded to in the proof of the main result in $\cite{article1}$, $\cite{article2}$, although it is more prevalent than the authors indicate. In particular, any search over the consecutive partitions of size $T$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, in which case, the only way to determine this is to search over $\textit{all}$ partitions, consecutive or otherwise, at top level, to determine whether indeed the the optimal consecutive partition is truly of size $T$. If not, if a nonconsecutive partition exists at size $T$ that is optimal, one must do the entire search at level $T-1$ again. There is no efficiency gain if one knows in advance only that the optimal partition is weakly consecutive. 
 
+\section{Main Results}
+{\parindent0pt % disables indentation for all the text between { and }
+We now state our main results.
+}% restore indentation
+\newtheorem{prop} \label{thm0}
+\textbf{Proposition} Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
+\begin{enumerate}[(i)]
+	\item $\mathcal{E} = \{P_\pi$ : $\pi \in U_N$\}
+	\item $\underline{\mathcal{E}} \supseteq \{P_\pi$ : $\pi \in U_N\setminus\left\lbrace p_{\emptyset}, p_N \right\rbrace$\}, with the possible addition of singleton splitting pairs.
+\end{enumerate}
+In particular $\underline{\mathcal{E}}$ may contain splitting elements while $\mathcal{E}$ never does.
 
-\begin{thm}
-For the dataset $\mathcal{D} = \{R_1, \dots, R_N\}$, priority function $G(R_i) = \frac{x_i^\tau}{y_i}$, let $F$ be a score function $F(x_i, y_i) = \frac{x_i^\gamma}{y_i}$, for $\gamma > 0$. The for any fixed $T \in \mathbf{N}, T < N$, there is a maximal ordered partition $\mathcal{P}$ of size $T$ for $F$ iff $\left(\gamma, \tau\right) = \left( 2, 1\right)$.
+\vspace{6pt} 
+
+
+\begin{thm} \label{thm1}
+Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition of non-splitting subsets of size $T$ iff $(\gamma, \tau) = (2,1)$.
 \end{thm}
 
-\begin{proof}
+\begin{thm} \label{thm2}
+$\mathcal{D}$, $F$, $G$ as above. If $F$ is quasiconvex, then there is either a strongly consecutive maximal non-splitting partition, or a consecutive singleton splitting maximal partition.
+\end{thm}
+
+The notion of 
+
+The brute-force optimization in $\ref{eq1}$ has cost that grows exponentially with $n$. A constrained optimization over the set of all size $T$ ordered partitions has cost that grows as $\binom{n-1}{T-1}$, i.e., as a polynomail of degree $T-1$. In particular, the $T = 2$ problem grows linearly in $n$. There is an improvement that can be made to this approach.
+
+Consider a graph $\mathcal{G} = \left( V, E\right)$ with vertices denoted by $\left( i, j\right)$, for $i \in \left\lbrace 1, \dots, n\right\rbrace$, $j \in \left\lbrace 1, \dots, T\right\rbrace$. Add a source node $\left( 1, 1\right)$ and a terminal sink node labeled $\left( n+1, T+1\right)$, Add directed edges from node $\left( i,k \right)$ to $\left( i, k+1\right)$, for each $i < j$, with edge cost $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$. The interpretation is that a path from node $\left( i, j\right)$ to $\left( k, j+1\right)$ represents choice of the subset $\left\lbrace i, \dots, k\right\rbrace$ as the $i^{th}$ subset in the candidate partition. One can then solve for the shortest path by finding a shortest path by the Bellman-Ford algorithm. 
+
+
+% \includepdf[pages=-]{12_4_unlabeled.pdf}
+\begin{figure}
+  \includegraphics[scale=.22]{16_6_unlabeled.pdf}
+  \caption{Graph connectivity, (N, T) = (16, 6)}  
+\end{figure}
+
+\vspace{16pt}
+\begin{figure}
+  \includegraphics[scale=.11]{12_4_labeled.pdf}
+  \caption{Labeled (N, T) = (12, 4) case displaying optimal path SOURCE -- (0, 3) -- (3, 6) -- (6, 9) -- (9, 12) --  SINK corresponding to ordered partition [[0 1 2 ], [3 4 5 ], [6 7 8 ], [9 10 11 ]]}
+\end{figure}
+
+For the graph $\mathcal{G} = \left( V, E\right)$, we have 
+\begin{align*}
+\vert V \vert & = \left( T-1\right)\left(N-T-1\right) + 2 \\
+\vert E \vert & = 2\left( N-T+1\right) + \left( T-1\right)\sum_{i=1}^{N-T+1} i = 2\left( N-T+1\right) + \frac{T-1}{2}\left( N-T+1\right)\left( N-T+2\right)
+\end{align*}
+
+The Bellman-Ford algorithm requires $\mathcal{O}\left( V\cdot E\right)$ operations, which for $N >> T$ is $\mathcal{O}\left( TN^2\right)$. A naive search of all ordered partitions requires $\binom{n-1}{T-1}$ operations, a polynomial of order $T-1$ in $N$. We have effectively reduced large cases to be no worse than quadratic in N. The time savings is at the expense of memory footprint; all partial sums of the form $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$ must be stored (although sequential calculation cost is still $\mathcal{O}\left( N\right)$). This may be the most significant feature of this approach - all partial sums are cached on a computation tree that is easily traversed. For example, for a sample size of 10,000 points, with T = 100, there are approximately 4.8530e9 edges, with a storage cost of approximately 19.4119 Gb. Running times are quite fast, however, and we are currently exploring a distributed version of the algorithm.
+
+\cleardoublepage
+\appendix
+\section{Appendix}
+We present here an alternative proof of Theorem 1 which is elementary and direct.
+
+\vspace{6pt}
+
+$\textit{Proof of Theorem 1}$
 For sufficiency, let $\gamma = 2$, and suppose the partition $\mathcal{P} = \left\lbrace P_1, \dots, P_T\right\rbrace$ is the argmax solution to \ref{eq1}. Let $R_1 = (X_1, Y_1)$ be the set of records in $\mathcal{P}$ that contains the maximal element $R_{(1)}$ of $\mathcal{D}$, and define $R_1^{in} = \argmin_{R_j \in X_1} G(x_i, y_i)$, $R_1^{out} = \argmax_{R_j \not\in X_1} G(x_i, y_i)$. Note that $X_1$ is an ordered subset if and only if $R_1^{in} <= R_1^{out}$, so that there are no "holes" in $X_1$. This is not true if $X_1$ does not contain the maximal element. This can be made precise by defining $I_1^{in} = j \text{ such that} R_{(j)} = R_1^{in}$, $I_1^{out} = j \text{ such that} R_{(j)} = R_1^{out}$, and $D_1 = I_1^{in} - I_1^{out}$. It is then the case that $D_1 \geq 1$, and $X_1$ is ordered if and only iff $D_1 < 0$.
 
 Set $D = D_1$ and assume $D_1 \geq 0$. We describe an iterative procedure that swaps elements between $X_1$ and the remaining subsets, such that each step does not decrease the overall score of the partition, and decreases the value of $D$ by at least 1. In this way the procedure can be stopped when $X_1$ is ordered. We can then remove $X_1$ from the partition, regarding the remaining subsets as a partition of $\left\lbrace 1, \dots N-\vert X_1 \vert\right\rbrace$, and apply the same procedure to the remaining subset containing the maximal element. The process terminates with a maximal ordered partition.
@@ -439,8 +482,36 @@ So $p$ has two real roots, one at $\alpha_1 = 0$ and one for $\alpha_2 \geq 0$. 
 F(X_1-\alpha, Y_1-\beta) - F(X_1, Y_1) \geq 0 & \implies \alpha \not \in \left( X_1 \pm \vert X_1\vert \sqrt{\frac{Y_1-\beta}{Y_1}}\right) \\
 F(X_2+\alpha, Y_2+\beta) - F(X_2, Y_2) \leq 0 & \implies \alpha \not \in \left( -X_2 \pm \vert X_2\vert \sqrt{\frac{Y_2 +\beta}{Y_2}} \right)
 \end{align*}
-so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\frac{Y_1-\beta}{Y_1}}\right), X_2\left( \sqrt{\frac{Y_2 + \beta}{Y_2} - 1} \right)}\right]$. The idea is that $\alpha$ is small relative to $\beta$ so that the polynomial $p(\alpha) = s_2 + s_4$ never goes negative enough to violate $s_1 + s_2 \leq -\left( s_1 + s_3\right)$. The proof is technical and is contained in the Appendix.
+so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\frac{Y_1-\beta}{Y_1}}\right), X_2\left( \sqrt{\frac{Y_2 + \beta}{Y_2} - 1} \right)}\right]$. The idea is that $\alpha$ is small relative to $\beta$ so that the polynomial $p(\alpha) = s_2 + s_4$ never goes negative enough to violate $s_1 + s_2 \leq -\left( s_1 + s_3\right)$. The proof is technical and is below.
 \end{claimproof}
+
+\begin{lemma}
+For $X_1$, $X_2 > 0$, $alpha \geq 0$, $s1 + s3 \geq 0$, we have $\sum_i s_i \geq 0$
+\end{lemma}
+\begin{proof}
+We can write
+\begin{align*}
+s_2 + s_4 & = \frac{\alpha \left( \alpha - 2X_1\right)}{Y_1}  + \frac{\alpha\left( \alpha + 2X_2\right)}{Y_2} \\
+& = \left( \frac{Y_1}{Y_2} + \frac{Y_2}{Y_1}\right)\alpha^2 + 2\left( \frac{X_2}{Y_2} - \frac{X_1}{Y_1} \right)\alpha
+\end{align*}
+By the proof of the claim tha $s_1 + s_3 \geq 0$, we have that $s_1 + s_3 \geq \beta \left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right)$, so it is sufficient to show that
+\[
+\left( \frac{Y_1}{Y_2} + \frac{Y_2}{Y_1}\right)\alpha^2 + 2\left( \frac{X_2}{Y_2} - \frac{X_1}{Y_1} \right)\alpha \geq  - \beta\left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right)
+\]
+Writing the left-hand side as $q\left( \alpha \right) = h\alpha^2 + g\alpha + c$, it is sufficient to show that $\vert \alpha\vert \vert g + h \alpha\vert \leq \vert \beta\left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right) \vert$. By elementary methods, and the fact that 
+\begin{align*}
+F(X_1-\alpha, Y_1-\beta) - F(X_1, Y_1) \geq 0 & \implies \alpha \not \in \left( X_1 \pm \vert X_1\vert \sqrt{\frac{Y_1-\beta}{Y_1}}\right) \\
+F(X_2+\alpha, Y_2+\beta) - F(X_2, Y_2) \leq 0 & \implies \alpha \not \in \left( -X_2 \pm \vert X_2\vert \sqrt{\frac{Y_2 +\beta}{Y_2}} \right)
+\end{align*}
+so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\frac{Y_1-\beta}{Y_1}}\right)}\right]$, it can be shown that since $h \leq 0$, $g \geq 0$, $\vert \alpha\vert \vert g + h \alpha\vert \leq \vert \alpha g \vert$. Finally,
+\begin{align*}
+\vert \alpha g \vert = 2\alpha\left( \frac{X_1}{Y_1} - \frac{X_2}{Y_2}\right) & \leq \beta\left( \left(\frac{X_1}{Y_1}\right)^2 - \left(\frac{X_2}{Y_2}\right)^2\right) \\
+\iff 2\alpha & \leq \beta\left( \frac{X_1}{Y_1} + \frac{X_2}{Y_2}\right)
+\end{align*}
+By the claim, we have $\frac{X_1}{Y_1} \geq \frac{\alpha}{\beta}$, $\frac{X_2}{Y_2} \geq \frac{2\alpha}{\beta}$, which proves the lemma.
+
+\end{proof}
+
 
 
 \begin{case}
@@ -600,7 +671,6 @@ yields
 \end{align*}
 We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
 
-\end{proof} 
 
 \vspace{16pt}
 
@@ -660,71 +730,16 @@ does not represent an improvemnt. The improvement is obtained by substition to o
 
 In this case it is seems necessary to remove the maximal element from $X_1$ to get to $\left[ \left[ 0 \right], \left[ 1, 2, 3\right]\right]$, which is the operation perfomed in that case above. The partition is then ordered, so the algorithm halts, but if it weren't, we would have $X_1 \leq 0$, $X_2 \geq 0$, the maximal record now in $X_2$, which would become the new $X_1$, and the algorithm would proceed. 
 
-\section{Implementation, Emprirical Results}
-The brute-force optimization in $\ref{eq1}$ has cost that grows exponentially with $n$. A constrained optimization over the set of all size $T$ ordered partitions has cost that grows as $\binom{n-1}{T-1}$, i.e., as a polynomail of degree $T-1$. In particular, the $T = 2$ problem grows linearly in $n$. There is an improvement that can be made to this approach.
-
-Consider a graph $\mathcal{G} = \left( V, E\right)$ with vertices denoted by $\left( i, j\right)$, for $i \in \left\lbrace 1, \dots, n\right\rbrace$, $j \in \left\lbrace 1, \dots, T\right\rbrace$. Add a source node $\left( 1, 1\right)$ and a terminal sink node labeled $\left( n+1, T+1\right)$, Add directed edges from node $\left( i,k \right)$ to $\left( i, k+1\right)$, for each $i < j$, with edge cost $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$. The interpretation is that a path from node $\left( i, j\right)$ to $\left( k, j+1\right)$ represents choice of the subset $\left\lbrace i, \dots, k\right\rbrace$ as the $i^{th}$ subset in the candidate partition. One can then solve for the shortest path by finding a shortest path by the Bellman-Ford algorithm. 
-
-
-% \includepdf[pages=-]{12_4_unlabeled.pdf}
-\begin{figure}
-  \includegraphics[scale=.22]{16_6_unlabeled.pdf}
-  \caption{Graph connectivity, (N, T) = (16, 6)}  
-\end{figure}
-
-\vspace{16pt}
-\begin{figure}
-  \includegraphics[scale=.11]{12_4_labeled.pdf}
-  \caption{Labeled (N, T) = (12, 4) case displaying optimal path SOURCE -- (0, 3) -- (3, 6) -- (6, 9) -- (9, 12) --  SINK corresponding to ordered partition [[0 1 2 ], [3 4 5 ], [6 7 8 ], [9 10 11 ]]}
-\end{figure}
-
-For the graph $\mathcal{G} = \left( V, E\right)$, we have 
-\begin{align*}
-\vert V \vert & = \left( T-1\right)\left(N-T-1\right) + 2 \\
-\vert E \vert & = 2\left( N-T+1\right) + \left( T-1\right)\sum_{i=1}^{N-T+1} i = 2\left( N-T+1\right) + \frac{T-1}{2}\left( N-T+1\right)\left( N-T+2\right)
-\end{align*}
-
-The Bellman-Ford algorithm requires $\mathcal{O}\left( V\cdot E\right)$ operations, which for $N >> T$ is $\mathcal{O}\left( TN^2\right)$. A naive search of all ordered partitions requires $\binom{n-1}{T-1}$ operations, a polynomial of order $T-1$ in $N$. We have effectively reduced large cases to be no worse than quadratic in N. The time savings is at the expense of memory footprint; all partial sums of the form $\frac{-\left(\sum_{r=i}^{j-1} x_r\right)^2}{\sum_{r=i}^{j-1} y_r}$ must be stored (although sequential calculation cost is still $\mathcal{O}\left( N\right)$). This may be the most significant feature of this approach - all partial sums are cached on a computation tree that is easily traversed. For example, for a sample size of 10,000 points, with T = 100, there are approximately 4.8530e9 edges, with a storage cost of approximately 19.4119 Gb. Running times are quite fast, however, and we are currently exploring a distributed version of the algorithm.
-
-\section{Applications}
-
-\cleardoublepage
-\appendix
-\section{Appendix}
-\begin{lemma}
-For $X_1$, $X_2 > 0$, $alpha \geq 0$, $s1 + s3 \geq 0$, we have $\sum_i s_i \geq 0$
-\end{lemma}
-\begin{proof}
-We can write
-\begin{align*}
-s_2 + s_4 & = \frac{\alpha \left( \alpha - 2X_1\right)}{Y_1}  + \frac{\alpha\left( \alpha + 2X_2\right)}{Y_2} \\
-& = \left( \frac{Y_1}{Y_2} + \frac{Y_2}{Y_1}\right)\alpha^2 + 2\left( \frac{X_2}{Y_2} - \frac{X_1}{Y_1} \right)\alpha
-\end{align*}
-By the proof of the claim tha $s_1 + s_3 \geq 0$, we have that $s_1 + s_3 \geq \beta \left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right)$, so it is sufficient to show that
-\[
-\left( \frac{Y_1}{Y_2} + \frac{Y_2}{Y_1}\right)\alpha^2 + 2\left( \frac{X_2}{Y_2} - \frac{X_1}{Y_1} \right)\alpha \geq  - \beta\left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right)
-\]
-Writing the left-hand side as $q\left( \alpha \right) = h\alpha^2 + g\alpha + c$, it is sufficient to show that $\vert \alpha\vert \vert g + h \alpha\vert \leq \vert \beta\left( \left( \frac{X_1}{Y_1}\right)^2 - \left( \frac{X_2}{Y_2}\right)^2 \right) \vert$. By elementary methods, and the fact that 
-\begin{align*}
-F(X_1-\alpha, Y_1-\beta) - F(X_1, Y_1) \geq 0 & \implies \alpha \not \in \left( X_1 \pm \vert X_1\vert \sqrt{\frac{Y_1-\beta}{Y_1}}\right) \\
-F(X_2+\alpha, Y_2+\beta) - F(X_2, Y_2) \leq 0 & \implies \alpha \not \in \left( -X_2 \pm \vert X_2\vert \sqrt{\frac{Y_2 +\beta}{Y_2}} \right)
-\end{align*}
-so that $\alpha > 0$ means that $\alpha \in \left[ 0, \min{X_1\left( 1 - \sqrt{\frac{Y_1-\beta}{Y_1}}\right)}\right]$, it can be shown that since $h \leq 0$, $g \geq 0$, $\vert \alpha\vert \vert g + h \alpha\vert \leq \vert \alpha g \vert$. Finally,
-\begin{align*}
-\vert \alpha g \vert = 2\alpha\left( \frac{X_1}{Y_1} - \frac{X_2}{Y_2}\right) & \leq \beta\left( \left(\frac{X_1}{Y_1}\right)^2 - \left(\frac{X_2}{Y_2}\right)^2\right) \\
-\iff 2\alpha & \leq \beta\left( \frac{X_1}{Y_1} + \frac{X_2}{Y_2}\right)
-\end{align*}
-By the claim, we have $\frac{X_1}{Y_1} \geq \frac{\alpha}{\beta}$, $\frac{X_2}{Y_2} \geq \frac{2\alpha}{\beta}$, which proves the lemma.
-
-\end{proof}
 
 \begin{thebibliography}{1}
 
-   \bibitem{article1} Chakravarty, A. K., J. B. Orlin, and U. G. Rothblum. A partitioning problem with additive objective with an application to optimal inventory groupings for joint replenishment. {\em Operations Research}. 30, no. 5 (1982):
-1018-1022.
+   \bibitem{article1} Chakravarty, A. K., J. B. Orlin, and U. G. Rothblum. A partitioning problem with additive objective with an application to optimal inventory groupings for joint replenishment. {\em Operations Research}. 30, no. 5, 1982: 1018-1022.
 
-    \bibitem{article2} Chakravarty, Amiya K., James B. Orlin, and Uriel G. Rothblum. Consecutive optimizers for a partitioning problem with applications to optimal inventory groupings for joint replenishment. {\em Operations Research}. 33, no. 4 (1985):
-820-834
+    \bibitem{article2} Chakravarty, Amiya K., James B. Orlin, and Uriel G. Rothblum. Consecutive optimizers for a partitioning problem with applications to optimal inventory groupings for joint replenishment. {\em Operations Research}. 33, no. 4, 1985: 820-834
+
+	\bibitem{article 2} M. Kulldorff. A spatial scan statistic. {\em Communications in Statistics: Theory and Methods}, 26(6), 1997: 1481–1496
+
+	\bibitem{article3} M. Kulldorff and N. Nagarwalla. Spatial disease clusters: detection and inference. {\em Statistics in Medicine}, 14, 1995: 799–810
 
 \end{thebibliography}
 
