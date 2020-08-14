@@ -164,9 +164,9 @@ PartitionTest::optimize_(int b, int e) {
 	paSum += a_[*eit];
 	pbSum += b_[*eit];
       }
-      // XXX
-      // rSum += Score::power_(paSum, pbSum, gamma_);
-      rSum += Score::log_(paSum, pbSum);
+      rSum += Score::power_(paSum, pbSum, gamma_);
+      // rSum += Score::neg_log_(paSum, pbSum);
+      // rSum += Score::log_(paSum, pbSum);
       // rSum += Score::exp_(paSum, pbSum);
       
     }
