@@ -5,6 +5,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{amsthm}
@@ -12,6 +13,7 @@
 \usepackage{listings}
 \usepackage{dirtytalk}
 \usepackage{pdfpages}
+\usepackage[shortlabels]{enumitem}
 \usepackage[margin=1.2in]{geometry}
 \lhead{Charles Pehlivanian}
 \rhead{Consecutive Partitions For Power Score Functions}
@@ -51,9 +53,33 @@ This is an abstract.
 
 \section{Preliminaries}
 
-Throughout $n \in \mathbb{N}$ is positive and $N = \{1, \dots, n\}$. A partition $\mathcal{P}$ size $T$ of $N$ is specified by a set of subsets $\mathcal{P} = \{ \pi_1, \dots, \pi_T \}, \pi_i \subseteq N$, $i = 1, \dots, T$. Each subset $\pi$ can be identified with a point $P_\pi = () \in \mathbb{R}^2$,  
+Throughout $n \in \mathbb{N}$ is positive and $N = \{1, \dots, n\}$. A partition $\mathcal{P}$ size $T$ of $N$ is specified by a set of subsets $\mathcal{P} = \{ \pi_1, \dots, \pi_T \}, \pi_i \subseteq N$, $i = 1, \dots, T$. Each subset $\pi$ can be identified with a point $P_\pi = () \in \mathbb{R}^2$, with $P_0 = (0,0)$ by convention.
 
+\begin{definition}
+For $\mathcal{P}_0$ partition of $N$, the partition polytope $\mathcal{C}$ of $\mathcal{P}$ is defined by $\mathcal{C} = convexhull(\{P_\pi : \pi \in \mathcal{P}\})$. 
+The constrained partition polytope is defined by $\underline{\mathcal{C}} = convexhull(\{P_\pi : \pi \in \mathcal{P}$, $\pi \neq \varnothing$, $\pi \neq N\} \subseteq \mathcal{C}$. 
+\end{definition}
 
+The notion of consecutive subset needs to be refined in order to distinguish strongly consecutive partitions from weakly consecutive ones. 
+
+\begin{definition}
+A consecutive subset $\pi \subseteq N$ is non-splitting if both $\pi$, $N  \backslash \pi$ are consecutive. Otherwise, it is splitting.\\
+Designate
+\begin{align*}
+C &= C_N = \{ \pi \subseteq N : \pi \textrm{is consecutive \} }\\
+U &= U_N = \{ \pi \subseteq N : \pi \textrm{is consecutive, non-splitting \}} \\
+S &= S_N = C \backslash U = \{ \pi \subseteq N : \pi \textrm{is consecutive, splitting} \}
+\end{align*}
+\end{definition}
+
+\newtheorem{prop}{Proposition}
+\textbf{Proposition} Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
+\begin{enumerate}[(i)]
+	\item $\mathcal{E} = \{P_\pi$ : $\pi \in U_N$\}
+	\item $\underline{mathcal{E}} \supseteq \{P_\pi$ : $\pi \in U_N$\}, with the possible addition of singleton splitting pairs, so that $\underline{\mathcal{E}}$ may contain non-consecutive elements.
+\end{enumerate}
+
+It is easy to see that $| U_N | = 2n - 1$, $| S_N | = \frac{(n-1)(n-2)}{2}$, with $|C_N| = |U_N| + |S_N| = \frac{n(n+1)}{2}$. A search over consecutive non-splitting portfolios can be performed in linear time. If a singleton subset $\{ i \} \subseteq N$ is splitting (i.e.\ if $1 < i < n$), then we call the pair $\{ \{i\}, N\backslash_{\{i\}} \}$ a singleton splitting pair.
 \section{Background}
 
 If the object is to optimize \eqref{eq0} over partitions of strict size $T$, these results are not of much help. There is no guarantee that a strictly maximal partition exists, and the search space cannot be reduced. If the object is to find a consecutive partition of strict size $S \le T$, we are in worse shape; all partitions of size $T$ must be examined. If the optimizing partition is consecutive, we're done. Otherwise, we must repeat the process for size $T$ - 1. 
