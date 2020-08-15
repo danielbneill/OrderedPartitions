@@ -26,6 +26,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{sublemma}{Lemma}[lemma]
+\newtheorem{prop}{Proposition}
 
 \newtheoremstyle{case}{}{}{}{}{}{:}{ }{}
 \theoremstyle{case}
@@ -194,15 +195,24 @@ In fact for any pair $\left( N, T\right)$ a maximally-degenerate collapsing exis
 
 \section{Main Results}
 {\parindent0pt % disables indentation for all the text between { and }
-We now state our main results.
+We now state our main results.\\
 }% restore indentation
-\newtheorem{prop} \label{thm0}
-\textbf{Proposition} Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
+\begin{prop} \label{thm0}
+Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
 \begin{enumerate}[(i)]
 	\item $\mathcal{E} = \{P_\pi$ : $\pi \in U_N$\}
 	\item $\underline{\mathcal{E}} \supseteq \{P_\pi$ : $\pi \in U_N\setminus\left\lbrace p_{\emptyset}, p_N \right\rbrace$\}, with the possible addition of singleton splitting pairs.
 \end{enumerate}
 In particular $\underline{\mathcal{E}}$ may contain splitting elements while $\mathcal{E}$ never does.
+\end{prop}
+\begin{proof}
+Let $P ^* = (x^*, y^*) \in \mathcal{E}$. Then there is an affine $a(x,y0 = Ax + By + C$ satisfying $a(x^*, y^*) = 0$, $a(x,y) < 0$ for all $(x,y) \in \mathcal{C} \Bigr\rvert_{\{ p^* \}}$.  We have
+\begin{align} \label{}
+Ax^* + By^* = \min_{(x,y) \in \mathcal{C}} Ax + By = \min_{\pi \subseteq N} \sum_{i \in \pi} (Ax_i + By_i).
+\end{align}
+The set $S^* = \{ i \in N: Ax_i + By_i \leq 0 \}$ clearly minimzes \ref{eq3}. We will show that $S^*, N\backslash_S^*$ are both consecutive. \\
+
+\end{proof}
 
 \vspace{6pt} 
 
