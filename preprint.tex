@@ -206,26 +206,111 @@ Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mat
 In particular $\underline{\mathcal{E}}$ may contain splitting elements while $\mathcal{E}$ never does.
 \end{prop}
 \begin{proof}
-Let $P ^* = (x^*, y^*) \in \mathcal{E}$. Then there is an affine $a(x,y0 = Ax + By + C$ satisfying $a(x^*, y^*) = 0$, $a(x,y) < 0$ for all $(x,y) \in \mathcal{C} \Bigr\rvert_{\{ p^* \}}$.  We have
-\begin{align} \label{}
+Let $p ^* = (x^*, y^*) \in \mathcal{E}$. Then there is an affine $a\left(x,y\right) = Ax + By + C$ satisfying $a(x^*, y^*) = 0$, $a(x,y) < 0$ for all $(x,y) \in \mathcal{C} \setminus p^*$.  We have
+\begin{align}
 Ax^* + By^* = \min_{(x,y) \in \mathcal{C}} Ax + By = \min_{\pi \subseteq N} \sum_{i \in \pi} (Ax_i + By_i).
 \end{align}
-The set $S^* = \{ i \in N: Ax_i + By_i \leq 0 \}$ clearly minimzes \ref{eq3}. We will show that $S^*, N\backslash_S^*$ are both consecutive. \\
+The set $S^* = \{ i \in N: Ax_i + By_i \leq 0 \}$ minimizes the last expression. We will show that $S^*, N\setminus S^*$ are both consecutive. If $A = 0$ then $B \neq 0$ and $S^* =\left\lbrace i \in N \colon y_i \leq 0 \right\rbrace = \emptyset$, so both $S^*$, $N\setminus S^*$ are consecutive. If $ A \neq 0$ then $S^* = \left\lbrace i \in N \colon \frac{x_i}{y_i} \leq \frac{-B}{A} \right\rbrace$ or $S^* = \left\lbrace i \in N \colon \frac{x_i}{y_i} \geq \frac{-B}{A} \right\rbrace$, depending on the sign of $A$, as $y_i > 0$ for all $i$. In either case, $S^*, N\setminus S^*$ are both consecutive. So $\mathcal{E} \subseteq U_N$.
+Now let $p \in \left\lbrace p_{\pi} \colon \pi \in U_N\right\rbrace$. Then $\pi = \left\lbrace j.j+1, \dots, k \right\rbrace$, for some $1 \leq j \leq k \leq n$, with either $j = 1$or $k = n$, or both. Assume $j = 1$, the remaining cases are similar, and write $p = \left( \sum_{j=1}^k x_j, \sum_{j=1}^k y_j\right)$. For $1 \leq i \leq n$ define $C_x^i = \sum_{j=1}^i x_i$, $C_y^i = \sum_{j=1}^i y_i$, $C_x^{-i} = \sum_{j=i}^n x_i$, $C_y^{-i} = \sum_{j=i}^n y_i$, and define the affine transformations
+\begin{align*}
+l_k^1 &= \left( -y_k, x_k\right) \cdot \left( x,y\right) - \left( -y_kC_x^{k-1} + x_kC_y^{k-1}\right) \\
+l_k^2 &= \left( -y_{k+1}, x_{k+1}\right) \cdot \left( x,y\right) - \left( -y_{k+1}C_x^k + x_{k+1}C_y^k\right)
+\end{align*}
+with $l_k^2\left( x,y\right) = \left( -y_n, x_n\right) \cdot \left( x,y\right)$ if $k = n$. Note that $l_k^1\left( p\right) = l_k^2\left( p\right) = 0$. In particular $l_k^1$ is identically zero on the segment from $\left( \sum_1^{k-1} x_i, \sum_1^{k-1}y_i\right)$ to $\left( \sum_1^k x_i, \sum_1^k y_i\right)$, and $l_k^2$ is identically zero on the segment from $\left( \sum_1^k x_i, \sum_1^k y_i\right)$ to $\left( \sum_1^{k+1} x_i, \sum_1^{k+1}y_i\right)$. We will show that $l_k^1 \leq 0$, $l_k^2 \leq 0$ on $\mathcal{C}$, so that $p$ being the intersection of two 1-dimensional facets, is an extreme point of $\mathcal{C}$. By the first part of the proof, it is sufficient to show that the transformations are negative on $U_N$. 
 
+\begin{lemma}
+For $\frac{x_1}{y_1} \leq \frac{x_2}{y_2} \leq \dots \leq \frac{x_k}{y_k}$, $y_i > 0$, for all $i$,
+\begin{align*}
+\frac{x_1}{y_1} \leq \frac{x_1 + \dots + x_k}{y_1 + \dots + y_k} \leq \frac{x_k}{y_k}
+\end{align*}
+\end{lemma}
+\begin{proof}
+The proof is by induction on $k$. For $k=2$, using the fact that $x_2y_1 - x_1y_2 \geq 0$, we have
+\begin{align*}
+\frac{x_1+x_2}{y_1+y_2} - \frac{x_1}{y_1} = \frac{x_1y_2 - x_2y_1}{y_1\left( y_1 + y_2\right)} &\geq 0 \\
+\frac{x_1 + x_2}{y_1 + y_2} - \frac{x_2}{y_2} = \frac{x_1y_2 - x_2y_1}{y_2\left( y_1 + y_2\right)} &\leq 0
+\end{align*}
+For $k > 2$, two applications of the above case gives
+\[
+\frac{x_1}{y_1} \leq \frac{\sum_1^{k-1} x_i}{\sum_1^{k-1} y_i} \leq \frac{\sum_1^k x_k}{\sum_1^k y_i} \leq \frac{x_k}{y_k}. 
+\]
+\end{proof}
+
+Thus for $k < l \leq n$,
+\begin{align*}
+l_k^1\left( C_x^l, C_y^l\right) &= -y_kC_x^l + x_kC_y^l + y_kC_x^{k-1} - x_kC_y^{k-1} \\
+&= \left( \frac{x_k}{y_k} - \frac{\sum_k^l x_i}{\sum_k^l y_i}\right)y_k\left( \sum_k^l y_i\right) \\
+&\leq 0
+\end{align*}
+and
+\begin{align*}
+l_k^2\left(C_x^l, C_y^l\right) &= -y_{k+1}C_x^l + x_{k+1}C_y^l + y_{k+1}C_x^k - x_{k+1}C_y^k \\
+&= \left( \frac{x_{k+1}}{y_{k+1}} - \frac{\sum_{k+1}^l x_i}{\sum_{k+1}^l y_i}\right)y_{k+1}\left( \sum_{k+1}^l y_i\right) \\
+&\leq 0
+\end{align*}
+Similarly, for $1 \leq l < k$,
+\begin{align*}
+l_k^1\left( C_x^l, C_y^l\right) &= \left( \frac{\sum_{l+1}^{k-1} x_i}{\sum_{l+1}^{k-1} y_i} - \frac{x_k}{y_k}\right)y_k\left( \sum_{l+1}^{k-1}\right) \\
+&\leq \left( \frac{\sum_{l+1}^{k-1} x_i}{\sum_{l+1}^{k-1} y_i} - \frac{x_{k-1}}{y_{k-1}}\right)y_k\left( \sum_{l+1}^{k-1}\right) \\
+&\leq 0
+\end{align*}
+and 
+\begin{align*}
+l_k^2\left(C_x^l, C_y^l\right) &= \left( \frac{\sum_{l+1}^k x_i}{\sum_{l+1}^k y_i} - \frac{x_{k+1}}{y_{k+1}}\right) \\
+&\leq \left( \frac{\sum_{l+1}^k x_i}{\sum_{l+1}^k y_i} - \frac{x_k}{y_k}\right) \\
+&\leq 0
+\end{align*}
+The reasoning is similar for $p \in \left\lbrace \pi \in U_N\right\rbrace$ for $\pi$ of the form $\left\lbrace j, \dots, n\right\rbrace$, for $j > 1$. The analagouse transformations are given by
+\begin{align*}
+l_k^1 &= \left( y_k, -x_k\right) \cdot \left( x,y\right) - \left( y_kC_x^{-\left(k+1\right)} - x_kC_y^{-\left( k+1\right)}\right) \\
+l_k^2 &= \left( y_{k+1}, -x_{k+1}\right) \cdot \left( x,y\right) - \left( y_{k+1}C_x^{-k} + x_{k+1}C_y^{-k}\right)
+\end{align*}
+Thus $U_N \subseteq \mathcal{E}$, and the proof of part i) is complete.
+For $p = \left( x^*, y^* \right) \in \underline{\mathcal{E}}$, we can again find a separating affine function $l\left( x,y\right) = Ax + By + C$, satisfying
+\begin{align} \label{eq6}
+Ax^* + By^* =\min_{S \in N, S \neq \emptyset, S \neq N} \sum_{i \in S} \left( Ax_i + By_i\right)
+\end{align}
+Let $S^* = \argmin{S \in N} \sum_{i \in S} \left( Ax_i + By_i\right)$, which by the proof above is of the form $p_{\pi}$, for some $\pi \in C_N$. If $\pi = \left\lbrace j,j+1, \dots, k\right\rbrace$ has cardinality $m$, with $1 \leq m M n$, then it also minimizes $\ref{eq6}$, is consecutive, non-splitting, and the proof is done. Otherwise there are 2 cases.
+\begin{case}
+$\pi = \emptyset$. Since $\pi = \left\lbrace i \in N \colon Ax_i + By_i \leq 0 \right\rbrace$, we have $Ax + By > 0$ for $\left( x,y\right) \in \mathcal{C}$. So $\ref{eq6}$ is minimized by selecting $p_{\pi} = \left\lbrace i^*\right\rbrace$, for $i^* = \argmin_i \left( Ax_i + By_i\right)$. This $\pi$ is a singleton, and $\pi$, $N\setminus \pi$ is a singleton consecutive splitting pair.
+\end{case}
+\begin{case}
+$\pi = N$. Then by similar reasoning, $Ax_i + By_i < 0$ for $\left( x,y\right) \in \mathcal{C}$. Then $\ref{eq6}$ is minimized by removing a single element from $N$; take $\pi = N\setminus \left\lbrace i^*\right\rbrace$, where $i^* = argmax_{i \in N} \left( Ax_i + By_i\right)$. Again $\pi$, $N\setminus \pi$ is a singleton consecutive splitting pair.
+\end{case}
+In addition note that $\pi \in \underline{\mathcal{E}}$ implies $N\setminus \pi \in \mathcal{E}$. Finally the same argument used in the first part for $\mathcal{E}$ shows that $\left\lbrace p_{\pi} \colon \pi \in U_N\right\rbrace \subseteq \underline{\mathcal{E}}$. Thus we have completed the classification of extreme points for $\underline{\mathcal{C}}$ as desired.
 \end{proof}
 
 \vspace{6pt} 
+The vertices of $\mathcal{C}$ can be found by a purely geometric argument, the basis of which is a ``sweeping`` argument that lies at the root of a Graham scan $\cite{article3}$ used to find the vertices of a convex hull of a point set in $\mathbb{R}^2$. Writing $\frac{x_1}{y_1} \leq \dots \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \frac{x_n}{y_n}$, we have 
+\begin{align} \label{eq7}
+\frac{y_q}{x_q} \leq \dots \frac{y_1}{x_1} \leq 0 \leq \frac{y_n}{x_n} \leq \dots \leq \frac{y_{q+1}}{x_{q+1}}.
+\end{align} 
+In addition, if $y_1, y_2 > 0$, and $x_1$, $x_2$ are of the same sign, then $\frac{y_2}{x_2} \leq \frac{y_1+y_2}{x_1+x_2} \leq \frac{y_1}{x_2}.$ By repeated application it follows that
+\begin{align} \label{eq8}
+\frac{y_M}{x_M} \leq \frac{\sum_{i \in S}y_i}{\sum_{i \in S}x_i} \leq \frac{y_m}{x_m}
+\end{align}
+for any $S \subseteq N$, where $m = \min S$, $M = \max S$. 
 
+A geometric description of the convex hull follows. Since all $y_i > 0$, the point $p_{\emptyset} = \left(0,0\right)$ has the miminal y-coordinate in the set $\mathcal{C}$. Starting with this point, and sweeping with a ray from the negative x-axis clockwise to the positive x-axis, it follows that the first point of the form $p_{\left\lbrace i \colon i \in N\right\rbrace}$ point encountered during the sweep is $p_{\left\lbrace 1 \right\rbrace}$, from $\ref{eq7}$. In fact the points $p_{\left\lbrace i \right\rbrace}$, $i =1, \dots q$ will be met in order. From the relation $\frac{y_2}{x_2} \leq \frac{y_1+y_2}{x_1+x_2} \leq \frac{y_1}{x_2}$ it follows that the point $p_{\left\lbrace 1,2 \right\rbrace}$ subtends an angle with the origin that is between that formed by $p_{\left\lbrace 1 \right\rbrace}$ and $p_{\left\lbrace 2 \right\rbrace}$, although its y-coordinate is larger than both. We can also place the point $p_{\left\lbrace 2,3 \right\rbrace}$ in this way, it subtends a smaller angle (as measured from the positive x-axis) than $p_{\left\lbrace 1,2 \right\rbrace}$. 
+
+A geometric description of the convex hull follows. Since all $y_i > 0$, the point $p_{\emptyset} = \left(0,0\right)$ has the miminal y-coordinate in the set $\mathcal{C}$. Stating with this point, and sweeping with a ray from the negative x-axis clockwise to the positive x-axis, it follows that the first point of the form $p_{\left\lbrace i \colon i \in N\right\rbrace}$ point encountered during the sweep is $p_{\left\lbrace 1 \right\rbrace}$, from $\ref{eq7}$. That this is the first vertex of any type encountered can be seen by $\ref{eq8}$. Start now with $p_{\left\lbrace 1\right(\rbrace}$ and continue the sweep. Since the point $p_{\left\lbrace 1,2 \right\rbrace}$ has the largest y-coordinate of any point in the cone between $p_{\left\lbrace 1 \right\rbrace}$ and $p_{\left\lbrace 2 \right\rbrace}$, it is part of the convex hull. Similarly, since $p_{\left\lbrace 1,2,3 \right\rbrace}$ has the largest y-coordinate of any point in the cone between $p_{\left\lbrace 1,2 \right\rbrace}$ and $p_{\left\lbrace 2,3 \right\rbrace}$, it becomes the next vertex. The argument can be generalized to obtain a listing of the vertices of $\mathcal{C}$ - $\left\lbrace p_{\left\lbrace 1\right\rbrace}, p_{\left\lbrace 1,2 \right\rbrace}, \dots, p_{\left\lbrace 1, \dots, n\right\rbrace}, p_{\left\lbrace 2, \dots, n\right\rbrace}, p_{\left\lbrace 3, \dots, n\right\rbrace}, \dots, p_{\left\lbrace n\right\rbrace}\right\rbrace$. 
+
+The process to determine the vertices of the convex hull of $\underline{\mathcal{C}}$ is similar. From $cite{thm0}$, all points determined above are obtained as vertices, in order, with the exception of $p_{\emptyset} = \left( 0,0\right)$, $p_N = \left( \sum_{1}^n x_i, \sum_{1}^n y_i\right)$. After removing these, the additional splitting singleton pairs are considered. Since these pairs are indexed by $1 < i < n$, 
 
 \begin{thm} \label{thm1}
 Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition of non-splitting subsets of size $T$ iff $(\gamma, \tau) = (2,1)$.
 \end{thm}
+\begin{proof}
+Trivial.
+\end{proof}
 
 \begin{thm} \label{thm2}
-$\mathcal{D}$, $F$, $G$ as above. If $F$ is quasiconvex, then there is either a strongly consecutive maximal non-splitting partition, or a consecutive singleton splitting maximal partition.
+Let $\mathcal{D}$, $F$, $G$ be as above, with $\tau = 1$, and $F$ convex in all of its variables. Then there is a strongly maximally ordered singleton splitting partition.
 \end{thm}
 
-The notion of 
+\begin{thm} \label{thm2} 
+$\mathcal{D}$, $F$, $G$ as above. If $F$ is quasiconvex, then there is either a strongly consecutive maximal non-splitting partition, or a consecutive singleton splitting maximal partition.
+\end{thm}
 
 The brute-force optimization in $\ref{eq1}$ has cost that grows exponentially with $n$. A constrained optimization over the set of all size $T$ ordered partitions has cost that grows as $\binom{n-1}{T-1}$, i.e., as a polynomail of degree $T-1$. In particular, the $T = 2$ problem grows linearly in $n$. There is an improvement that can be made to this approach.
 
@@ -750,6 +835,8 @@ In this case it is seems necessary to remove the maximal element from $X_1$ to g
 	\bibitem{article 2} M. Kulldorff. A spatial scan statistic. {\em Communications in Statistics: Theory and Methods}, 26(6), 1997: 1481–1496
 
 	\bibitem{article3} M. Kulldorff and N. Nagarwalla. Spatial disease clusters: detection and inference. {\em Statistics in Medicine}, 14, 1995: 799–810
+	
+	\bibitem{article4} Graham, R.L. (1972). "An Efficient Algorithm for Determining the Convex Hull of a Finite Planar Set" (PDF). Information Processing Letters. 1 (4): 132–133. doi:10.1016/0020-0190(72)90045-2.	
 
 \end{thebibliography}
 

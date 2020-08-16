@@ -10,7 +10,7 @@ import matplotlib.pyplot as plot
 from scipy.spatial import ConvexHull, Delaunay
 
 
-SEED = 555
+SEED = 556
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -549,16 +549,19 @@ if __name__ == '__main__':
         # if np.argmax(all_scores) == (len(all_scores)-1):            
         # if min(all_sym_scores, key=lambda x:x[1])[0] != len(a0):
         # if max(all_sym_scores, key=lambda x:x[1])[0] == len(all_sym_scores):
-        #     vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
-        #     import pdb
-        #     pdb.set_trace()
+        if True:
+            optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+            if len(set(vert_const_sym).difference(set(vert_ext_sym))) == 0:
+                vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
+        import pdb
+        pdb.set_trace()
 
         # Condition B, to test when T >= 3
-        optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]        
-        if not all((any(set(s).issubset(set(ss)) for ss in optim_all[PARTITION_SIZE-2][1]) for s in optim_all[PARTITION_SIZE-1][1])):
-            vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
-            import pdb
-            pdb.set_trace()
+        # optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]        
+        # if not all((any(set(s).issubset(set(ss)) for ss in optim_all[PARTITION_SIZE-2][1]) for s in optim_all[PARTITION_SIZE-1][1])):
+        #     vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
+        #     import pdb
+        #     pdb.set_trace()
         
 
         try:
@@ -817,6 +820,35 @@ if (False):
     rng = np.random.RandomState(552)
     while True:
         NUM_POINTS = rng.choice(10)+2
+        upper_limit_a = rng.uniform(low=-1000., high=1000.)
+        upper_limit_b = rng.uniform(low=0., high=1000.)
+        a0 = rng.uniform(low=0.000001, high=upper_limit_a, size=NUM_POINTS)
+        b0 = rng.uniform(low=0.000001, high=upper_limit_b, size=NUM_POINTS)
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]
+
+        lhs1 = (a0[0]/b0[0])
+        lhs2 = (a0[-1]/b0[-1])
+        rhs = np.sum(a0)/np.sum(b0)
+
+        # print("( ",lhs,", ",rhs," )")
+        
+        if (lhs1 > rhs) or (lhs2 < rhs):
+            print('FOUND')
+            print("( ",lhs,", ",rhs," )")
+
+if (False):
+    import numpy as np
+
+    count = 0
+    
+    rng = np.random.RandomState(552)
+    while True:
+        NUM_POINTS = 5
+        k = 3
+        l = 4
         upper_limit_a = rng.uniform(low=0., high=1000.)
         upper_limit_b = rng.uniform(low=0., high=1000.)
         a0 = rng.uniform(low=0.000001, high=upper_limit_a, size=NUM_POINTS)
@@ -826,20 +858,24 @@ if (False):
         a0 = a0[sortind]
         b0 = b0[sortind]
 
-        lhs = 1*(a0[-1]/b0[-1])
-        rhs = np.sum(a0)/np.sum(b0)
+        xk = a0[k]
+        yk = b0[k]
+        Cxl = np.sum(a0[:l])
+        Cyl = np.sum(b0[:l])
+        Cxkm1 = np.sum(a0[:(k-1)])
+        Cykm1 = np.sum(b0[:(k-1)])
 
-        # print("( ",lhs,", ",rhs," )")
-        
-        if lhs < rhs:
-            print('FOUND')
-            print("( ",lhs,", ",rhs," )")
+        s1 = ((xk/yk)-(Cxl/Cyl))*yk*Cyl
+        s2 = ((xk/yk)-(Cxkm1/Cykm1))*yk*Cykm1
+        if (s1-s2)>0:
+            print(a0)
+            print(b0)
                     
 if (False):
     import numpy as np
 
     count = 0
-    gamma = 1.0
+    gamma = 4.0
 
     def F(a,b,gamma):
         return np.sum(a)**gamma/np.sum(b)
@@ -862,6 +898,47 @@ if (False):
 
         if lhs > rhs:
             print('FOUND')
+            print("( ",lhs,", ",rhs," )")
+
+        count += 1
+        if not count%1000000:
+            print('count: {}'.format(count))
+
+if (False):
+    import numpy as np
+
+    count = 0
+    gamma = 4.0
+
+    def F(a,b,gamma):
+        return np.sum(a)**gamma/np.sum(b)
+
+    # def F(a,b,gamma):
+    #     return np.log(np.sum(a))/np.sum(b)
+    
+    rng = np.random.RandomState(87)
+    while True:
+        NUM_POINTS = 5
+        LEN_SUBSET = 3
+        subind = rng.choice(NUM_POINTS, LEN_SUBSET, replace=False)
+        minind = min(subind)
+        maxind = max(subind)
+        a0 = rng.uniform(low=-100., high=0., size=NUM_POINTS)
+        b0 = rng.uniform(low=0., high=1., size=NUM_POINTS)
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]
+
+        lhs = b0[maxind]/a0[maxind]
+        rhs = b0[minind]/a0[minind]
+        mid = np.sum(b0[subind])/np.sum(a0[subind])
+
+        if (lhs > mid) or (mid > rhs):
+            print('FOUND')
+            print(a0)
+            print(b0)
+            print(subind)
             print("( ",lhs,", ",rhs," )")
 
         count += 1
