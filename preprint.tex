@@ -70,7 +70,7 @@ A priority function is a function $G\colon \mathbf{R} \times \mathbf{R}^{+} \to 
 The elements $x_i$ and $y_i$ can be thought of as contributing to a score for the record $R_{\left( i\right)}$, possibly through an excess ratio $\frac{x_i}{y_i}$, where $y_i$ represents a baseline, $x_i$ a realization, or as a normalized central moment $\frac{x_i^{\tau}}{y_i}$, weighted distance to a centroid, etc. In the area of $\textit{spatial scan}$ statistics, each record gives rise to a spatial scan statistic $\cite{article3}$ it is used by epidemiologists to detect and track ``hot spots`` or outbreaks of disease, based on diagnoses over a baseline, often assumed distributed as Poisson or Gaussian, although parametric considerations don't enter into our analysis. The notion of frequency, or realizations over a baseline motivate the properties of a score function.
 
 \begin{definition}
-A score function is a continuous function $F\colon \Omega \subseteq \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that is increasing in $x$ and decreasing in $y$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
+A score function is a continuous function $F\colon \Omega \subseteq \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ that is increasing in $x$ and decreasing in $y$, normalized so that $F\left( 0,0\right) = 0$. If F is of the form $F(x,y) = \frac{x^\gamma}{y}$ for some $\gamma > 0$, then F is a power score function. 
 \end{definition}
 
 Several additional properties have been associated with score functions, namely quasi-convexity, marginal convexity in the individual variables, or a marginal contribution constraint $\frac{x}{y} \frac{\partial F}{\partial x} + \frac{\partial F}{\partial y} \geq 0$ related to submodularity. In particular we do not assume smoothness beyond continuity, nor convexity, unless explicitly stated.
@@ -295,13 +295,153 @@ A geometric description of the convex hull follows. Since all $y_i > 0$, the poi
 
 A geometric description of the convex hull follows. Since all $y_i > 0$, the point $p_{\emptyset} = \left(0,0\right)$ has the miminal y-coordinate in the set $\mathcal{C}$. Stating with this point, and sweeping with a ray from the negative x-axis clockwise to the positive x-axis, it follows that the first point of the form $p_{\left\lbrace i \colon i \in N\right\rbrace}$ point encountered during the sweep is $p_{\left\lbrace 1 \right\rbrace}$, from $\ref{eq7}$. That this is the first vertex of any type encountered can be seen by $\ref{eq8}$. Start now with $p_{\left\lbrace 1\right(\rbrace}$ and continue the sweep. Since the point $p_{\left\lbrace 1,2 \right\rbrace}$ has the largest y-coordinate of any point in the cone between $p_{\left\lbrace 1 \right\rbrace}$ and $p_{\left\lbrace 2 \right\rbrace}$, it is part of the convex hull. Similarly, since $p_{\left\lbrace 1,2,3 \right\rbrace}$ has the largest y-coordinate of any point in the cone between $p_{\left\lbrace 1,2 \right\rbrace}$ and $p_{\left\lbrace 2,3 \right\rbrace}$, it becomes the next vertex. The argument can be generalized to obtain a listing of the vertices of $\mathcal{C}$ - $\left\lbrace p_{\left\lbrace 1\right\rbrace}, p_{\left\lbrace 1,2 \right\rbrace}, \dots, p_{\left\lbrace 1, \dots, n\right\rbrace}, p_{\left\lbrace 2, \dots, n\right\rbrace}, p_{\left\lbrace 3, \dots, n\right\rbrace}, \dots, p_{\left\lbrace n\right\rbrace}\right\rbrace$. 
 
-The process to determine the vertices of the convex hull of $\underline{\mathcal{C}}$ is similar. From $cite{thm0}$, all points determined above are obtained as vertices, in order, with the exception of $p_{\emptyset} = \left( 0,0\right)$, $p_N = \left( \sum_{1}^n x_i, \sum_{1}^n y_i\right)$. After removing these, the additional splitting singleton pairs are considered. Since these pairs are indexed by $1 < i < n$, 
+The process to determine the vertices of the convex hull of $\underline{\mathcal{C}}$ is similar. From $\ref{thm0}$, all points determined above are obtained as vertices, in order, with the exception of $p_{\emptyset} = \left( 0,0\right)$, $p_N = \left( \sum_{1}^n x_i, \sum_{1}^n y_i\right)$. After removing these, the additional splitting singleton pairs are considered as some or all may be vertices. Since these pairs are indexed by $1 < i < n$, they can be listed and tested successively. If any one is a vertex, it will lie between $p_{\left\lbrace n\right\rbrace}$ and $p_{\left\lbrace 1\right\rbrace}$ when the vertices of $\mathcal{C}$ are traversed in a clockwise direction. If any lies below the segment joining these two vertices, then there is a splitting pair in $\underline{\mathcal{E}}$. If more than one does, we can use the familiar right-turn rule to determine which of these are vertices: for $p^1$, $p^2$, $p^3$ with increasing x-coordinates, $p^2$ is in the lower convex hull if and only if
+\[
+\begin{vmatrix} \label{eq8}
+p_x^1 & p_y^1 & 1\\
+p_x^2 & p_y^2 & 1\\
+p_x^3 & p_y^3 & 1\\
+\end{vmatrix} > 0.
+\]
+Otherwise $p^2 \in int\left( \underline{\mathcal{C}}\right)$. We can use Algorithm 1 to determine all extreme points for $\underline{\mathcal{C}}$, given a configuration $X$, $Y$.
+
+\begin{algorithm}
+\caption{Extreme Point Algorithm for Cosntrained Partition Polytope }
+\begin{algorithmic}[1]
+\State $\underline{\mathcal{E}} \leftarrow \left\lbrace p_{\pi} \colon \pi \in U_N\right\rbrace$
+\State $L \leftarrow \left\lbrace p_{\pi} \colon \pi = \left\lbrace i\right\rbrace, 1 \leq i \leq n\right\rbrace$
+\State sort $L$ by decreasing x-coordinate
+\State $s[0] \leftarrow \textit{pop}\left( L\right)$, $s[1] \leftarrow \textit{pop}\left( L\right)$
+\For{$i = \textit{size}\left( L\right) \textit{step -1}$}
+\State $p_i = \textit{pop}\left( L\right)$
+\State append $p_i$ to $s$
+\State $p^1$, $p^2$, $p^3 \leftarrow$ last 3 points of $s$
+\If{$\begin{vmatrix}
+p_x^1 & p_y^1 & 1\\
+p_x^2 & p_y^2 & 1\\
+p_x^3 & p_y^3 & 1\\
+\end{vmatrix} > 0.$}
+\State remove middle of last 3 points from $s$
+\EndIf
+\EndFor
+\State $S \leftarrow S \cup \left\lbrace N\setminus \pi \colon \pi \in S\right\rbrace$
+\State $\underline{\mathcal{E}} \leftarrow \underline{\mathcal{E}} \cup S$\
+\end{algorithmic}
+\end{algorithm}
+
+Introduce a symmetric score function $\overline{F}\colon \Omega \subseteq \mathbf{R} \times \mathbf{R}^{+} \to \mathbf{R}$ by
+\[   
+\overline{F}\left( x,y\right) = \left\{
+\begin{array}{ll}
+      F\left( x,y\right) + F\left( C_x-x, C_y-y\right), & \left( x,y\right) \in \Omega \setminus{\left\lbrace \left( 0,0\right), \left( C_x, C_y\right) \right\rbrace}  \\
+      F\left( x,y\right), & \left( x,y\right) \in \left\lbrace \left( 0,0\right), \left( C_x, C_y\right) \right\rbrace  \\
+\end{array} 
+\right. 
+\]
+where $C_x = \sum_1^n x_i$, $C_y = \sum_1^n y_i$. Since $F\left( 0,0\right) = 0$, $\overline{F}$ is continuous on $\Omega \subseteq \mathbf{R} \times \mathbf{R}^{+}$. In addition the convexity, and quasiconvexity of $\overline{F}$ on its domain is inherited from the corresponding properties of $F$. 
+
+\begin{prop}
+If $\argmax_{\left( x,y\right) \in \underline{\mathcal{C}}} \overline{F}\left( x,y\right) \in S_N$, then $p_N = \argmax_{\left( x,y\right) \in \mathcal{C}} \overline{F}$, and all of the $x_i$ are of the same sign.
+\end{prop}
+\begin{proof}
+Let $p = \argmax_{\left( x,y\right)} \overline{F}\left( x,y\right)$, where $p$ is consecutive splitting in $N$. Let $\hat{p} = \argmax_{\left( x,y,\right) \in \mathcal{C}} \overline{F}\left( x,y\right)$. Since $\overline{F}$ is convex on $\mathcal{C}$, $\hat{p} \in \mathcal{E}$. Since $\mathcal{E} \subseteq \underline{\mathcal{E}}$, $\mathcal{C} \subseteq \underline{\mathcal{C}}$, and $\overline{F}\left( \hat{p}\right) \geq \overline{F}\left( p\right)$, $\hat{P}$ cannot lie in $\underline{\mathcal{E}}$. The only elements in $\mathcal{E}\setminus \underline{\mathcal{E}}$ are $\left\lbrace p_{\emptyset}, p_{N}\right\rbrace$, and since $\overline{F}\left( 0,0\right) = \overline{F}\left( p_N\right)$, the first part follows. Finally, if $\overline{F}$ is maximaixed at $p_N$ and there is a $1 \leq q < n$ with $\frac{x_1}{y_1} \leq \dots \leq \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \leq \frac{x_n}{y_n}$, then by monotonicity of $F$ in $x$, $y$, we have $F\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) \geq F\left( p_N\right)$, hence $\overline{F}\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) > \overline{F}\left( p_N\right) = F\left( p_N\right)$, unless $q = 0$ or $q = n$, in which case the inequality is not strict. So we must have either $q = 0$ or $q = n$, and all of the $x_i$ of the same sign.
+\end{proof}
+
 
 \begin{thm} \label{thm1}
 Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition of non-splitting subsets of size $T$ iff $(\gamma, \tau) = (2,1)$.
 \end{thm}
 \begin{proof}
-Trivial.
+Let $\left( \gamma, \tau\right) = \left( 2,1\right)$. The proof proceeds by induction on $T$. For $T=2$ define $\overline{F}$ as above. $\ref{eq0}$ then becomes $M = \max_{\left( x,y\right) \in \underline{\mathcal{C}}} \overline{F}\left( x,y,\right)$, which is solved at $p_{\pi}$, for $\pi$, $N\setminus \pi$ consecutive subsets of $N$, unless 
+\begin{align} \label{eq8}
+p_N = argmax_{\left( x,y\right) \in \mathcal{C}} \overline{R}\left( x,y\right)
+\end{align} by Proposition 1. But for any $x_i, y_i \in \mathbf{R}$, $y_i > 0$, $i = 1,2$, we have
+\begin{align*}
+\left( \sqrt{\frac{y_2}{y_1}}x_1 - \sqrt{\frac{y_1}{y_2}x_2}\right)^2 \geq 0 &\implies \left( x_1+x_2\right)^2 \leq x_1^2\left( \frac{y_1+y_2}{y_1}\right) + x_2^2\left( \frac{y_1+y_2}{y_2}\right) \geq 0 \\
+&\implies \frac{\left( x_1+x_2\right)^2}{y_1+y_2} \leq \frac{x_1^2}{y_1} + \frac{x_2^2}{y_2},
+\end{align*}
+so that for $\gamma = 2$, $F$ satisifies a subadditive property in both variables. In particular, $p_N$ cannot maximize $\ref{eq8}$ above ($\overline{F}$ is in fact $textit{minimized}$ there), and the solution is a strongly consecutive partition $\pi$, $N\setminus \pi$. 
+
+Now let $T >= 3$. Define, for any subset $\pi \subseteq N$, $d\left(\pi\right) = \max \pi - \min \pi$. Let $\mathcal{P} = \left\lbrace \pi_1, \dots, \pi_T\right\rbrace$ be an optimal size $T$ partition that maximizes $\ref{eq1}$ which also minimizes $\sum_{j=1}^T d\left(\pi_j\right)$ among all optimal size $T$ partitions. If not all $\pi_j$ are consecutive, then we can find $\pi_i$, $\pi_j$ and $k \in \pi_j$ with $\min \pi_i < k < \max \pi_j$. Note that $\min\left( \max \pi_i, \max \pi_j\right) \geq k$,  and $\max\left( \min \pi_i, \min \pi_j \right) \leq k$, so that 
+\[
+\min\left( \max \pi_i, \max \pi_j\right) - \max\left( \min \pi_i, \min \pi_j \right) \geq 0.
+\] 
+By the first part, we can find an optimal partition of $\pi_i \cup \pi_j$ into nonempty consecutive sets $P_i, P_j$ with respect to $\pi_i \cup \pi_j$. Then $d\left( P_i\right) + d\left( P_j\right) \leq \max\left( \max \pi_i, \max \pi_j\right) - \min\left( \min \pi_i, \min \pi_j\right) - 1$, so
+\begin{align*}
+d\left(\pi_i\right) + d\left( \pi_j\right) &= \max \pi_i - \min \pi_i + \max \pi_j - \min \pi_j \\
+&= \max\left(\max \pi_i, \max \pi_j\right) + \min\left( \max \pi_i, \max \pi_j\right) \\
+&- \min\left( \min \pi_i, \min \pi_j \right) - \max\left( \min \pi_i, \min \pi_j\right) \\
+&\geq d\left(P_i\right) + d\left(P_j\right) + 1,
+\end{align*}
+a contradiction. So all of the $\pi_j$ are consecutive, nonempty.
+
+For the necessity, assume $\tau = 1$ and choose $\gamma = 2 + \epsilon$, for $\epsilon > 0$. Set
+\[
+X = \left[ 1-\delta, \delta, 1 + \delta\right], Y = \left[ 1, \delta, 1\right]
+\] 
+for some $\delta > 0$. There are 3 partitions of $\left\lbrace 1, 2, 3\right\rbrace$, namely $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$. Only the first 2 are ordered. The scores can be computed
+\begin{align*}
+\text{Score}\left(\mathcal{P}_1\right) & = \left( 1-\delta \right)^\gamma + \frac{\left( 1+2\delta\right)^\gamma}{1+\delta} \\
+\text{Score}\left(\mathcal{P}_2\right) & = \frac{1}{1+\delta} + \left( 1+\delta\right)^\gamma \\
+\text{Score}\left(\mathcal{P}_3\right) & = 2^{1+\epsilon}
+\end{align*}
+The last expression is independent of $\delta$, so can choose $\delta$ small so that the last score dominates.
+For $\gamma = 2 - \epsilon$, $\epsilon > 0$, and the sequences
+\[
+X = \left[ 1, \frac{1}{\delta}, 1\right], Y = \left[ \frac{1}{1+\delta}, \frac{1}{\delta}, \frac{1}{1-\delta}\right]
+\] 
+we have
+\begin{align*}
+\text{Score}\left(\mathcal{P}_1\right) & = \frac{1^\gamma}{\frac{1}{1+\delta}} + \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) }  = \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) } + \left( 1 + \delta \right)\\
+\text{Score}\left(\mathcal{P}_2\right) & = \frac{1^\gamma}{\frac{1}{1-\delta}} + \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)}  = \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)} + \left( 1 - \delta \right)\\
+\text{Score}\left(\mathcal{P}_3\right) & = \frac{\left( 1 + 1\right)^\gamma}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)}  + \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} = \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + 2^{\gamma - 1}\left( 1 - \delta^2\right) 
+\end{align*}
+and letting $\delta \rightarrow 0$ gives the result, as the first summands in each score can be made arbitrarily close to each other.
+
+To extend these examples to larger $\vert \mathcal{D} \vert = M > N$, $S \geq T$, simply add $M-N$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $S \geq T$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $S - T$ of the indices $N+1, \dots, M$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
+\[
+\left( 1-\delta\right)^\gamma + \frac{\delta^\gamma}{\delta} + \left( 1+\delta\right)^\gamma
+\]
+which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\gamma < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\gamma > 0$ and $\left( N, T\right)$. Therefore $\gamma = 2$.
+
+Now let $\gamma = 2$ and set
+\[
+X = \left[ x-\delta, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
+\] 
+for $x, \delta > 0$, and consider the three partitions $\mathcal{P}_i$, $i=1, 2, 3$ as above. We have
+\begin{align*}
+& \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_2\right) \\
+& \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_2\right) = \frac{-\delta^2\left( 2x + \delta\right)}{x\left( x + \delta\right)}
+\end{align*}
+The power priority $G(x,y) = \frac{x^\tau}{y}$ places the priorty on the records:
+\begin{align} \label{eq8}
+\left( G(x_1, y_1), G(x_2, y_2), G(x_3, y_3)\right) = \left( \frac{\left( x - \delta \right)^{\tau}}{x}, \delta^{\tau-1},  \frac{\left( x + \delta \right)^{\tau}}{x}\right).
+\end{align}
+For $\tau > 1$, choosing $x$ large relative to delta gives $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$. So the partitions $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ become $\mathcal{P}_1 = \left\lbrace \left[ 1 \right], \left[ 0, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 1, 2 \right], \left[ 0 \right]\right\rbrace$, maintaining the partition scores above. The maximum score is shared by $\mathcal{P}_1$, $\mathcal{P}_2$, the first being unordered. In order to force $\text{Score}\left(\mathcal{P}_1\right) > \text{Score}\left(\mathcal{P}_2\right)$, we perturb the original $X$, $Y$ by
+\[
+X\left(\epsilon\right) = \left[ x-\delta+\epsilon, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
+\]
+and denoting by $\text{Score}\left(\epsilon \right)\left(\mathcal{P}_i \right)$ the score of the partition $\mathcal{P}_i$ on the records $\left\lbrace \left(x\left(\epsilon\right)_1, y_1\right),\left(x\left(\epsilon\right)_2, y_2\right),\left(x\left(\epsilon\right)_3, y_3\right) \right\rbrace$, it follows that
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \epsilon - \delta\right)^2}{x} - \frac{\left( x - \delta\right)^2}{x} = \frac{2\epsilon\left( x - \delta\right) + \epsilon^2}{x} \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + \epsilon\right)^2}{x + \delta}  - \frac{x^2}{x+\delta}= \frac{2\epsilon x + \epsilon^2}{x+\delta}
+\end{align*}
+Choosing, e.g. $x = 1$, $\delta = .25$ gives 
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{3}{2}\epsilon + \epsilon^2 \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= 2\epsilon + \epsilon^2
+\end{align*}
+By choosing $epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
+For $ 0 \leq \tau < 1$ and the priority function $G(X,Y) = \frac{x^{\tau}}{y}$, choose $x$ large relative to $\delta$ forces the priority ordering $G(x_0, y_0) \leq G(x_2, y_2) \leq G(x_1, y_1)$. So the  highest and second highest records exchange priority ordering, and the partition $\mathcal{P}_1$ stays the same, while $\mathcal{P}_1$ now corresponds to $\left\lbrace \left[ 0, 2\right], \left[ 1\right]\right\rbrace$, $\mathcal{P}_2$ to $\left\lbrace \left[ 0, 1\right], \left[ 2\right]\right\rbrace$, only the last being ordered. Perturbing the original sequences by
+\[
+X\left(\epsilon\right) = \left[ x-\delta, \delta, x + \delta + \epsilon\right], Y = \left[ x, \delta, x\right]
+\]
+yields
+\begin{align*}
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + 2\delta + \epsilon\right)^2}{x + \delta}  - \frac{\left( x + 2\delta\right)^2}{x + \delta} = \frac{2\epsilon\left( x + 2\delta\right) + \epsilon^2}{x + \delta} \\
+\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \delta + \epsilon\right)^2}{x} - \frac{\left( x + \delta\right)}{x} = \frac{2\epsilon\left( x + \delta \right) + \epsilon^2}{x} \\
+\end{align*}
+We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
 \end{proof}
 
 \begin{thm} \label{thm2}
@@ -372,31 +512,7 @@ Set $D = D_1$ and assume $D_1 \geq 0$. We describe an iterative procedure that s
 \end{algorithmic}
 \end{algorithm}
 
-% \begin{algorithm}
-% \caption{Ordering Algorithm}\label{Algorithm}
-% \begin{algorithmic}[1]
-% \Procedure{MyProcedure}{}
-% \State $\textit{stringlen} \gets \text{length of }\textit{string}$
-% \State $i \gets \textit{patlen}$
-% \BState \emph{top}:
-% \If {$i > \textit{stringlen}$} \Return false
-% \EndIf
-% \State $j \gets \textit{patlen}$
-% \BState \emph{loop}:
-% \If {$\textit{string}(i) = \textit{path}(j)$}
-% \State $j \gets j-1$.
-% \State $i \gets i-1$.
-% \State \textbf{goto} \emph{loop}.
-% \State \textbf{close};
-% \EndIf
-% \State $i \gets i+\max(\textit{delta}_1(\textit{string}(i)),\textit{delta}_2(j))$.
-% \State \textbf{goto} \emph{top}.
-% \EndProcedure
-% \end{algorithmic}
-% \end{algorithm}
-
-
- Without loss of generality, assume $R_1^{out} \in X_2$. We will assume that $G(x_1^{in}, y_1^{in}) < G(x_1^{out}, y_1^{out})$, and show that we can obtain an improvement in the sum $F(X_1, Y_1) + F(X_2, Y_2)$ by exchanging elements of $X_1$, $X_2$. In this way the elements of the subset $X_1$ are sucessively swapped out until it is ordered. Since $X_1$ is the partition with maximal element, we can remove it from consideration, and find the maximal remaining element, and apply the same procedure. In this way we obtain a partition all of whose subsets are ordered.
+Without loss of generality, assume $R_1^{out} \in X_2$. We will assume that $G(x_1^{in}, y_1^{in}) < G(x_1^{out}, y_1^{out})$, and show that we can obtain an improvement in the sum $F(X_1, Y_1) + F(X_2, Y_2)$ by exchanging elements of $X_1$, $X_2$. In this way the elements of the subset $X_1$ are sucessively swapped out until it is ordered. Since $X_1$ is the partition with maximal element, we can remove it from consideration, and find the maximal remaining element, and apply the same procedure. In this way we obtain a partition all of whose subsets are ordered.
 
 Assume the tuples $R_1^{in}$, $R_1^{out}$ are composed of $R_1^{in} = \left(x_1^{in}, y_1^{in}\right), R_1^{out} = \left(x_1^{out}, y_1^{out}\right)$.
 
@@ -607,8 +723,6 @@ By the claim, we have $\frac{X_1}{Y_1} \geq \frac{\alpha}{\beta}$, $\frac{X_2}{Y
 
 \end{proof}
 
-
-
 \begin{case}
 $X_1$,  $X_2 \leq 0$
 \end{case}
@@ -694,78 +808,6 @@ $X_1 \leq 0$, $X_2 \geq 0$
 Defining $\bar{X_1} = -X_1$, $\bar{Y_1} = Y_1$, and $\bar{X_2} = -X_2$, $\bar{Y_2} = Y_2$ will allow us to use the previous case, if the minimal element $\bar{R_{(n)}}$ lies in $\bar{X_1}$, so that the maximal element is in the positive partition in that case. This is true if and only if the minimal element of the original partition, $m = R_{(n)}$, does not lie in $X_2$. If it did, then direct computation of $F(X_1 + m, Y_1 + n) - F(X_1, Y_1)$, $F(X_2 - m, Y_2 + n) - F(X_2, Y_2)$ shows that the sum $F(X_1 + m, Y_1 + m) + F(X_2 - m, Y_2 - m)$ is positive, and represents an improvement to the original partition. So we can assume that $m \not \in X_2$, and the positive partition $\bar{X_1}$ contains the maximal element, and the previous case can be applied.
 
 In this way the maximal subset $X_1$ is altered, without a decrease in the partition score, until $D_1 < 0$. $X_1$ is then ordered, and the partition $\mathcal{P} \setminus X_1$ of the set $\left\lbrace 1, \dots, N - \vert X_1\vert\right\rbrace$ is used in the next iteration.
-
-\vspace{16pt}
-For the necessity, assume $\tau = 1$ and choose $\gamma = 2 + \epsilon$, for $\epsilon > 0$. Set
-\[
-X = \left[ 1-\delta, \delta, 1 + \delta\right], Y = \left[ 1, \delta, 1\right]
-\] 
-for some $\delta > 0$. There are 3 partitions of $\left\lbrace 1, 2, 3\right\rbrace$, namely $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$. Only the first 2 are ordered. The scores can be computed
-\begin{align*}
-\text{Score}\left(\mathcal{P}_1\right) & = \left( 1-\delta \right)^\gamma + \frac{\left( 1+2\delta\right)^\gamma}{1+\delta} \\
-\text{Score}\left(\mathcal{P}_2\right) & = \frac{1}{1+\delta} + \left( 1+\delta\right)^\gamma \\
-\text{Score}\left(\mathcal{P}_3\right) & = 2^{1+\epsilon}
-\end{align*}
-The last expression is independent of $\delta$, so can choose $\delta$ small so that the last score dominates.
-For $\gamma = 2 - \epsilon$, $\epsilon > 0$, and the sequences
-\[
-X = \left[ 1, \frac{1}{\delta}, 1\right], Y = \left[ \frac{1}{1+\delta}, \frac{1}{\delta}, \frac{1}{1-\delta}\right]
-\] 
-we have
-\begin{align*}
-\text{Score}\left(\mathcal{P}_1\right) & = \frac{1^\gamma}{\frac{1}{1+\delta}} + \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) }  = \frac{\left(1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) } + \left( 1 + \delta \right)\\
-\text{Score}\left(\mathcal{P}_2\right) & = \frac{1^\gamma}{\frac{1}{1-\delta}} + \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)}  = \frac{\left( 1 + \frac{1}{\delta}\right)^\gamma}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)} + \left( 1 - \delta \right)\\
-\text{Score}\left(\mathcal{P}_3\right) & = \frac{\left( 1 + 1\right)^\gamma}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)}  + \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} = \frac{\left( \frac{1}{\delta}\right)^\gamma}{\frac{1}{\delta}} + 2^{\gamma - 1}\left( 1 - \delta^2\right) 
-\end{align*}
-and letting $\delta \rightarrow 0$ gives the result, as the first summands in each score can be made arbitrarily close to each other.
-
-To extend these examples to larger $\vert \mathcal{D} \vert = M > N$, $S \geq T$, simply add $M-N$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $S \geq T$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $S - T$ of the indices $N+1, \dots, M$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
-\[
-\left( 1-\delta\right)^\gamma + \frac{\delta^\gamma}{\delta} + \left( 1+\delta\right)^\gamma
-\]
-which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\gamma < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\gamma > 0$ and $\left( N, T\right)$. Therefore $\gamma = 2$.
-
-Now let $\gamma = 2$ and set
-\[
-X = \left[ x-\delta, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
-\] 
-for $x, \delta > 0$, and consider the three partitions $\mathcal{P}_i$, $i=1, 2, 3$ as above. We have
-\begin{align*}
-& \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_2\right) \\
-& \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_2\right) = \frac{-\delta^2\left( 2x + \delta\right)}{x\left( x + \delta\right)}
-\end{align*}
-The power priority $G(x,y) = \frac{x^\tau}{y}$ places the priorty on the records:
-\begin{align} \label{eq8}
-\left( G(x_1, y_1), G(x_2, y_2), G(x_3, y_3)\right) = \left( \frac{\left( x - \delta \right)^{\tau}}{x}, \delta^{\tau-1},  \frac{\left( x + \delta \right)^{\tau}}{x}\right).
-\end{align}
-For $\tau > 1$, choosing $x$ large relative to delta gives $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$. So the partitions $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ become $\mathcal{P}_1 = \left\lbrace \left[ 1 \right], \left[ 0, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 1, 2 \right], \left[ 0 \right]\right\rbrace$, maintaining the partition scores above. The maximum score is shared by $\mathcal{P}_1$, $\mathcal{P}_2$, the first being unordered. In order to force $\text{Score}\left(\mathcal{P}_1\right) > \text{Score}\left(\mathcal{P}_2\right)$, we perturb the original $X$, $Y$ by
-\[
-X\left(\epsilon\right) = \left[ x-\delta+\epsilon, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
-\]
-and denoting by $\text{Score}\left(\epsilon \right)\left(\mathcal{P}_i \right)$ the score of the partition $\mathcal{P}_i$ on the records $\left\lbrace \left(x\left(\epsilon\right)_1, y_1\right),\left(x\left(\epsilon\right)_2, y_2\right),\left(x\left(\epsilon\right)_3, y_3\right) \right\rbrace$, it follows that
-\begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \epsilon - \delta\right)^2}{x} - \frac{\left( x - \delta\right)^2}{x} = \frac{2\epsilon\left( x - \delta\right) + \epsilon^2}{x} \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + \epsilon\right)^2}{x + \delta}  - \frac{x^2}{x+\delta}= \frac{2\epsilon x + \epsilon^2}{x+\delta}
-\end{align*}
-Choosing, e.g. $x = 1$, $\delta = .25$ gives 
-\begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{3}{2}\epsilon + \epsilon^2 \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= 2\epsilon + \epsilon^2
-\end{align*}
-By choosing $epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
-
-
-For $ 0 \leq \tau < 1$ and the priority function $G(X,Y) = \frac{x^{\tau}}{y}$, choose $x$ large relative to $\delta$ forces the priority ordering $G(x_0, y_0) \leq G(x_2, y_2) \leq G(x_1, y_1)$. So the  highest and second highest records exchange priority ordering, and the partition $\mathcal{P}_1$ stays the same, while $\mathcal{P}_1$ now corresponds to $\left\lbrace \left[ 0, 2\right], \left[ 1\right]\right\rbrace$, $\mathcal{P}_2$ to $\left\lbrace \left[ 0, 1\right], \left[ 2\right]\right\rbrace$, only the last being ordered. Perturbing the original sequences by
-\[
-X\left(\epsilon\right) = \left[ x-\delta, \delta, x + \delta + \epsilon\right], Y = \left[ x, \delta, x\right]
-\]
-yields
-\begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + 2\delta + \epsilon\right)^2}{x + \delta}  - \frac{\left( x + 2\delta\right)^2}{x + \delta} = \frac{2\epsilon\left( x + 2\delta\right) + \epsilon^2}{x + \delta} \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \delta + \epsilon\right)^2}{x} - \frac{\left( x + \delta\right)}{x} = \frac{2\epsilon\left( x + \delta \right) + \epsilon^2}{x} \\
-\end{align*}
-We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
-
 
 \vspace{16pt}
 
