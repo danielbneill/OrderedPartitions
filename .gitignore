@@ -3,6 +3,8 @@ catboost_info/
 proto.py
 protoPYTHON_wrap.cxx
 __pycache__
-_proto.so
+*.so
 *.dat
+*.pdf
+*.dot
 *~
