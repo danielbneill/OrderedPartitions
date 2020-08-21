@@ -194,9 +194,7 @@ In fact the trivial partition is the optimal partition of size $T \leq 5$, and t
 In fact for any pair $\left( N, T\right)$ a maximally-degenerate collapsing exists for most score functions. This degeneracy is alluded to in the proof of the main result in $\cite{article1}$, $\cite{article2}$, although it is more prevalent than the authors indicate. In particular, any search over the consecutive partitions of size $T$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, in which case, the only way to determine this is to search over $\textit{all}$ partitions, consecutive or otherwise, at top level, to determine whether indeed the the optimal consecutive partition is truly of size $T$. If not, if a nonconsecutive partition exists at size $T$ that is optimal, one must do the entire search at level $T-1$ again. There is no efficiency gain if one knows in advance only that the optimal partition is weakly consecutive. 
 
 \section{Main Results}
-{\parindent0pt % disables indentation for all the text between { and }
-We now state our main results.\\
-}% restore indentation
+We now state our main results.
 \begin{prop} \label{thm0}
 Let $\mathcal{P}$ be a partition of $N$, and let $\mathcal{E} = \mathcal{E}_\mathcal{C} = \{$ extreme points of $\mathcal{C}$ \}, $\underline{\mathcal{E}} = \mathcal{E}_{\underline{\mathcal{C}}} = \{$ extreme points for $\underline{\mathcal{C}}$ \}. Then
 \begin{enumerate}[(i)]
@@ -348,19 +346,19 @@ Let $p = \argmax_{\left( x,y\right)} \overline{F}\left( x,y\right)$, where $p$ i
 \end{proof}
 
 
-\begin{thm} \label{thm1}
-Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(\mathbf{R}_i) = G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition of non-splitting subsets of size $T$ iff $(\gamma, \tau) = (2,1)$.
+\begin{thm} \label{thm0}
+Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with priority function $G(x_i,y_i) =  \frac{x_i^\tau}{y_i}$, and equipped with the power score function $F(\mathbf{R}_i) = f(x_i,y_i) = \frac{x_i^\gamma}{y_i}$. $F_1x \times T \in \mathbb{N},$ $T < N$. Then there is a strongly maximally ordered partition of non-splitting subsets of size $T$ iff $(\gamma, \tau) = (2,1)$.
 \end{thm}
 \begin{proof}
 Let $\left( \gamma, \tau\right) = \left( 2,1\right)$. The proof proceeds by induction on $T$. For $T=2$ define $\overline{F}$ as above. $\ref{eq0}$ then becomes $M = \max_{\left( x,y\right) \in \underline{\mathcal{C}}} \overline{F}\left( x,y,\right)$, which is solved at $p_{\pi}$, for $\pi$, $N\setminus \pi$ consecutive subsets of $N$, unless 
 \begin{align} \label{eq8}
-p_N = argmax_{\left( x,y\right) \in \mathcal{C}} \overline{R}\left( x,y\right)
+p_N = argmax_{\left( x,y\right) \in \mathcal{C}} \overline{F}\left( x,y\right)
 \end{align} by Proposition 1. But for any $x_i, y_i \in \mathbf{R}$, $y_i > 0$, $i = 1,2$, we have
 \begin{align*}
-\left( \sqrt{\frac{y_2}{y_1}}x_1 - \sqrt{\frac{y_1}{y_2}x_2}\right)^2 \geq 0 &\implies \left( x_1+x_2\right)^2 \leq x_1^2\left( \frac{y_1+y_2}{y_1}\right) + x_2^2\left( \frac{y_1+y_2}{y_2}\right) \geq 0 \\
+\left( \sqrt{\frac{y_2}{y_1}}x_1 - \sqrt{\frac{y_1}{y_2}x_2}\right)^2 \geq 0 &\implies \left( x_1+x_2\right)^2 \leq x_1^2\left( \frac{y_1+y_2}{y_1}\right) + x_2^2\left( \frac{y_1+y_2}{y_2}\right)\\
 &\implies \frac{\left( x_1+x_2\right)^2}{y_1+y_2} \leq \frac{x_1^2}{y_1} + \frac{x_2^2}{y_2},
 \end{align*}
-so that for $\gamma = 2$, $F$ satisifies a subadditive property in both variables. In particular, $p_N$ cannot maximize $\ref{eq8}$ above ($\overline{F}$ is in fact $textit{minimized}$ there), and the solution is a strongly consecutive partition $\pi$, $N\setminus \pi$. 
+so that for $\gamma = 2$, $F$ satisifies a subadditive property in both variables. In particular, $p_N$ cannot maximize $\ref{eq8}$ above ($\overline{F}$ is in fact $\textit{minimized}$ there), and the solution is a strongly consecutive partition $\pi$, $N\setminus \pi$. 
 
 Now let $T >= 3$. Define, for any subset $\pi \subseteq N$, $d\left(\pi\right) = \max \pi - \min \pi$. Let $\mathcal{P} = \left\lbrace \pi_1, \dots, \pi_T\right\rbrace$ be an optimal size $T$ partition that maximizes $\ref{eq1}$ which also minimizes $\sum_{j=1}^T d\left(\pi_j\right)$ among all optimal size $T$ partitions. If not all $\pi_j$ are consecutive, then we can find $\pi_i$, $\pi_j$ and $k \in \pi_j$ with $\min \pi_i < k < \max \pi_j$. Note that $\min\left( \max \pi_i, \max \pi_j\right) \geq k$,  and $\max\left( \min \pi_i, \min \pi_j \right) \leq k$, so that 
 \[
@@ -444,13 +442,31 @@ yields
 We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
 \end{proof}
 
-\begin{thm} \label{thm2}
-Let $\mathcal{D}$, $F$, $G$ be as above, with $\tau = 1$, and $F$ convex in all of its variables. Then there is a strongly maximally ordered singleton splitting partition.
+The sufficiency of the $\left( \gamma, \tau\right) = \left( 2,1\right)$ above is a special case of the following, in which the score function $F$ is regarded as function on the lattice $2^N$ in the natural way $F\left( S \subseteq N\right) = F\left( \sum_{i \in S} x_i, \sum_{i \in S} y_i\right)$
+
+\begin{thm} \label{thm1}
+Let $\mathcal{D}$, $F$, $G$ be as above, with $\tau = 1$, and $F$ super(sub)modular on $2^N$. Then there is a maximal (minimal) strongly consecutive partition. 
 \end{thm}
 
-\begin{thm} \label{thm2} 
-$\mathcal{D}$, $F$, $G$ as above. If $F$ is quasiconvex, then there is either a strongly consecutive maximal non-splitting partition, or a consecutive singleton splitting maximal partition.
+In addition, if $F$ is super(sub)modular on $2^N$, the optimal partitions display an interleaving property with varying $T$
+\begin{thm} \label{thm2}
+With $D$, $F$, $G$ as above, assume that $F$ is supermodular on $2^N$. Then there exist maximal consecutive parititions, for $\mathcal{P}_T = \left\lbrace \pi_1^T, \dots, \pi_T^T\right\rbrace$, satisfying, for all $T$, $1 \leq i \leq T-1$
+\begin{align*}
+\min{\pi_i^T} &\leq \min{\pi_i^{T-1}} \leq \min{\pi_{i+1}^T} \\
+\max{\pi_i^T} &\leq \max{\pi_i^{T-1}} \leq \max{\pi_{i+1}^T} \\
+\end{align*}
+and $\min{\pi_T^T} \leq \max{\pi_T^T} \leq \max{\pi_{T-1}^{T-1}}$.
 \end{thm}
+\begin{proof}
+adapt arguments from $\cite{article5}$.
+\end{proof}
+
+Finally, we address a gap in the current literature concerning the case for which $F$ is not supermodular, but admits a maximal consecutive partition. As shown previously, the arguments in $\cite{article1}, \cite{article2}$ only guarantee the existence of maximal weakly consecutive partitions when the score function $F$ is convex in all variables. The weakly consecutive partition may have strict size $S$ for $S < T$, and the collapse of size may be complete, to $S = 1$ as we have seen. Any search would require a complete scan of all partitions at level $T$ to find the optimal score, and if the optimal partition is not consecutive, the search would resume at levels $T-1, ...$. There is no efficiency gain unless we know $\textit{a priori}$ that a strict size $S$ optimal consecutive partition exists, or something about the structure of the optimal partition of strict size $T$. We can relax the supermodularity requirment on $F$, obtaining
+
+\begin{thm} \label{thm3}
+Let $\mathcal{D}$, $F$, $G$ be as above, with $\tau = 1$. Suppose that $F$ is convex in all arguments. Then for any $1 \leq T \leq N$, there is a maximal strongly singleton splitting partition.
+\end{thm}
+
 
 The brute-force optimization in $\ref{eq1}$ has cost that grows exponentially with $n$. A constrained optimization over the set of all size $T$ ordered partitions has cost that grows as $\binom{n-1}{T-1}$, i.e., as a polynomail of degree $T-1$. In particular, the $T = 2$ problem grows linearly in $n$. There is an improvement that can be made to this approach.
 
@@ -458,15 +474,15 @@ Consider a graph $\mathcal{G} = \left( V, E\right)$ with vertices denoted by $\l
 
 
 % \includepdf[pages=-]{12_4_unlabeled.pdf}
-\begin{figure}
-  \includegraphics[scale=.22]{16_6_unlabeled.pdf}
-  \caption{Graph connectivity, (N, T) = (16, 6)}  
-\end{figure}
+% \begin{figure}
+%   \includegraphics[scale=.22]{12_4_unlabeled.pdf}
+%   \caption{Graph connectivity, (N, T) = (12, 4)}  
+% \end{figure}
 
 \vspace{16pt}
 \begin{figure}
-  \includegraphics[scale=.11]{12_4_labeled.pdf}
-  \caption{Labeled (N, T) = (12, 4) case displaying optimal path SOURCE -- (0, 3) -- (3, 6) -- (6, 9) -- (9, 12) --  SINK corresponding to ordered partition [[0 1 2 ], [3 4 5 ], [6 7 8 ], [9 10 11 ]]}
+  \includegraphics[scale=.25]{8_3_labeled.pdf}
+  \caption{Labeled (N, T) = (8, 3) case displaying optimal path SOURCE -- (3, 1) -- (5, 2) --  SINK corresponding to ordered partition [[0 1 2 ], [3 4], [5 6 7 ]]}
 \end{figure}
 
 For the graph $\mathcal{G} = \left( V, E\right)$, we have 
@@ -879,6 +895,8 @@ In this case it is seems necessary to remove the maximal element from $X_1$ to g
 	\bibitem{article3} M. Kulldorff and N. Nagarwalla. Spatial disease clusters: detection and inference. {\em Statistics in Medicine}, 14, 1995: 799–810
 	
 	\bibitem{article4} Graham, R.L. (1972). "An Efficient Algorithm for Determining the Convex Hull of a Finite Planar Set" (PDF). Information Processing Letters. 1 (4): 132–133. doi:10.1016/0020-0190(72)90045-2.	
+	
+	\bibitem{article5} Eric V. Denardo, Gur Huberman and Uriel G. Rothblum. Optimal Locations on a Line Are Interleaved. {\em Operations Research}, Vol. 30, No. 4 (Jul. - Aug., 1982), pp. 745-759
 
 \end{thebibliography}
 

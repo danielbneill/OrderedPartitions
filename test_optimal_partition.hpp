@@ -23,7 +23,7 @@ public:
     return -std::log(a)/b;
   }
   static double log_(double a, double b) {
-    return std::log(a)/b;
+    return std::log(a+1)/b;
   }
   static double exp_(double a, double b) {
     return std::exp(-a)/b;

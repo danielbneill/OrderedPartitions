@@ -10,7 +10,7 @@ import matplotlib.pyplot as plot
 from scipy.spatial import ConvexHull, Delaunay
 
 
-SEED = 556
+SEED = 3367
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -549,10 +549,14 @@ if __name__ == '__main__':
         # if np.argmax(all_scores) == (len(all_scores)-1):            
         # if min(all_sym_scores, key=lambda x:x[1])[0] != len(a0):
         # if max(all_sym_scores, key=lambda x:x[1])[0] == len(all_sym_scores):
-        if True:
-            optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
-            if len(set(vert_const_sym).difference(set(vert_ext_sym))) == 0:
-                vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
+        # if True:
+        #     optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+        #     if len(set(vert_const_sym).difference(set(vert_ext_sym))) ==  0:
+        #         vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
+        #         import pdb
+        #         pdb.set_trace()
+
+        optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
         import pdb
         pdb.set_trace()
 
@@ -575,21 +579,22 @@ if __name__ == '__main__':
             # r_max_raw_minus_1 = optimize(a0, b0, PARTITION_SIZE-1, POWER, NUM_WORKERS, PRIORITY_POWER)
 
             # Stop if exception found
-            optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
-
-            import pdb
-            pdb.set_trace()
+            # optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+            # if len(set(vert_const_sym).difference(set(vert_ext_sym))) ==  0:
+            # if np.argmax(all_scores) == (len(all_scores)-1):
+            #     import pdb
+            #     pdb.set_trace()
 
             # Condition A, to test when T >= 3
-            if not all([all(a0[s] > 0) or all(a0[s] < 0) for s in optim_all[PARTITION_SIZE-2][1]]):
-                vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
-                import pdb
-                pdb.set_trace()
+            # if not all([all(a0[s] > 0) or all(a0[s] < 0) for s in optim_all[PARTITION_SIZE-2][1]]):
+            #     vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
+            #     import pdb
+            #     pdb.set_trace()
             
-            if not all([all(a0[s] > 0) or all(a0[s] < 0) for s in r_max_raw[1]]):
-                vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
-                import pdb
-                pdb.set_trace()
+            # if not all([all(a0[s] > 0) or all(a0[s] < 0) for s in r_max_raw[1]]):
+            #     vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)                
+            #     import pdb
+            #     pdb.set_trace()
 
             # Condition B, to test when T >= 3
             # if not all((any(set(s).issubset(set(ss)) for ss in optim_all[PARTITION_SIZE-2][1]) for s in optim_all[PARTITION_SIZE-1][1])):
@@ -1072,3 +1077,92 @@ if (False):
 
         if not count%10000:
             print('count: {}'.format(count))
+
+if (False):
+    import numpy as np
+
+    count = 0
+    gamma = 2.0
+
+    def F(a,b,gamma):
+        return np.sum(a)**gamma/np.sum(b)
+
+    def F_sym(a,b,Cx,Cy,gamma):
+        if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
+            return Cx**gamma/Cy
+            # return np.sum(a)**gamma/np.sum(b)
+        else:
+            return (np.sum(a)**gamma/np.sum(b)) + ((Cx-np.sum(a))**gamma/(Cy-np.sum(b)))
+            # return np.sum(a)**gamma/np.sum(b)
+
+    rng = np.random.RandomState(56)
+    while True:
+
+        NUM_POINTS = rng.choice(100)+5
+
+        j = np.max([rng.choice(int(NUM_POINTS/2)), 2])
+        k = rng.choice(int(NUM_POINTS/2)) + int(NUM_POINTS/2) + 1
+        l,m,n = np.sort(rng.choice(int(NUM_POINTS), 3, replace=False))
+        
+        upper_limit_a = rng.uniform(low=0., high=1000.)
+        upper_limit_b = rng.uniform(low=0., high=1000.)
+        a0 = rng.uniform(low=-1*upper_limit_a, high=upper_limit_a, size=NUM_POINTS)
+        b0 = rng.uniform(low=-0., high=upper_limit_b, size=NUM_POINTS)
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]
+        Cx = np.sum(a0)
+        Cy = np.sum(b0)
+
+        assert j < k
+
+        # lhs1 = F(a0[j:(k+1)],b0[j:(k+1)],gamma)
+        # lhs2 = F(a0[(j+1):(k+2)],b0[(j+1):(k+2)],gamma)
+        # rhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
+        # rhs2 = F(a0[(j+1):(k+1)],b0[(j+1):(k+1)],gamma)
+        # lhs1 = F_sym(a0[j:(k+1)],b0[j:(k+1)],Cx,Cy,gamma)
+        # lhs2 = F_sym(a0[(j+1):(k+2)],b0[(j+1):(k+2)],Cx,Cy,gamma)
+        # rhs1 = F_sym(a0[j:(k+2)],b0[j:(k+2)],Cx,Cy,gamma)
+        # rhs2 = F_sym(a0[(j+1):(k+1)],b0[(j+1):(k+1)],Cx,Cy,gamma)
+        lhs1 = F(a0[0:j], b0[0:j], gamma)
+        lhs2 = F(a0[j:k], b0[j:k], gamma)
+        rhs1 = F(a0[0:k], b0[0:k], gamma)
+        rhs2 = 0.
+
+        if (lhs1+lhs2)<(rhs1+rhs2):
+            print('FOUND')
+            print(a0)
+            print(b0)
+
+        count+=1
+
+        if not count%10000:
+            print('count: {}'.format(count))
+    
+if (False):
+    import numpy as np
+
+    count = 0
+    gamma = 4.0
+    
+    rng = np.random.RandomState(552)
+    while True:
+        NUM_POINTS = 2
+        upper_limit_a = rng.uniform(low=0., high=1000.)
+        upper_limit_b = rng.uniform(low=0., high=1000.)
+        a0 = rng.uniform(low=0.000001, high=upper_limit_a, size=NUM_POINTS)
+        b0 = rng.uniform(low=0.000001, high=upper_limit_b, size=NUM_POINTS)
+
+        sortind = np.argsort(a0/b0)
+        a0 = a0[sortind]
+        b0 = b0[sortind]
+
+        lhs1 = (a0[0]**gamma/b0[0])
+        lhs2 = (a0[-1]**gamma/b0[-1])
+        rhs = np.sum(a0)**gamma/np.sum(b0)
+
+        # print("( ",lhs,", ",rhs," )")
+
+        if rhs > (lhs1+lhs2):
+            print('FOUND')
