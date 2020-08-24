@@ -7,7 +7,7 @@
 
 #include "graph.hpp"
 
-void sort_by_priority(std::vector<double>& a, std::vector<double>& b) {
+void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
   std::vector<int> ind(a.size());
   std::iota(ind.begin(), ind.end(), 0);
   
@@ -15,7 +15,7 @@ void sort_by_priority(std::vector<double>& a, std::vector<double>& b) {
 		   [&a, &b](int i, int j) {
 		     return (a[i]/b[i]) < (a[j]/b[j]);
 		   });
-  std::vector<double> a_s, b_s;
+  std::vector<float> a_s, b_s;
   for (auto i : ind) {
     a_s.push_back(a[i]);
     b_s.push_back(b[i]);
@@ -35,10 +35,10 @@ auto main(int argc, char **argv) -> int {
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
-  std::uniform_real_distribution<double> dista(-10., 10.);
-  std::uniform_real_distribution<double> distb(1., 10.);
+  std::uniform_real_distribution<float> dista(-10., 10.);
+  std::uniform_real_distribution<float> distb(1., 10.);
 
-  std::vector<double> a(n), b(n);
+  std::vector<float> a(n), b(n);
 
   for (auto &el : a)
     el = dista(gen);
@@ -53,9 +53,9 @@ auto main(int argc, char **argv) -> int {
 
   /*
     Details
-    std::copy(a.begin(), a.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::copy(a.begin(), a.end(), std::ostream_iterator<float>(std::cout, " "));
     std::cout << std::endl;
-    std::copy(b.begin(), b.end(), std::ostream_iterator<double>(std::cout, " "));
+    std::copy(b.begin(), b.end(), std::ostream_iterator<float>(std::cout, " "));
     std::cout << std::endl;
     for(size_t i=0; i<a.size(); ++i)
     std::cout << a[i]/b[i] << " ";

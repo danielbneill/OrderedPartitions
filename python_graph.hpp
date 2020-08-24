@@ -11,38 +11,38 @@
 #include <type_traits>
 
 using ivec = std::vector<int>;
-using fvec = std::vector<double>;
+using fvec = std::vector<float>;
 using ivecvec = std::vector<ivec>;
-using swpair = std::pair<ivecvec, double>;
+using swpair = std::pair<ivecvec, float>;
 using swcont = std::vector<swpair>;
 
 
 ivecvec find_optimal_partition(int n,
 			       int T,
-			       std::vector<double> a,
-			       std::vector<double> b);
-double find_optimal_weight(int n,
+			       std::vector<float> a,
+			       std::vector<float> b);
+float find_optimal_weight(int n,
 			  int T,
-			  std::vector<double> a,
-			  std::vector<double> b);
+			  std::vector<float> a,
+			  std::vector<float> b);
 
 swpair optimize_one(int n,
 		   int T,
-		   std::vector<double> a,
-		   std::vector<double> b);
+		   std::vector<float> a,
+		   std::vector<float> b);
 
 swpair sweep_best(int n,
 		  int T,
-		  std::vector<double> a,
-		  std::vector<double> b);
+		  std::vector<float> a,
+		  std::vector<float> b);
 swcont sweep_parallel(int n,
 		    int T,
-		    std::vector<double> a,
-		    std::vector<double> b);
+		    std::vector<float> a,
+		    std::vector<float> b);
 swcont sweep(int n,
 	     int T,
-	     std::vector<double> a,
-	     std::vector<double> b);
+	     std::vector<float> a,
+	     std::vector<float> b);
 
 
 #endif

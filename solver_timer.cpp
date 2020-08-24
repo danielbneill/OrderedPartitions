@@ -26,7 +26,7 @@ auto main(int argc, char **argv) -> int {
 
       if (sampleSize > numParts) {
 
-	std::vector<double> a(sampleSize), b(sampleSize);
+	std::vector<float> a(sampleSize), b(sampleSize);
 	
 	for (auto &el : a)
 	  el = dista(gen);

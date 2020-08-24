@@ -3,18 +3,18 @@
 
 ivecvec find_optimal_partition(int n, 
 			       int T, 
-			       std::vector<double> a, 
-			       std::vector<double> b) {
+			       std::vector<float> a, 
+			       std::vector<float> b) {
   
   auto pg = PartitionGraph(n, T, a, b);
   return pg.get_optimal_subsets_extern();
   
 }
 
-double find_optimal_weight(int n,
+float find_optimal_weight(int n,
 			  int T,
-			  std::vector<double> a,
-			  std::vector<double> b) {
+			  std::vector<float> a,
+			  std::vector<float> b) {
   auto pg = PartitionGraph(n, T, a, b);
   return pg.get_optimal_weight_extern();
 
@@ -22,22 +22,22 @@ double find_optimal_weight(int n,
 
 swpair optimize_one(int n,
 		    int T,
-		    std::vector<double> a,
-		    std::vector<double> b) {
+		    std::vector<float> a,
+		    std::vector<float> b) {
 
   auto pg = PartitionGraph(n, T, a, b);
   ivecvec subsets = pg.get_optimal_subsets_extern();
-  double weight = pg.get_optimal_weight_extern();
+  float weight = pg.get_optimal_weight_extern();
 
   return std::make_pair(subsets, weight);
 }
 
 swpair sweep_best(int n,
 		  int T,
-		  std::vector<double> a,
-		  std::vector<double> b) {
+		  std::vector<float> a,
+		  std::vector<float> b) {
   
-  double best_weight = std::numeric_limits<double>::max(), weight;
+  float best_weight = std::numeric_limits<float>::max(), weight;
   ivecvec subsets;
   
   for (int i=T; i>1; --i) {
@@ -55,9 +55,9 @@ swpair sweep_best(int n,
 }
 
 swcont sweep_parallel(int n,
-		    int T,
-		    std::vector<double> a,
-		    std::vector<double> b) {
+		      int T,
+		      std::vector<float> a,
+		      std::vector<float> b) {
   
   ThreadsafeQueue<swpair> results_queue;
   
@@ -91,11 +91,11 @@ swcont sweep_parallel(int n,
 
 swcont sweep(int n,
 	     int T,
-	     std::vector<double> a,
-	     std::vector<double> b) {
+	     std::vector<float> a,
+	     std::vector<float> b) {
   
 
-  double weight;
+  float weight;
   ivecvec subsets;
   swcont r;
 
