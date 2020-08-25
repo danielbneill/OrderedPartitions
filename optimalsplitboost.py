@@ -1,3 +1,4 @@
+import heapq
 import numpy as np
 import sklearn.base
 import sklearn.tree
@@ -16,8 +17,8 @@ class OptimalSplitGradientBoostingClassifier(object):
                  y,
                  min_partition_size,
                  max_partition_size,
-                 gamma=0.,
-                 eta=0.,
+                 gamma=0.1,
+                 eta=0.1,
                  num_classifiers=100,
                  use_constant_term=False,
                  solver_type='linear_hessian',
@@ -111,10 +112,6 @@ class OptimalSplitGradientBoostingClassifier(object):
     def imply_tree(self, leaf_values, **impliedSolverKwargs):
         X0 = self.X.get_value()
         y0 = leaf_values
-
-        import pdb
-        pdb.set_trace()
-        
         return self.distiller(X0, y0, **impliedSolverKwargs)
             
     def weak_learner_predict(self, classifier_ind):
@@ -150,19 +147,26 @@ class OptimalSplitGradientBoostingClassifier(object):
 
     def fit(self, num_steps=None):
         num_steps = num_steps or self.num_classifiers
+
+        # Initial leaf_values for initial loss calculation
+        leaf_values = self.leaf_values.get_value()[0,:]
         print('STEP {}: LOSS: {:4.6f}'.format(0,
                                               theano.function([],
-                                                              clf.loss_without_regularization(
-                                                                  clf.predict()))()))        
+                                                              self.loss(
+                                                                  self.predict(),
+                                                                  len(np.unique(leaf_values)),
+                                                                  leaf_values))()))
+        # Iterative boosting
         for i in range(1,num_steps):
             self.fit_step()
+            leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
             print('STEP {}: LOSS: {:4.6f}'.format(i,
                                                   theano.function([],
-                                                                  self.loss_without_regularization(
-                                                                      clf.predict()))()))
-
+                                                                  self.loss(
+                                                                      self.predict(),
+                                                                      len(np.unique(leaf_values)),
+                                                                      leaf_values))()))
             # Summary statistics mid-training
-            oos_summary(self)
         print('Training finished')
 
     def find_best_optimal_split(self, g, h, num_partitions):
@@ -174,7 +178,7 @@ class OptimalSplitGradientBoostingClassifier(object):
         '''
 
         results = solverSWIG.OptimizerSWIG(num_partitions, g, h)()
-        
+
         x = T.dmatrix('x')
         loss = theano.function([x], self.loss_without_regularization(x))
         loss_heap = []
@@ -185,7 +189,7 @@ class OptimalSplitGradientBoostingClassifier(object):
             for subset in subsets:
                 s = list(subset)
                 min_val = -1 * np.sum(g[s])/np.sum(h[s])
-                impliedSolverKwargs = dict(max_depth=int(len(s)/2))
+                impliedSolverKwargs = dict(max_depth=max([int(len(s)/2), 2]))
                 leaf_values[s] = self.learning_rate * min_val
             optimal_split_tree = self.imply_tree(leaf_values, **impliedSolverKwargs)
             loss_new = loss(theano.function([], self.predict())() +
@@ -194,14 +198,18 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         best_loss, best_rind, best_leaf_values = heapq.heappop(loss_heap)
 
+        solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values))))
+        optimal_split_tree = self.imply_tree(best_leaf_values, **solverKwargs)
+
         self.partitions.append(results[best_rind][0])
 
         implied_values = theano.function([], optimal_split_tree.predict(self.X))()
 
-        print('leaf_values:    {!r}'.format([(round(val,4), np.sum(leaf_value==val))
+        print('leaf_values:    {!r}'.format([(round(val,4), np.sum(best_leaf_values==val))
                                             for val in np.unique(best_leaf_values)]))
-        print('implied_values: {!r}'.format([(round(val,4), np.sum(implied_value==val))
+        print('implied_values: {!r}'.format([(round(val,4), np.sum(implied_values==val))
                                             for val in np.unique(implied_values)]))
+
         return best_leaf_values
         
     def fit_step(self):
@@ -217,8 +225,8 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.set_next_leaf_value(best_leaf_values)
 
         # Calculate optimal_split_tree
-        impliedSolverKwargs = dict(max_depth=len(int(s/2)))        
-        optimal_split_tree = self.imply_tree(best_leaf_values, **impliedSolverArgs)
+        impliedSolverKwargs = dict(max_depth=len(np.unique(best_leaf_values))/2)        
+        optimal_split_tree = self.imply_tree(best_leaf_values, **impliedSolverKwargs)
 
         # Set implied_tree
         self.set_next_classifier(optimal_split_tree)
@@ -238,6 +246,7 @@ class OptimalSplitGradientBoostingClassifier(object):
         y_hat0 = theano.function([], self.predict())().squeeze()
         g = G(y_hat0)
         h = np.diag(H(y_hat0))
+        h = h + np.array([self.gamma]*h.shape[0])
 
         c = None
         if constantTerm and not self.solver_type == 'linear_hessian':
@@ -246,8 +255,8 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         return (g, h, c)        
         
-    def loss(self, y_hat):
-        return self._mse(y_hat) + T.sum(self.regularization)
+    def loss(self, y_hat, num_partitions, leaf_values):
+        return self.loss_without_regularization(y_hat) + self.regularization_loss(num_partitions, leaf_values)
 
     def loss_without_regularization(self, y_hat):
         return self._mse(y_hat)
@@ -262,10 +271,10 @@ class OptimalSplitGradientBoostingClassifier(object):
     def _mse_coordinatewise(self, y_hat):
         return (T.shape_padaxis(self.y, 1) - y_hat)**2
 
-    def _regularizer(self, leaf_values):
-        size_reg = self.gamma * partition_size
-        coeff_reg = 0.5 * self.eta * np.sum(leaf_values**2)
-        return size_req + coeff_reg
+    def regularization_loss(self, num_partitions, leaf_values):
+        size_reg = self.gamma * num_partitions
+        coeff_reg = 0.5 * self.eta * np.sum(np.unique(leaf_values**2))
+        return size_reg + coeff_reg
 
     def quadratic_solution_scalar(self, g, h, c):
         a,b = 0.5*h, g

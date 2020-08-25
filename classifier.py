@@ -9,23 +9,24 @@ import theano
 import theano.tensor as T
 
 class InductiveBase(BaseEstimator):
-    def __init__(self, classifier, X, y):
-        self.classifier = classifier
+    def __init__(self, classifier, X, y, **solverKwargs):
         self.X = X
         self.y = y
         self.classifier_ = clone(classifier)
+        for attr_,val_ in solverKwargs.items():
+            setattr(self.classifier_, attr_, val_)
 
         assert not any(np.isnan(self.y))
             
     def fit(self, **fitKwargs):
-        self.classifier_.fit(self.X, self.y, fitKwargs)
+        self.classifier_.fit(self.X, self.y, **fitKwargs)
 
 class InductiveRegressor(InductiveBase):
     ''' Decorator class to turn transductive regressor
         into an inductive one.
     '''
-    def __init__(self, classifier, X, y):
-        super(InductiveRegressor, self).__init__(classifier, X, y)
+    def __init__(self, classifier, X, y, **solverKwargs):
+        super(InductiveRegressor, self).__init__(classifier, X, y, **solverKwargs)
         self.fit()
 
     @if_delegate_has_method(delegate='classifier_')
@@ -39,8 +40,8 @@ class InductiveClassifier(InductiveBase):
         into an inductive one.
     '''
     
-    def __init__(self, classifier, X, y):
-        super(InductiveClassifier, self).__init__(classifier, X, y)
+    def __init__(self, classifier, X, y, **solverKwargs):
+        super(InductiveClassifier, self).__init__(classifier, X, y, **solverKwargs)
         
         unique_vals = np.unique(y)
         self.val_to_class = dict(zip(unique_vals, range(len(unique_vals))))
@@ -56,27 +57,6 @@ class InductiveClassifier(InductiveBase):
         yhat = T.as_tensor(np.array([self.class_to_val[x]
                                      for x in yhat0]).reshape(-1, 1).astype(theano.config.floatX))            
         return yhat
-
-# linear_model = importlib.import_module('sklearn.linear_model')
-# discriminant_analysis = importlib.import_module('sklearn.discriminant_analysis')
-# support_vector_machine = importlib.import_module('sklearn.svm')
-# tree = importlib.import_module('sklearn.tree')
-    
-# OLS Linear Regression
-# LinearRegressorKwargs =  {'fit_intercept': True }
-# LinearRegressor = partial(InductiveRegressor, linear_model.LinearRegression())
-
-# LDA
-# LinearDiscriminantKwargs = {}
-# LinearDiscriminant = partial(InductiveClassifier, discriminant_analysis.LinearDiscriminantAnalysis())
-
-# Support Vector Machine
-# SVCKwargs = {}
-# SVC = partial(InductiveClassifier, support_vector_machine.SVC())
-
-# Decision Tree
-# DecisionTreeKwargs = {}
-# DecisionTree = partial(InductiveClassifier, tree.DecisionTreeClassifier())
 
 class CatBoostImpliedTree(CatBoostClassifier):
     def __init__(self, X=None, y=None, max_depth=2):
@@ -113,4 +93,25 @@ def classifierFactory(clz, **modelArgs):
         return partial(InductiveClassifier, clz(**modelArgs))
     else:
         raise RuntimeError('Cannot determine whether {} is a classifier or a regressor'.format(clz))
+
+# linear_model = importlib.import_module('sklearn.linear_model')
+# discriminant_analysis = importlib.import_module('sklearn.discriminant_analysis')
+# support_vector_machine = importlib.import_module('sklearn.svm')
+# tree = importlib.import_module('sklearn.tree')
+    
+# OLS Linear Regression
+# LinearRegressorKwargs =  {'fit_intercept': True }
+# LinearRegressor = partial(InductiveRegressor, linear_model.LinearRegression())
+
+# LDA
+# LinearDiscriminantKwargs = {}
+# LinearDiscriminant = partial(InductiveClassifier, discriminant_analysis.LinearDiscriminantAnalysis())
+
+# Support Vector Machine
+# SVCKwargs = {}
+# SVC = partial(InductiveClassifier, support_vector_machine.SVC())
+
+# Decision Tree
+# DecisionTreeKwargs = {}
+# DecisionTree = partial(InductiveClassifier, tree.DecisionTreeClassifier())
 
