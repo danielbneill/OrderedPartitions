@@ -125,7 +125,7 @@ class OptimalSplitGradientBoostingClassifier(object):
             y_hat += self.implied_trees[classifier_ind].predict(X)
         return y_hat
         
-    def predict(self):        
+    def predict(self):
         y_hat = theano.shared(name='y_hat', value=np.zeros((self.N, 1)))
         for classifier_ind in range(self.curr_classifier):
             y_hat += self.implied_trees[classifier_ind].predict(self.X)
@@ -160,6 +160,9 @@ class OptimalSplitGradientBoostingClassifier(object):
         for i in range(1,num_steps):
             self.fit_step()
             leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+            if (i==24):
+                import pdb
+                pdb.set_trace()
             print('STEP {}: LOSS: {:4.6f}'.format(i,
                                                   theano.function([],
                                                                   self.loss(
@@ -179,9 +182,15 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         results = solverSWIG.OptimizerSWIG(num_partitions, g, h)()
 
+        npart = T.scalar('npart')
+        lv = T.dmatrix('lv')
         x = T.dmatrix('x')
-        loss = theano.function([x], self.loss_without_regularization(x))
+        loss = theano.function([x,npart,lv], self.loss(x, npart, lv))
+        
+        leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
         loss_heap = []
+
+        results = (results,)
 
         for rind, result in enumerate(results):
             leaf_values = np.zeros((self.N, 1))
@@ -189,17 +198,34 @@ class OptimalSplitGradientBoostingClassifier(object):
             for subset in subsets:
                 s = list(subset)
                 min_val = -1 * np.sum(g[s])/np.sum(h[s])
-                impliedSolverKwargs = dict(max_depth=max([int(len(s)/2), 2]))
+                # XXX
+                # impliedSolverKwargs = dict(max_depth=max([int(len(s)/2), 2]))
+                # impliedSolverKwargs = dict(max_depth=int(np.log2(num_partitions)))
+                impliedSolverKwargs = dict(max_depth=None)
                 leaf_values[s] = self.learning_rate * min_val
             optimal_split_tree = self.imply_tree(leaf_values, **impliedSolverKwargs)
             loss_new = loss(theano.function([], self.predict())() +
-                            theano.function([], optimal_split_tree.predict(self.X))())                    
+                            theano.function([], optimal_split_tree.predict(self.X))(),
+                            len(subsets),
+                            leaf_values)
             heapq.heappush(loss_heap, (loss_new.item(0), rind, leaf_values))
 
         best_loss, best_rind, best_leaf_values = heapq.heappop(loss_heap)
 
-        solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values))))
+        # XXX
+        # solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values))))
+        solverKwargs = dict(max_depth=int(np.log2(num_partitions)))
+        solverKwargs = dict(max_depth=None)        
         optimal_split_tree = self.imply_tree(best_leaf_values, **solverKwargs)
+
+        # ===============================
+        # == If DecisionTreeClassifier ==
+        # ===============================
+        # from sklearn import tree
+        # import graphviz
+        # dot_data = tree.export_graphviz(tr, out_file=None)
+        # graph = graphviz.Source(dot_data)
+        # graph.render('Boosting')
 
         self.partitions.append(results[best_rind][0])
 
@@ -225,7 +251,10 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.set_next_leaf_value(best_leaf_values)
 
         # Calculate optimal_split_tree
-        impliedSolverKwargs = dict(max_depth=len(np.unique(best_leaf_values))/2)        
+        # XXX
+        # impliedSolverKwargs = dict(max_depth=len(np.unique(best_leaf_values))/2)
+        impliedSolverKwargs = dict(max_depth=int(np.log2(num_partitions)))
+        impliedSolverKwargs = dict(max_depth=None)        
         optimal_split_tree = self.imply_tree(best_leaf_values, **impliedSolverKwargs)
 
         # Set implied_tree
@@ -234,8 +263,10 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.curr_classifier += 1
 
     def generate_coefficients(self, constantTerm=False):
+
         x = T.dvector('x')
-        loss = self.loss_without_regularization(T.shape_padaxis(x, 1))
+        leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+        loss = self.loss(T.shape_padaxis(x, 1), len(np.unique(leaf_values)), leaf_values)
 
         grads = T.grad(loss, x)
         hess = T.hessian(loss, x)
@@ -259,22 +290,40 @@ class OptimalSplitGradientBoostingClassifier(object):
         return self.loss_without_regularization(y_hat) + self.regularization_loss(num_partitions, leaf_values)
 
     def loss_without_regularization(self, y_hat):
+        ''' Dependent on loss function '''
+        return self.mse_loss_without_regularization(y_hat)
+
+    def regularization_loss(self, num_partitions, leaf_values):
+        ''' Independent of loss function '''
+        size_reg = self.gamma * num_partitions
+        coeff_reg = 0.5 * self.eta * T.sum(T.extra_ops.Unique(False,False,False)(leaf_values)**2)
+        return size_reg + coeff_reg
+    
+    def mse_loss_without_regularization(self, y_hat):
         return self._mse(y_hat)
+
+    def exp_loss_without_regularization(self, y_hat):
+        return T.sum(T.exp(-y_hat * T.shape_padaxis(self.y, 1)))
+
+    def cosh_loss_without_regularization(self, y_hat):
+        return T.sum(T.log(T.cosh(y_hat - T.shape_padaxis(self.y, 1))))
+
+    def hinge_loss_without_regularization(self, y_hat):
+        return T.sum(T.abs_(y_hat - T.shape_padaxis(self.y, 1)))
+
+    def logistic_loss_without_regularization(self, y_hat):
+        return T.sum(T.log(1 + T.exp(-y_hat * T.shape_padaxis(self.y, 1))))
 
     def cross_entropy(self, y_hat):
         y0 = T.shape_padaxis(self.y, 1)
-        return -(y0 * T.log(y_hat) + (1-y0)*T.log(1-y_hat))
+        # return T.sum(-(y0 * T.log(y_hat) + (1-y0)*T.log(1-y_hat)))
+        return T.sum(T.nnet.binary_crossentropy(y_hat, y0))
     
     def _mse(self, y_hat):
         return T.sqrt(T.sum(self._mse_coordinatewise(y_hat)))
 
     def _mse_coordinatewise(self, y_hat):
         return (T.shape_padaxis(self.y, 1) - y_hat)**2
-
-    def regularization_loss(self, num_partitions, leaf_values):
-        size_reg = self.gamma * num_partitions
-        coeff_reg = 0.5 * self.eta * np.sum(np.unique(leaf_values**2))
-        return size_reg + coeff_reg
 
     def quadratic_solution_scalar(self, g, h, c):
         a,b = 0.5*h, g

@@ -4,16 +4,21 @@ import proto
 class OptimizerSWIG(object):
     ''' Task-based C++ optimizer.
     '''
-    def __init__(self, num_partitions, g, h):
+    def __init__(self, num_partitions, g, h, sweep_mode=False):
         self.N = len(g)
         self.num_partitions = num_partitions
         self.g_c = proto.FArray()
         self.h_c = proto.FArray()        
         self.g_c = g
         self.h_c = h
+
+        self.sweep_mode = sweep_mode
         
     def __call__(self):
-        return proto.sweep_parallel(self.N, self.num_partitions, self.g_c, self.h_c)
+        if self.sweep_mode:
+            return proto.sweep_parallel(self.N, self.num_partitions, self.g_c, self.h_c)
+        else:
+            return proto.optimize_one(self.N, self.num_partitions, self.g_c, self.h_c)
 
 class EndTask(object):
     pass

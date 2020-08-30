@@ -68,7 +68,6 @@ swcont sweep_parallel(int n,
   };
 
   std::vector<ThreadPool::TaskFuture<void>> v;
-
   
   for (int i=T; i>1; --i) {
     v.push_back(DefaultThreadPool::submitJob(task, n, i, a, b));

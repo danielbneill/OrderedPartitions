@@ -32,7 +32,7 @@ class InductiveRegressor(InductiveBase):
     @if_delegate_has_method(delegate='classifier_')
     def predict(self, X):
         yhat0 = self.classifier_.predict(X.get_value())
-        yhat = T.as_tensor(yhat0.astype(theano.config.floatX))
+        yhat = T.as_tensor(yhat0.reshape(-1,1).astype(theano.config.floatX))
         return yhat
 
 class InductiveClassifier(InductiveBase):
@@ -88,7 +88,7 @@ class LeafOnlyTree(object):
 
 def classifierFactory(clz, **modelArgs):
     if isinstance(clz(), sklearn.base.RegressorMixin):
-        return partial(InductiveRegerssor, clz(**modelArgs))
+        return partial(InductiveRegressor, clz(**modelArgs))
     elif isinstance(clz(), sklearn.base.ClassifierMixin):
         return partial(InductiveClassifier, clz(**modelArgs))
     else:
