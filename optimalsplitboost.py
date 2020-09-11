@@ -24,8 +24,6 @@ class OptimalSplitGradientBoostingClassifier(object):
                  solver_type='linear_hessian',
                  learning_rate=0.1,
                  distiller=classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier),
-                 use_monotonic_partitions=True,
-                 shortest_path_solver=False,
                  ):
         ############
         ## Inputs ##
@@ -48,8 +46,6 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.solver_type = solver_type
         self.learning_rate = learning_rate
         self.distiller = distiller
-        self.use_monotonic_partitions = use_monotonic_partitions
-        self.shortest_path_solver = shortest_path_solver
         ################
         ## END Inputs ##
         ################
@@ -160,9 +156,6 @@ class OptimalSplitGradientBoostingClassifier(object):
         for i in range(1,num_steps):
             self.fit_step()
             leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
-            if (i==24):
-                import pdb
-                pdb.set_trace()
             print('STEP {}: LOSS: {:4.6f}'.format(i,
                                                   theano.function([],
                                                                   self.loss(

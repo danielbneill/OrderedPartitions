@@ -34,6 +34,8 @@ bool assertMixedSign(const std::vector<double>& a) {
 
 auto main(int argc, char **argv) -> int {
 
+  // If no strongly consecutive partition exists, reduce T
+  // and look for weakly consecutive ones
   const bool TEST_STRONGLY_CONSECUTIVE = false;
 
   int N, T;

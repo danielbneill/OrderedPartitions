@@ -15,8 +15,8 @@ TEST_SIZE = 0.10
 ## Generate Random Data ##
 ##########################
 if (USE_SIMULATED_DATA):
-    SEED = 253
-    NUM_SAMPLES = 75
+    SEED = 254
+    NUM_SAMPLES = 500
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES)
@@ -36,13 +36,11 @@ if USE_01_LOSS:
 #############################
 ## Generate Empirical Data ##
 #############################
-
-
 if __name__ == '__main__':
-    num_steps = 30
+    num_steps = 100
     num_classifiers = num_steps
-    min_partitions = 50
-    max_partitions = 51
+    min_partitions = 5
+    max_partitions = 6
 
     import sklearn.tree
     # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier)
@@ -57,10 +55,8 @@ if __name__ == '__main__':
                                                  num_classifiers=num_classifiers,
                                                  use_constant_term=False,
                                                  solver_type='linear_hessian',
-                                                 learning_rate=0.55,
+                                                 learning_rate=0.5,
                                                  distiller=distiller,
-                                                 use_monotonic_partitions=False,
-                                                 shortest_path_solver=True
                                                  )
 
     clf.fit(num_steps)
