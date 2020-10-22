@@ -47,7 +47,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-# C++ executable proto
+# C++ executable gtest_all
 add_library(graph OBJECT graph.cpp)
 add_executable(gtest_all gtest_all.cpp)
 target_link_libraries(gtest_all graph ${GTEST_LIBRARIES} pthread)

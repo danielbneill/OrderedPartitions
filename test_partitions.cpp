@@ -49,8 +49,9 @@ auto main(int argc, char **argv) -> int {
     aMixedSignss >> aMixedSign;
   }
 
-  double lower_limit_a = 0., lower_limit_b = 0.;
-  double upper_limit_a = 1., upper_limit_b = 1.;
+  double lower_limit_a = 0., upper_limit_a = 1.;
+  double lower_limit_b = 0., upper_limit_b = 1.;
+
   if ((gamma - std::floor(gamma) <= 0.) &&
       (delta - std::floor(delta) <= 0.)) {
     lower_limit_a = -1.;

@@ -427,10 +427,10 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=ma
 
 # Maximal ordered partition demonstration
 if __name__ == '__fake_news__':
-    NUM_POINTS =        int(sys.argv[1]) or 3   # N
-    PARTITION_SIZE =    int(sys.argv[2]) or 2   # T
+    NUM_POINTS =        int(sys.argv[1]) or 3          # N
+    PARTITION_SIZE =    int(sys.argv[2]) or 2          # T
     POWER =             float(sys.argv[3]) or 2.2      # gamma
-    PRIORITY_POWER =    float(sys.argv[4]) or 1.0
+    PRIORITY_POWER =    float(sys.argv[4]) or 1.0      # tau
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
     
@@ -447,9 +447,13 @@ if __name__ == '__fake_news__':
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
         # XXX
-        a0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
+        a0 = rng.uniform(low=-10.0, high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
 
+        # XXX
+        a0 = np.round(a0, 2)
+        b0 = np.round(b0, 2)
+        
         a0 = np.round(a0, 8)
         b0 = np.round(b0, 8)
 
@@ -537,7 +541,12 @@ if __name__ == '__fake_news__':
 
         def F_orig(x, y, gamma):
             return np.sum(x)**gamma/np.sum(y)
-    
+        def F_symmetric(x, y, Cx, Cy, gamma):
+            if np.sum(x) == Cx:
+                return F_orig(Cx, Cy, gamma)
+            else:
+                return np.sum(x)**gamma/np.sum(y) + (Cx-np.sum(x))**gamma/(Cy-np.sum(y))
+
         # if (np.dot(dF_orig(np.sum(a0), np.sum(b0), POWER), (-a0[0], -b0[0])) < 0) and \
         #    (np.dot(dF_orig(np.sum(a0), np.sum(b0), POWER), (-a0[-1], -b0[-1])) < 0):
             # if (2*a0[0] - b0[0]*(np.sum(a0)/np.sum(b0)) > 0):
@@ -546,22 +555,23 @@ if __name__ == '__fake_news__':
         #     import pdb
         #     pdb.set_trace()
 
-        all_scores = [F_orig(a0[:i], b0[:i], POWER) for i in range(1,len(a0))] + \
-        [F_orig(a0[i:], b0[i:], POWER) for i in range(1,len(a0))] + \
-        [F_orig(a0, b0, POWER)]
+        all_scores = [(i,F_orig(a0[:i], b0[:i], POWER)) for i in range(1,len(a0))] + \
+        [(i,F_orig(a0[i:], b0[i:], POWER)) for i in range(1,len(a0))] + \
+        [(len(a0),F_orig(a0, b0, POWER))]
         all_sym_scores = [(i, F_orig(a0[:i], b0[:i], POWER) + F_orig(a0[i:], b0[i:], POWER))
                           for i in range(1,len(a0))] + \
                           [(len(a0), F_orig(a0, b0, POWER))]
+        # if not all((any(set(s).issubset(set(ss)) for ss in optim_all[PARTITION_SIZE-2][1]) for s in optim_all[PARTITION_SIZE-1][1])):
 
         # vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=False)
         
         # if np.argmax(all_scores) == (len(all_scores)-1):            
         # if min(all_sym_scores, key=lambda x:x[1])[0] != len(a0):
-        if max(all_sym_scores, key=lambda x:x[1])[0] == len(all_sym_scores):
-            optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
-            vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)            
-            import pdb
-            pdb.set_trace()
+        # if max(all_sym_scores, key=lambda x:x[1])[0] == len(all_sym_scores):
+        #     optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+        #     vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)            
+        #     import pdb
+        #     pdb.set_trace()
         #     if len(set(vert_const_sym).difference(set(vert_ext_sym))) ==  0:
         #         vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
 
@@ -614,9 +624,11 @@ if __name__ == '__fake_news__':
             mu2 = (-a0[-1]*delFdelX - b0[-1]*delFdelY)
             mu1 = (-a0[0]*delFdelX - b0[0]*delFdelY)
 
-            vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
-            import pdb
-            pdb.set_trace()
+            if max(all_sym_scores, key=lambda x:x[1])[0] != len(all_sym_scores) or True:
+                optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+                vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, show_plot=True)
+                import pdb
+                pdb.set_trace()
 
             # print('FOUND')
             # if (mu1 >0) or (mu2 > 0):
@@ -888,7 +900,8 @@ if (False):
     import numpy as np
 
     count = 0
-    gamma = 4.0
+
+    gamma = 2.0
 
     def F(a,b,gamma):
         return np.sum(a)**gamma/np.sum(b)
@@ -898,7 +911,7 @@ if (False):
     
     rng = np.random.RandomState(847)
     while True:
-        NUM_POINTS = 2
+        NUM_POINTS = 10
         a0 = rng.uniform(low=0., high=100., size=NUM_POINTS)
         b0 = rng.uniform(low=0., high=1., size=NUM_POINTS)
 
@@ -906,10 +919,15 @@ if (False):
         a0 = a0[sortind]
         b0 = b0[sortind]
 
+        # lhs = F(a0, b0, gamma)
+        # rhs = F(a0[0], b0[0], gamma) + F(a0[1], b0[1], gamma)
         lhs = F(a0, b0, gamma)
-        rhs = F(a0[0], b0[0], gamma) + F(a0[1], b0[1], gamma)
+        rhs = F(a0[0], b0[0], gamma)
 
-        if lhs > rhs:
+        import pdb
+        pdb.set_trace()
+
+        if lhs < rhs:
             print('FOUND')
             print("( ",lhs,", ",rhs," )")
 
@@ -1090,16 +1108,14 @@ if (True):
     import numpy as np
 
     count = 0
-    gamma = 2.0
-
+    gamma = 4.0
+    seed = 146
+    
     def F_noy(a,b,gamma):
         return np.sum(a)**gamma
     
     def F(a,b,gamma):
         return np.sum(a)**gamma/np.sum(b)
-
-    def F(a,b,gamma):
-        return np.log(np.sum(a))**gamma
 
     def F_sym(a,b,Cx,Cy,gamma):
         if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
@@ -1109,10 +1125,10 @@ if (True):
             return (np.sum(a)**gamma/np.sum(b)) + ((Cx-np.sum(a))**gamma/(Cy-np.sum(b)))
             # return np.sum(a)**gamma/np.sum(b)
 
-    rng = np.random.RandomState(346)
+    rng = np.random.RandomState(seed)
     while True:
 
-        NUM_POINTS = 10
+        NUM_POINTS = 4
 
         j = np.max([rng.choice(int(NUM_POINTS/2)), 2])
         k = rng.choice(int(NUM_POINTS/2)) + int(NUM_POINTS/2) + 1
@@ -1122,17 +1138,22 @@ if (True):
         # l,m = np.sort(rng.choice(int(NUM_POINTS), 2, replace=False))
         # n,o = np.sort(rng.choice(int(NUM_POINTS), 2, replace=False))
 
-        upper_limit_a = rng.uniform(low=1., high=100.)
+        upper_limit_a = rng.uniform(low=0., high=100.)
         upper_limit_b = rng.uniform(low=0., high=100.)
         a0 = rng.uniform(low=-0., high=upper_limit_a, size=NUM_POINTS)
         b0 = rng.uniform(low=-0., high=upper_limit_b, size=NUM_POINTS)
 
+
+        # a0 = np.round(a0, 0)
+        # b0 = np.round(b0, 0)
         sortind = np.argsort(a0/b0)
         a0 = a0[sortind]
         b0 = b0[sortind]
         Cx = np.sum(a0)
         Cy = np.sum(b0)
 
+        # STRONG SUBMODULARITY
+        # ====================
         # Submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => submodular
         # sets = subsets(NUM_POINTS)
         # m,n = rng.choice(len(sets), 2, replace=False)
@@ -1143,7 +1164,14 @@ if (True):
         # lhs2 = F(a0[rset], b0[rset], gamma)
         # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
         # rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+        # print('lset: {}'.format(lset))
+        # print('rset: {}'.format(rset))
+        # print('l_r_int: {}'.format(l_r_int))
+        # print('l_r_union: {}'.format(l_r_union))
+        # print('=====')
 
+        # CONSECUTIVE SUBMODULARITY
+        # =========================
         # Weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
         # XXX
         # inequality flips for gamma=2 when replacing F with F_noy;
@@ -1155,6 +1183,8 @@ if (True):
         # rhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
         # rhs2 = F(a0[(j+1):(k+1)],b0[(j+1):(k+1)],gamma)
 
+        # CONSECUTIVE SUBMODULARITY
+        # =========================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
         # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
         # l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
@@ -1166,15 +1196,47 @@ if (True):
         # lhs2 = F(a0[rset], b0[rset], gamma)
         # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
         # rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+        # print('lset: {}'.format(lset))
+        # print('rset: {}'.format(rset))
+        # print('l_r_int: {}'.format(l_r_int))
+        # print('l_r_union: {}'.format(l_r_union))
+        # print(lhs1+lhs2,rhs1+rhs2)
+        # print(j,k,l,m)
+        # print('========')
 
+        # CONSECUTIVE SUBMODULARITY
+        # =========================
         # Yet another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
-        j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
-        lhs1 = F(a0[j:l], b0[j:l], gamma)
-        lhs2 = F(a0[k:m], b0[k:m], gamma)
-        rhs1 = F(a0[j:m], b0[j:m], gamma)
-        rhs2 = F(a0[k:l], b0[k:l], gamma)
+        # j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
+        # lhs1 = F(a0[j:l], b0[j:l], gamma)
+        # lhs2 = F(a0[k:m], b0[k:m], gamma)
+        # rhs1 = F(a0[j:m], b0[j:m], gamma)
+        # rhs2 = F(a0[k:l], b0[k:l], gamma)
+ 
+        # CONSECUTIVE NONSPLITTIGN SUBMODULARITY
+        # ======================================
+        i,j = np.sort(rng.choice(int(NUM_POINTS), 2, replace=False))
+        fb1,fb2 = rng.choice(2, 2, replace=True)
+        lset = set(range(0,i+1)) if fb1 else set(range(i,NUM_POINTS))
+        rset = set(range(0,j+1)) if fb2 else set(range(j,NUM_POINTS))
+        l_r_int = lset.intersection(rset)
+        l_r_union = lset.union(rset)
+        lset,rset,l_r_int,l_r_union = list(lset),list(rset),list(l_r_int),list(l_r_union)
+        lhs1 = F(a0[lset], b0[lset], gamma)
+        lhs2 = F(a0[rset], b0[rset], gamma)
+        rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+        rhs2 = F(a0[l_r_int], b0[l_r_int], gamma) if l_r_int else 0.
+        print('i,j: ({},{})'.format(i,j))
+        print('lset: {}'.format(lset))
+        print('rset: {}'.format(rset))
+        print('l_r_int: {}'.format(l_r_int))
+        print('l_r_union: {}'.format(l_r_union))
+        print(lhs1+lhs2,rhs1+rhs2)
+        print('=====')
+                      
+       
                 
-        # Subadditivity
+        # Subadditivity : (lhs1+lhs2) >= (rhs1+rhs2)
         # sets = subsets(NUM_POINTS)
         # m,n = rng.choice(len(sets), 2, replace=False)
         # lset, rset = sets[m][0], sets[n][0]
@@ -1183,6 +1245,10 @@ if (True):
         # lhs1 = F(a0[lset], b0[lset], gamma)
         # lhs2 = F(a0[rset], b0[rset], gamma)
         # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+        # rhs2 = 0.
+        # lhs1 = F_sym(a0[lset], b0[lset], Cx, Cy, gamma)
+        # lhs2 = F_sym(a0[rset], b0[rset], Cx, Cy, gamma)
+        # rhs1 = F_sym(a0[l_r_union], b0[l_r_union], Cx, Cy, gamma)
         # rhs2 = 0.
 
         # Weak subadditivity : (lhs1+lhs2) >= (rhs1+rhs2)
@@ -1196,17 +1262,47 @@ if (True):
         # rhs1 = F(a0[j:l],b0[j:l],gamma)
         # rhs2 = 0.
 
+        # Quasiconvexity - note this is not a property of the set function,
+        # but of the function defined on R x R+
+        # j,k = rng.choice(range(2, int(NUM_POINTS)), 2, replace=False)
+        # x1,y1 = np.sum(a0[:j]), np.sum(b0[:j])
+        # x2,y2 = np.sum(a0[:k]), np.sum(b0[:k])
+        # For F
+        # if F(x1,y1,gamma) >= F(x2,y2,gamma):
+        #     x1_tmp = x1
+        #     y1_tmp = y1
+        #     x1 = x2
+        #     y1 = y2
+        #     x2 = x1_tmp
+        #     y2 = y1_tmp
+        # lhs1 = (gamma - 1 - gamma*(x1/x2) + (y1/y2))*F(x2,y2,gamma)
+        # lhs2 = 0.
+        # rhs1 = 0.
+        # rhs2 = 0.
+
+        # For F_sym
+        # if F_sym(x1,y1,Cx,Cy,gamma) >= F_sym(x2,y2,Cx,Cy,gamma):
+        #     x1_tmp = x1
+        #     y1_tmp = y1
+        #     x1 = x2
+        #     y1 = y2
+        #     x2 = x1_tmp
+        #     y2 = y1_tmp
+        # XXX
+        # lhs1 = (gamma - 1 - gamma*(x1/x2) + (y1/y2))*F(x2,y2,gamma)
+        # lhs2 = (gamma*(x1/(Cx-x2)) - gamma*(x2/(Cx-x2)) + (y2/(Cy-y2)) - (y1/(Cy-y2)))*F(Cx-x2,Cy-y2,gamma)
+        # rhs1 = 0.
+        # rhs2 = 0.
+
         if ((lhs1+lhs2)<(rhs1+rhs2)) and not np.isclose(lhs1+lhs2, rhs1+rhs2):
         # if not np.isclose(lhs1+lhs2, rhs1+rhs2):
             print('FOUND')
-            print(np.sum(a0[j:k]),' : ',np.sum(a0[k:l]),' : ',np.sum(a0[j:l]))
-            print(np.sum(a0[j:k])**2,' : ',np.sum(a0[k:l])**2,' : ',np.sum(a0[j:l])**2)            
-            print(F_noy(a0[j:k], b0[j:k], gamma),' : ',F_noy(a0[k:l], b0[k:l], gamma),' : ',F_noy(a0[j:l], b0[j:l], gamma))
             print(lhs1+lhs2)
             print(rhs1+rhs2)
             print('a0: ', a0)
             print('b0: ', b0)
-            print('j, k, l: ', j, k, l)
+            # import pdb
+            # pdb.set_trace()
             sys.exit()
 
         count+=1
