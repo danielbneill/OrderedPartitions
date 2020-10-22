@@ -10,7 +10,7 @@
 using boost::multiprecision::cpp_dec_float_100;
 using namespace boost::multiprecision;
 
-int main(int argc, char **argv) {
+auto main() -> int {
 
   // Underflow example
 

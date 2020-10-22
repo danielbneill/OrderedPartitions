@@ -57,9 +57,6 @@ add_library(test_optimal_partition test_optimal_partition.cpp)
 add_executable(test_partitions test_partitions.cpp)
 target_link_libraries(test_partitions test_optimal_partition pthread)
 
-# C++ executable test_lemma
-add_executable(test_lemma test_lemma.cpp)
-
 # C++ executable graph_to_dot
 add_executable(graph_to_dot graph_to_dot.cpp)
 target_link_libraries(graph_to_dot graph)

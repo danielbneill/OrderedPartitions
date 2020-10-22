@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <stdexcept>
 #include <iterator>
 
 #include "graph.hpp"
@@ -30,6 +31,9 @@ auto main(int argc, char **argv) -> int {
 
   int n, T;
 
+  if (argc < 3)
+    throw std::invalid_argument("Must call with 2 input arguments.");
+  
   std::istringstream nss(argv[1]), Tss(argv[2]);
   nss >> n; Tss >> T;
 
@@ -48,7 +52,6 @@ auto main(int argc, char **argv) -> int {
   sort_by_priority(a, b);
 
   auto pg = PartitionGraph(n, T, a, b);
-  auto wt = pg.get_optimal_weight_extern();
   auto subsets = pg.get_optimal_subsets_extern();
 
   /*

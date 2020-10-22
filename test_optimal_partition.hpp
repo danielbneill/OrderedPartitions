@@ -74,12 +74,12 @@ public:
   std::vector<double> get_b() const;
 
 private:
-  int numElements_;
   std::vector<double> a_;
   std::vector<double> b_;
   int T_;
   double gamma_;
   double delta_;
+  int numElements_;
   std::vector<int> elements_;
   std::vector<resultPair> results_;
   resultPair optimalResult_;

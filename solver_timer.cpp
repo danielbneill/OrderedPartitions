@@ -1,8 +1,13 @@
+#include <stdexcept>
+
 #include "solver_timer.hpp"
 
 auto main(int argc, char **argv) -> int {
 
   int n, T, stride;
+
+  if (argc < 4)
+    throw std::invalid_argument("Must call with 3 input arguments.");
 
   std::istringstream nss(argv[1]), Tss(argv[2]), stridess(argv[3]);
   nss >> n; Tss >> T; stridess >> stride;
@@ -14,15 +19,15 @@ auto main(int argc, char **argv) -> int {
 
   using dur = std::chrono::high_resolution_clock::duration::rep;
   std::vector<std::vector<dur>> times(n+1);
-  for (size_t i=0; i<=n; ++i)
+  for (int i=0; i<=n; ++i)
     {
       times[i] = std::vector<dur>(T+1);
-      for(size_t j=0; j<=T; ++j)
+      for(int j=0; j<=T; ++j)
 	times[i][j] = dur{0};
     }
 
-  for (size_t sampleSize=5; sampleSize<=n; sampleSize+=stride) {
-    for (size_t numParts=2; numParts<=T; ++numParts) {
+  for (int sampleSize=5; sampleSize<=n; sampleSize+=stride) {
+    for (int numParts=2; numParts<=T; ++numParts) {
 
       if (sampleSize > numParts) {
 

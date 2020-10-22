@@ -60,7 +60,6 @@ TEST(PartitionGraphTest, Baselines) {
   // sort_by_priority(a, b);
 
   auto pg = PartitionGraph(40, 5, a, b);
-  auto wt = pg.get_optimal_weight_extern();
   auto opt = pg.get_optimal_subsets_extern();
 
   for (size_t i=0; i<expected.size(); ++i) {
@@ -93,7 +92,6 @@ TEST(PartitionGraphTest, OrderedProperty) {
     sort_by_priority(a, b);
 
     auto pg = PartitionGraph(n, T, a, b);
-    auto wt = pg.get_optimal_weight_extern();
     auto opt = pg.get_optimal_subsets_extern();
 
     int sum;

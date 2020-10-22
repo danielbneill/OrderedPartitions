@@ -11,6 +11,9 @@
 #include <boost/graph/bellman_ford_shortest_paths.hpp>
 #include <boost/graph/graphviz.hpp>
 
+#define MON_Internal_UnusedStringify(macro_arg_string_literal) #macro_arg_string_literal
+#define MONUnusedParameter(macro_arg_parameter) _Pragma(MON_Internal_UnusedStringify(unused(macro_arg_parameter)))
+
 //
 // boost adjacency_list type
 // adjacency_list<OutEdgeList, VertexList, Directed,
@@ -52,8 +55,8 @@ public:
     b_{b},
     per_level_{n-T+1},
     priority_sortind_{ivec(T_)},
-    subsets_{ivecvec(T_)},
-    optimalweight_{0.}
+    optimalweight_{0.},
+    subsets_{ivecvec(T_)}
   { _init(); }
 
   PartitionGraph(int n,
@@ -65,8 +68,8 @@ public:
     T_{T},
     per_level_{n-T+1},
     priority_sortind_{ivec(T_)},
-    subsets_{ivecvec(T_)},
-    optimalweight_{0.}
+    optimalweight_{0.},
+    subsets_{ivecvec(T_)}
   { 
     a_.assign(a, a+n);
     b_.assign(b, b+n);
@@ -86,9 +89,9 @@ public:
 private:
   int n_;
   int T_;
-  int per_level_;
   fvec a_;
   fvec b_;
+  int per_level_;
   ivec priority_sortind_;
   ipairlist optimalpath_;
   ilist optimalnodepath_;

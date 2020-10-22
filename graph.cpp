@@ -29,20 +29,20 @@ PartitionGraph::add_edge_and_weight(int j, int k, std::vector<float> &&diffs)
   if (k==1) {
     // level 1, just connect source to node
     weight = compute_weight(0, j, diffs);
-    auto r = boost::add_edge(0, curr_node, EdgeWeightProperty(weight), G_);
+    __attribute__((unused)) auto r = boost::add_edge(0, curr_node, EdgeWeightProperty(weight), G_);
   }
   else if (k==T_) {
     // level T_, connect all nodes in previous layer to node
-    for (size_t i=j; i<j+per_level_-1; ++i) {
+    for (int i=j; i<j+per_level_-1; ++i) {
       weight = compute_weight(i, k, diffs);
-      auto r = boost::add_edge(node_to_int(i, k-1), curr_node, EdgeWeightProperty(weight), G_);
+      __attribute__((unused)) auto r = boost::add_edge(node_to_int(i, k-1), curr_node, EdgeWeightProperty(weight), G_);
 		      }
   }
   else {
     // level >= 2
-    for (size_t i=k-1; i<j; ++i) {
+    for (int i=k-1; i<j; ++i) {
       weight = compute_weight(i, j, diffs);
-      auto r = boost::add_edge(node_to_int(i, k-1), curr_node, EdgeWeightProperty(weight), G_);
+      __attribute__((unused)) auto r = boost::add_edge(node_to_int(i, k-1), curr_node, EdgeWeightProperty(weight), G_);
     }
   }
 }
@@ -85,9 +85,9 @@ PartitionGraph::create()
   int numDiff = (n_+1)*(n_);
   float wt;
   std::vector<float> diffs = std::vector<float>(numDiff);
-  for (size_t j=1; j<=n_; ++j) { diffs[j] = -1. * std::pow(asum[j-1], 2)/bsum[j-1]; }
-  for (size_t i=1; i<=n_; ++i) {
-    for (size_t j=i+1; j<=n_; ++j) {
+  for (int j=1; j<=n_; ++j) { diffs[j] = -1. * std::pow(asum[j-1], 2)/bsum[j-1]; }
+  for (int i=1; i<=n_; ++i) {
+    for (int j=i+1; j<=n_; ++j) {
       wt = -1. * std::pow(asum[j-1]-asum[i-1], 2)/(bsum[j-1]-bsum[i-1]);
       diffs[i*n_+j] = wt;
     }
@@ -98,8 +98,8 @@ PartitionGraph::create()
   
   // add layers for $T \in \{1, \dots T__{-1}\}$
   // std::cerr << "CONSTRUCTING GRAPH\n";
-  for(size_t k=1; k<T_; ++k) {
-    for(size_t j=k; j<(k+per_level_); ++j) {
+  for(int k=1; k<T_; ++k) {
+    for(int j=k; j<(k+per_level_); ++j) {
       add_edge_and_weight(j, k, std::move(diffs));
     }
     // std::cerr << "  LAYER " << k << " OF " << T_-1 << " COMPLETE\n";
@@ -108,9 +108,9 @@ PartitionGraph::create()
   // add sink, must add explicitly
   float weight;
   int curr_node = (T_-1) * per_level_ + 1;
-  for (size_t j=T_-1; j<n_; ++j) {
+  for (int j=T_-1; j<n_; ++j) {
     weight = compute_weight(j, n_, diffs);
-    auto r = boost::add_edge(node_to_int(j, T_-1), curr_node, EdgeWeightProperty(weight), G_);
+    __attribute__((unused)) auto r = boost::add_edge(node_to_int(j, T_-1), curr_node, EdgeWeightProperty(weight), G_);
   }
   // std::cerr << "GRAPH CONSTRUCTION COMPLETE\n";
 }
@@ -134,12 +134,12 @@ PartitionGraph::optimize() {
     parent[i] = i;
 
   // bellman-ford
-  bool r = bellman_ford_shortest_paths(G_, 
-				       nb_vertices, 
-				       boost::weight_map(weight_pmap).
-				       distance_map(&distance[0]).
-				       predecessor_map(&parent[0])
-				       );
+  __attribute__((unused)) bool r = bellman_ford_shortest_paths(G_, 
+							       nb_vertices, 
+							       boost::weight_map(weight_pmap).
+							       distance_map(&distance[0]).
+							       predecessor_map(&parent[0])
+							       );
   
   // optimal paths
   using ipair = std::pair<int,int>;
@@ -160,7 +160,7 @@ PartitionGraph::optimize() {
   int subset_ind = 0;
   for (auto& node : optimalpath_) {
     subsets_[subset_ind]= std::vector<int>();
-    for(size_t i=node.first; i<node.second; ++i) {
+    for(int i=node.first; i<node.second; ++i) {
       subsets_[subset_ind].push_back(priority_sortind_[i]);
     }
     subset_ind++;
@@ -244,7 +244,7 @@ PartitionGraph::write_dot() {
 
   int nb_vertices = boost::num_vertices(G_);
   std::vector<std::string> nameProp(nb_vertices);
-  for(size_t i=0; i<nb_vertices; ++i) {
+  for(int i=0; i<nb_vertices; ++i) {
     auto p = int_to_node(i);
     nameProp[i] = "(" + std::to_string(p.first) + ", " + std::to_string(p.second) + ")";
   }

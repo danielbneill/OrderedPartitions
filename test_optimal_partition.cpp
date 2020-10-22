@@ -20,7 +20,7 @@ namespace combinatorics {
     if (k == 0) return 1;
     
     int result = n;
-    for( int i = 2; i <= k; ++i ) {
+    for( unsigned long i = 2; i <= k; ++i ) {
       result *= (n-i+1);
       result /= i;
     }
@@ -92,7 +92,6 @@ PartitionTest::runTest() {
   for (auto& item : v_)
     item.get();
 
-  int count = 0;
   double maxScore = std::numeric_limits<double>::min();
 
   resultPair result;
@@ -204,7 +203,7 @@ PartitionTest::formPartitions_() {
   
   for(;;){
     counter += 1;
-    if (lists.size() == T_) {
+    if (static_cast<int>(lists.size()) == T_) {
       fList_.emplace_back(lists);
     }
     
@@ -224,9 +223,9 @@ PartitionTest::formPartitions_() {
       if(obreak) break;
       
       ++index;
-      if (index >= lists.size())
+      if (index >= static_cast<int>(lists.size()))
 	lists.emplace_back(std::vector<int>());
-      for (;i<indexes.size();++i) {
+      for (;i<static_cast<int>(indexes.size());++i) {
 	indexes[i]=index;
 	lists[index].emplace_back(elements_[i]);
 	index=0;
@@ -246,7 +245,7 @@ PartitionTest::assertOrdered(const resultPair& r) const {
   for (auto& list: r.second) {
     std::vector<int> v(list.size());
     std::adjacent_difference(list.begin(), list.end(), v.begin());    
-    return std::count(v.begin()+1, v.end(), 1) == (v.size() - 1);
+    return std::count(v.begin()+1, v.end(), 1) == (static_cast<int>(v.size()) - 1);
   }
   return true;
 }
