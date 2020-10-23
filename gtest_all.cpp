@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "graph.hpp"
+#include "DP.hpp"
 
 void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
   std::vector<int> ind(a.size());
@@ -110,9 +111,118 @@ TEST(PartitionGraphTest, OrderedProperty) {
   
 }
 
+TEST(DPSolverTest, Baselines ) {
+
+  std::vector<float> a{0.0212651 , -0.20654906, -0.20654906, -0.20654906, -0.20654906,
+      0.0212651 , -0.20654906,  0.0212651 , -0.20654906,  0.0212651 ,
+      -0.20654906,  0.0212651 , -0.20654906, -0.06581402,  0.0212651 ,
+      0.03953075, -0.20654906,  0.16200014,  0.0212651 , -0.20654906,
+      0.20296943, -0.18828341, -0.20654906, -0.20654906, -0.06581402,
+      -0.20654906,  0.16200014,  0.03953075, -0.20654906, -0.20654906,
+      0.03953075,  0.20296943, -0.20654906,  0.0212651 ,  0.20296943,
+      -0.20654906,  0.0212651 ,  0.03953075, -0.20654906,  0.03953075};
+  std::vector<float> b{0.22771114, 0.21809504, 0.21809504, 0.21809504, 0.21809504,
+      0.22771114, 0.21809504, 0.22771114, 0.21809504, 0.22771114,
+      0.21809504, 0.22771114, 0.21809504, 0.22682739, 0.22771114,
+      0.22745816, 0.21809504, 0.2218354 , 0.22771114, 0.21809504,
+      0.218429  , 0.219738  , 0.21809504, 0.21809504, 0.22682739,
+      0.21809504, 0.2218354 , 0.22745816, 0.21809504, 0.21809504,
+      0.22745816, 0.218429  , 0.21809504, 0.22771114, 0.218429  ,
+      0.21809504, 0.22771114, 0.22745816, 0.21809504, 0.22745816};
+
+  std::vector<std::vector<int>> expected = {
+    {1, 2, 3, 4, 6, 8, 10, 12, 16, 19, 22, 23, 25, 28, 29, 32, 35, 38, 21}, 
+    {13, 24}, 
+    {0, 5, 7, 9, 11, 14, 18, 33, 36, 15, 27, 30, 37, 39}, 
+    {17, 26}, 
+    {20, 31, 34}
+  };
+
+  
+  // sort_by_priority(a, b);
+
+  auto dp = DPSolver(40, 5, a, b);
+  auto opt = dp.get_optimal_subsets_extern();
+
+  for (size_t i=0; i<expected.size(); ++i) {
+    auto expected_subset = expected[i], opt_subset = opt[i];
+    ASSERT_EQ(expected_subset.size(), opt_subset.size());
+    for(size_t j=0; j<expected_subset.size(); ++j) {
+      ASSERT_EQ(expected_subset[j], opt_subset[j]);
+    }
+  }
+
+}
+
+TEST(DPSolverTest, OrderedProperty) {
+  // Case (n,T) = (50,5)
+  int n = 50, T = 5;
+  
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_real_distribution<float> dist(1., 10.);
+
+  std::vector<float> a(n), b(n);
+
+  for (size_t i=0; i<5; ++i) {
+    for (auto &el : a)
+      el = dist(gen);
+    for (auto &el : b)
+      el = dist(gen);
+
+    // Presort
+    sort_by_priority(a, b);
+
+    auto dp = DPSolver(n, T, a, b);
+    auto opt = dp.get_optimal_subsets_extern();
+
+    int sum;
+    std::vector<int> v;
+
+    for (auto& list : opt) {
+      v.resize(list.size());
+      std::adjacent_difference(list.begin(), list.end(), v.begin());
+      sum = std::accumulate(v.begin()+1, v.end(), 0);
+    }
+
+    // We ignored the first element as adjacent_difference has unintuitive
+    // result for first element
+    ASSERT_EQ(sum, v.size()-1);
+  }
+  
+}
+
+
+TEST(MultiSolver, Runs) {
+
+  int n = 100, T = 10;
+  
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_real_distribution<float> dista(-10., 10.);
+  std::uniform_real_distribution<float> distb(0., 10.);
+  
+  std::vector<float> a(n), b(n);
+
+  for (size_t i=0; i<5; ++i) {
+    for (auto &el : a)
+      el = dista(gen);
+    for (auto &el : b)
+      el = distb(gen);
+
+    auto pg = PartitionGraph(n, T, a, b);
+    auto opt_pg = pg.get_optimal_subsets_extern();
+
+    auto dp = DPSolver(n, T, a, b);
+    auto opt_dp = dp.get_optimal_subsets_extern();
+
+    ASSERT_EQ(1, 1);
+  
+  }
+}
+
 auto main(int argc, char **argv) -> int {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
 

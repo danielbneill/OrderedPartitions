@@ -49,8 +49,9 @@ link_directories(${Boost_LIBRARY_DIR})
 
 # C++ executable gtest_all
 add_library(graph OBJECT graph.cpp)
+add_library(DP OBJECT DP.cpp)
 add_executable(gtest_all gtest_all.cpp)
-target_link_libraries(gtest_all graph ${GTEST_LIBRARIES} pthread)
+target_link_libraries(gtest_all graph DP ${GTEST_LIBRARIES} pthread)
 
 # C++ executable test_partitions
 add_library(test_optimal_partition test_optimal_partition.cpp)
@@ -69,6 +70,10 @@ target_link_libraries(solver_timer graph timer)
 # C++ executable multiprecisision
 add_executable(multiprecision multiprecision.cpp)
 target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
+
+# C++ DPSolver
+add_executable(DP_solver_test DP_solver_test.cpp)
+target_link_libraries(DP_solver_test DP graph pthread)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)
