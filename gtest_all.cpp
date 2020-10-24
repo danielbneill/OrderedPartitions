@@ -30,6 +30,19 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 	    
 }
 
+void pretty_print_subsets(std::vector<std::vector<int>>& subsets) {
+  std::cout << "SUBSETS\n";
+  std::cout << "[\n";
+  std::for_each(subsets.begin(), subsets.end(), [](std::vector<int>& subset){
+		  std::cout << "[";
+		  std::copy(subset.begin(), subset.end(),
+			    std::ostream_iterator<int>(std::cout, " "));
+		  std::cout << "]\n";
+		});
+  std::cout << "]" << std::endl;
+}
+
+
 TEST(PartitionGraphTest, Baselines) {
 
   std::vector<float> a{0.0212651 , -0.20654906, -0.20654906, -0.20654906, -0.20654906,
@@ -193,22 +206,28 @@ TEST(DPSolverTest, OrderedProperty) {
 }
 
 
-TEST(MultiSolver, Runs) {
+TEST(MultiSolver, SmallScaleTieouts) {
 
-  int n = 100, T = 10;
+  int n = 40, T = 10;
+  size_t NUM_CASES = 250;
   
   std::default_random_engine gen;
   gen.seed(std::random_device()());
   std::uniform_real_distribution<float> dista(-10., 10.);
   std::uniform_real_distribution<float> distb(0., 10.);
   
-  std::vector<float> a(n), b(n);
+  std::vector<float> a(n), b(n), c(n);
 
-  for (size_t i=0; i<5; ++i) {
+  for (size_t i=0; i<NUM_CASES; ++i) {
     for (auto &el : a)
       el = dista(gen);
     for (auto &el : b)
       el = distb(gen);
+
+    sort_by_priority(a, b);
+
+    for(int i=0; i<n; ++i)
+      c[i] = a[i]/b[i];
 
     auto pg = PartitionGraph(n, T, a, b);
     auto opt_pg = pg.get_optimal_subsets_extern();
@@ -216,7 +235,119 @@ TEST(MultiSolver, Runs) {
     auto dp = DPSolver(n, T, a, b);
     auto opt_dp = dp.get_optimal_subsets_extern();
 
-    ASSERT_EQ(1, 1);
+    ASSERT_EQ(opt_pg.size(), opt_dp.size());
+
+    /*
+      std::copy(a.begin(), a.end(), std::ostream_iterator<float>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(b.begin(), b.end(), std::ostream_iterator<float>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(c.begin(), c.end(), std::ostream_iterator<float>(std::cout, " " ));
+      std::cout << std::endl;
+      std::cout << "PG SOLVER\n";
+      pretty_print_subsets(opt_pg);
+      std::cout << "DP SOLVER\n";
+      pretty_print_subsets(opt_dp);
+      std::cout << "=====\n";
+    */
+
+    // Scores
+    float pg_score_num = 0., pg_score_den = 0.;
+    float dp_score_num = 0., dp_score_den = 0.;
+    float pg_score = 0., dp_score = 0.;
+    for (size_t i=0; i<opt_pg.size(); ++i) {
+      for (size_t j=0; j<opt_pg[i].size(); ++j) {
+	pg_score_num += a[opt_pg[i][j]];
+	pg_score_den += b[opt_pg[i][j]];
+	dp_score_num += a[opt_dp[i][j]];
+	dp_score_den += b[opt_dp[i][j]];
+      }
+      pg_score += pg_score_num*pg_score_num/pg_score_den;
+      dp_score += dp_score_num*dp_score_num/dp_score_den;
+    }
+
+    // std::cout << "Scores (PG, DP): " << pg_score << " : " << dp_score << std::endl;
+    
+    
+    for (size_t i=0; i<opt_pg.size(); ++i) {
+      for (size_t j=0; j<opt_pg[i].size(); ++j) {
+	ASSERT_EQ(opt_pg[i][j], opt_dp[i][j]);
+      }
+    }
+
+  
+  }
+}
+
+TEST(MultiSolver, LargeScaleTieouts) {
+
+  int n = 500, T = 15;
+  size_t NUM_CASES = 5;
+  
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_real_distribution<float> dista(-10., 10.);
+  std::uniform_real_distribution<float> distb(0., 10.);
+  
+  std::vector<float> a(n), b(n), c(n);
+
+  for (size_t i=0; i<NUM_CASES; ++i) {
+    for (auto &el : a)
+      el = dista(gen);
+    for (auto &el : b)
+      el = distb(gen);
+
+    sort_by_priority(a, b);
+
+    for(int i=0; i<n; ++i)
+      c[i] = a[i]/b[i];
+
+    auto pg = PartitionGraph(n, T, a, b);
+    auto opt_pg = pg.get_optimal_subsets_extern();
+
+    auto dp = DPSolver(n, T, a, b);
+    auto opt_dp = dp.get_optimal_subsets_extern();
+
+    ASSERT_EQ(opt_pg.size(), opt_dp.size());
+
+    /*
+      std::copy(a.begin(), a.end(), std::ostream_iterator<float>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(b.begin(), b.end(), std::ostream_iterator<float>(std::cout, " "));
+      std::cout << std::endl;
+      std::copy(c.begin(), c.end(), std::ostream_iterator<float>(std::cout, " " ));
+      std::cout << std::endl;
+      std::cout << "PG SOLVER\n";
+      pretty_print_subsets(opt_pg);
+      std::cout << "DP SOLVER\n";
+      pretty_print_subsets(opt_dp);
+      std::cout << "=====\n";
+    */
+
+    // Scores
+    float pg_score_num = 0., pg_score_den = 0.;
+    float dp_score_num = 0., dp_score_den = 0.;
+    float pg_score = 0., dp_score = 0.;
+    for (size_t i=0; i<opt_pg.size(); ++i) {
+      for (size_t j=0; j<opt_pg[i].size(); ++j) {
+	pg_score_num += a[opt_pg[i][j]];
+	pg_score_den += b[opt_pg[i][j]];
+	dp_score_num += a[opt_dp[i][j]];
+	dp_score_den += b[opt_dp[i][j]];
+      }
+      pg_score += pg_score_num*pg_score_num/pg_score_den;
+      dp_score += dp_score_num*dp_score_num/dp_score_den;
+    }
+
+    // std::cout << "Scores (PG, DP): " << pg_score << " : " << dp_score << std::endl;
+    
+    
+    for (size_t i=0; i<opt_pg.size(); ++i) {
+      for (size_t j=0; j<opt_pg[i].size(); ++j) {
+	ASSERT_TRUE((opt_pg[i][j] == opt_dp[i][j]) || (dp_score > pg_score));
+      }
+    }
+
   
   }
 }
