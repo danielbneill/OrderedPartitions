@@ -29,6 +29,8 @@ public:
   { _init(); }
 
   ivecvec get_optimal_subsets_extern() const;
+  float get_optimal_score_extern() const;
+
     
 private:
   int n_;
@@ -38,6 +40,7 @@ private:
   fvecvec maxScore_;
   ivecvec nextStart_;
   ivec priority_sortind_;
+  float optimal_score_;
   ivecvec subsets_;
 
   void _init() { create(); optimize(); }

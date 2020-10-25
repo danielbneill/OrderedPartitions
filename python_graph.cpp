@@ -1,7 +1,7 @@
 #include "python_graph.hpp"
 #include <thread>
 
-ivecvec find_optimal_partition(int n, 
+ivecvec find_optimal_partition__PG(int n, 
 			       int T, 
 			       std::vector<float> a, 
 			       std::vector<float> b) {
@@ -11,7 +11,7 @@ ivecvec find_optimal_partition(int n,
   
 }
 
-float find_optimal_weight(int n,
+float find_optimal_weight__PG(int n,
 			  int T,
 			  std::vector<float> a,
 			  std::vector<float> b) {
@@ -20,7 +20,7 @@ float find_optimal_weight(int n,
 
 }
 
-swpair optimize_one(int n,
+swpair optimize_one__PG(int n,
 		    int T,
 		    std::vector<float> a,
 		    std::vector<float> b) {
@@ -32,7 +32,7 @@ swpair optimize_one(int n,
   return std::make_pair(subsets, weight);
 }
 
-swpair sweep_best(int n,
+swpair sweep_best__PG(int n,
 		  int T,
 		  std::vector<float> a,
 		  std::vector<float> b) {
@@ -42,6 +42,8 @@ swpair sweep_best(int n,
   
   for (int i=T; i>1; --i) {
     PartitionGraph pg{n, i, a, b};
+    // XXX
+    // Taking minimum here?
     weight = pg.get_optimal_weight_extern();
     std::cout << "NUM_PARTITIONS: " << T << " WEIGHT: " << weight << std::endl;
     if (weight < best_weight) {
@@ -54,7 +56,7 @@ swpair sweep_best(int n,
   
 }
 
-swcont sweep_parallel(int n,
+swcont sweep_parallel__PG(int n,
 		      int T,
 		      std::vector<float> a,
 		      std::vector<float> b) {
@@ -88,7 +90,7 @@ swcont sweep_parallel(int n,
 
 }
 
-swcont sweep(int n,
+swcont sweep__PG(int n,
 	     int T,
 	     std::vector<float> a,
 	     std::vector<float> b) {

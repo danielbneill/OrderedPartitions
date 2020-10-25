@@ -17,29 +17,29 @@ using swpair = std::pair<ivecvec, float>;
 using swcont = std::vector<swpair>;
 
 
-ivecvec find_optimal_partition(int n,
+ivecvec find_optimal_partition__PG(int n,
 			       int T,
 			       std::vector<float> a,
 			       std::vector<float> b);
-float find_optimal_weight(int n,
+float find_optimal_weight__PG(int n,
 			  int T,
 			  std::vector<float> a,
 			  std::vector<float> b);
 
-swpair optimize_one(int n,
+swpair optimize_one__PG(int n,
 		   int T,
 		   std::vector<float> a,
 		   std::vector<float> b);
 
-swpair sweep_best(int n,
+swpair sweep_best__PG(int n,
 		  int T,
 		  std::vector<float> a,
 		  std::vector<float> b);
-swcont sweep_parallel(int n,
+swcont sweep_parallel__PG(int n,
 		    int T,
 		    std::vector<float> a,
 		    std::vector<float> b);
-swcont sweep(int n,
+swcont sweep__PG(int n,
 	     int T,
 	     std::vector<float> a,
 	     std::vector<float> b);

@@ -58,6 +58,8 @@ DPSolver::print_nextStart_() {
 
 void
 DPSolver::create() {
+  optimal_score_ = 0.;
+  
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
 
@@ -81,15 +83,29 @@ DPSolver::create() {
     }
   }
 
+  // Precompute partial sums
+  std::vector<std::vector<float>> partialSums;
+  partialSums = std::vector<std::vector<float>>(n_, std::vector<float>(n_, 0.));
+  for (int i=0; i<n_; ++i) {
+    // std::cout << "PRECOMPUTE ROW: " << i << std::endl;
+    for (int j=i; j<n_; ++j) {
+      partialSums[i][j] = compute_score(i, j);
+      // float score = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
+      //	std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
+    }
+  }
+  std::cout << "COMPLETED PRECOMPUTE STEP\n";
+
   // Fill in column-by-column from the left
   float score;
   float maxScore;
   int maxNextStart = -1;
   for(int j=2; j<=T_; ++j) {
+    // std::cout << "COMPLETED ALL SIZE " << j << " PARTITIONS\n";
     for (int i=0; i<n_; ++i) {
       maxScore = std::numeric_limits<float>::min();
       for (int k=i+1; k<=(n_-(j-1)); ++k) {
-	score = compute_score(i,k) + maxScore_[k][j-1];
+	score = partialSums[i][k] + maxScore_[k][j-1];
 	if (score > maxScore) {
 	  maxScore = score;
 	  maxNextStart = k;
@@ -97,6 +113,9 @@ DPSolver::create() {
       }
       maxScore_[i][j] = maxScore;
       nextStart_[i][j] = maxNextStart;
+      // Only need the initial entry in last column
+      if (j == T_)
+	break;
     }
   }
 
@@ -113,11 +132,15 @@ DPSolver::optimize() {
   // Pick out associated maxScores element
 
   int currentInd = 0, nextInd = 0;
+  float score_num = 0., score_den = 0.;
   for (int t=T_; t>0; --t) {
     nextInd = nextStart_[currentInd][t];
     for (int i=currentInd; i<nextInd; ++i) {
       subsets_[T_-t].push_back(priority_sortind_[i]);
+      score_num += a_[priority_sortind_[i]];
+      score_den += b_[priority_sortind_[i]];
     }
+    optimal_score_ += score_num*score_num/score_den;
     currentInd = nextInd;
   }
 }
@@ -127,3 +150,7 @@ DPSolver::get_optimal_subsets_extern() const {
   return subsets_;
 }
 
+float
+DPSolver::get_optimal_score_extern() const {
+  return optimal_score_;
+}

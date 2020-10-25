@@ -16,9 +16,9 @@ class OptimizerSWIG(object):
         
     def __call__(self):
         if self.sweep_mode:
-            return proto.sweep_parallel(self.N, self.num_partitions, self.g_c, self.h_c)
+            return proto.sweep_parallel__DP(self.N, self.num_partitions, self.g_c, self.h_c)
         else:
-            return proto.optimize_one(self.N, self.num_partitions, self.g_c, self.h_c)
+            return proto.optimize_one__DP(self.N, self.num_partitions, self.g_c, self.h_c)
 
 class EndTask(object):
     pass
@@ -36,7 +36,7 @@ class OptimizerTask(object):
         
     @staticmethod
     def _task(N, num_partitions, g, h):
-        s, w = proto.optimize_one(N, num_partitions, g, h)
+        s, w = proto.optimize_one__DP(N, num_partitions, g, h)
         return s, w
 
 class Worker(multiprocessing.Process):

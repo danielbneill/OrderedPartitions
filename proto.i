@@ -4,6 +4,8 @@
 %{
 #include "graph.hpp"
 #include "python_graph.hpp"
+#include "DP.hpp"
+#include "python_dpsolver.hpp"
 %}
 
 %include "std_vector.i"
@@ -18,4 +20,5 @@ namespace std {
 }
 
 %include "python_graph.hpp"
+%include "python_dpsolver.hpp"
 

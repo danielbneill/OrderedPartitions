@@ -6,7 +6,8 @@ import theano
 import theano.tensor as T
 
 import classifier
-import solverSWIG
+import solverSWIG_PG
+import solverSWIG_DP
 
 SEED = 515
 rng = np.random.RandomState(SEED)
@@ -173,7 +174,7 @@ class OptimalSplitGradientBoostingClassifier(object):
             loss wins.
         '''
 
-        results = solverSWIG.OptimizerSWIG(num_partitions, g, h)()
+        results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
 
         npart = T.scalar('npart')
         lv = T.dmatrix('lv')

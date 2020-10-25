@@ -78,7 +78,7 @@ target_link_libraries(DP_solver_test DP graph pthread)
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)
 # set_source_files_properties(proto.i PROPERTIES SWIG_FLAGS "-includeall")
-swig_add_library(test_partition_optimizer LANGUAGE python OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR} OUTFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR} SOURCES python_graph.cpp graph.cpp proto.i)
+swig_add_library(test_partition_optimizer LANGUAGE python OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR} OUTFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR} SOURCES python_graph.cpp graph.cpp python_dpsolver.cpp DP.cpp proto.i)
 swig_link_libraries(test_partition_optimizer ${PYTHON_LIBRARIES})
 
 # Equivalent CL swig:
