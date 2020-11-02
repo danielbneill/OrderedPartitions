@@ -176,7 +176,7 @@ def oos_summary(clf, X_test, y_test):
     print('IS _loss_lr:  {:4.6f}'.format(_loss(y_hat_lr)))
     print('IS _loss_cb:  {:4.6f}'.format(_loss(y_hat_cb)))
     print()
-    
+
     # Out-of-sample predictions
     X0 = X_test
     y0 = y_test.reshape(-1,1)

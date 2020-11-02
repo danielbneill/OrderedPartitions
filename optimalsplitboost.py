@@ -168,7 +168,7 @@ class OptimalSplitGradientBoostingClassifier(object):
 
     def find_best_optimal_split(self, g, h, num_partitions):
         ''' Method: results contains the optimal partitions for all partition sizes in
-            [1, num_partitions]. We take each, form the optimal_split_tree from an
+            [1, num_partitions]. We take each, from the optimal_split_tree from an
             inductive fitting of the classifier, then look at the loss of the new
             predictor (current predictor + optimal_split_tree predictor). The minimal
             loss wins.

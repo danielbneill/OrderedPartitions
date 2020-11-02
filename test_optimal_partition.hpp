@@ -22,11 +22,14 @@ public:
   static double neg_log_(double a, double b) {
     return -std::log(a)/b;
   }
-  static double log_(double a, double b) {
-    return std::log(a+1)/b;
-  }
   static double exp_(double a, double b) {
     return std::exp(-a)/b;
+  }
+  static double log_(double a, double b) {
+    return -1.*std::log(1+a);
+  }
+  static double log_prod_(double a, double b) {
+    return -1.*std::log((1+a)*(1+b));
   }
 };
 

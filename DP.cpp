@@ -94,7 +94,6 @@ DPSolver::create() {
       //	std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
     }
   }
-  std::cout << "COMPLETED PRECOMPUTE STEP\n";
 
   // Fill in column-by-column from the left
   float score;

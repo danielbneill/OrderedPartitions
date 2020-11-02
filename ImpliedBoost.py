@@ -9,15 +9,15 @@ from optimalsplitboost import OptimalSplitGradientBoostingClassifier
 
 USE_SIMULATED_DATA = True # False
 USE_01_LOSS = False # False
-TEST_SIZE = 0.10
+TEST_SIZE = 0.10 # .10
 
 ##########################
 ## Generate Random Data ##
 ##########################
 if (USE_SIMULATED_DATA):
-    SEED = 254
-    NUM_SAMPLES = 10000
-    NUM_FEATURES = 5
+    SEED = 254 # 254
+    NUM_SAMPLES = 1000 # 1000
+    NUM_FEATURES = 20 # 20
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES, n_features=NUM_FEATURES)
@@ -38,25 +38,26 @@ if USE_01_LOSS:
 ## Generate Empirical Data ##
 #############################
 if __name__ == '__main__':
-    num_steps = 50
+    num_steps = 50 # 50
     num_classifiers = num_steps
-    min_partitions = 2
-    max_partitions = 3
+    min_partitions = 1 # 1
+    max_partitions = 501 # 501
+
 
     import sklearn.tree
-    # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier)
-    distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
+    distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
+    # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
     clf = OptimalSplitGradientBoostingClassifier(X_train,
                                                  y_train,
                                                  min_partition_size=min_partitions,
                                                  max_partition_size=max_partitions,
-                                                 gamma=0.0025, # .025
-                                                 eta=0.75, # .025
+                                                 gamma=0.025, # .025
+                                                 eta=0.5, # .5
                                                  num_classifiers=num_classifiers,
                                                  use_constant_term=False,
                                                  solver_type='linear_hessian',
-                                                 learning_rate=0.5,
+                                                 learning_rate=0.5, # 0.5
                                                  distiller=distiller,
                                                  )
 

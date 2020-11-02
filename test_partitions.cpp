@@ -49,8 +49,9 @@ auto main(int argc, char **argv) -> int {
     aMixedSignss >> aMixedSign;
   }
 
-  double lower_limit_a = 0., upper_limit_a = 1.;
-  double lower_limit_b = 0., upper_limit_b = 1.;
+  // XXX
+  double lower_limit_a = 0., upper_limit_a = 10.;
+  double lower_limit_b = 0., upper_limit_b = 10.;
 
   if ((gamma - std::floor(gamma) <= 0.) &&
       (delta - std::floor(delta) <= 0.)) {
@@ -103,6 +104,10 @@ auto main(int argc, char **argv) -> int {
     // Optimize
     pt.runTest();
 
+    std::cerr << "Maximal partition" << std::endl;
+    pt.print_pair(pt.get_results());
+    std::cerr << std::endl;
+
     // Print out problematic case    
     if (!pt.assertOrdered(pt.get_results())) {
       // Replay everything
@@ -121,10 +126,9 @@ auto main(int argc, char **argv) -> int {
 	  else if (i > 1)
 	    isConsecutive[i] = true;
 	}
-	// XXX
 	// Look at all cases <= T
-	if (contains_no(isConsecutive, true)) {
-	// if (true) {
+	// if (contains_no(isConsecutive, true)) {
+	if (true) {
 	  auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
 	  
 	  std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
@@ -148,7 +152,7 @@ auto main(int argc, char **argv) -> int {
 	    pt_vec[i]->print_pair(pt_vec[i]->get_results());
 	    std::cerr << std::endl;
 	  }
-	  
+	
 	  exit(0);
 	}
       }

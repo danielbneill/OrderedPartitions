@@ -163,11 +163,10 @@ PartitionTest::optimize_(int b, int e) {
 	paSum += a_[*eit];
 	pbSum += b_[*eit];
       }
-      rSum += Score::power_(paSum, pbSum, gamma_);
-      // rSum += Score::neg_log_(paSum, pbSum);
+      // XXX
+      // rSum += Score::power_(paSum, pbSum, gamma_);      
       // rSum += Score::log_(paSum, pbSum);
-      // rSum += Score::exp_(paSum, pbSum);
-      
+      rSum += Score::log_prod_(paSum, pbSum);
     }
     // print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {
