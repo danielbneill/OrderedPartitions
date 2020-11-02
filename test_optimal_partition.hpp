@@ -7,6 +7,7 @@
 #include <utility>
 #include <numeric>
 #include <iterator>
+#include <atomic>
 
 #include "threadpool.hpp"
 #include "threadsafequeue.hpp"
@@ -89,6 +90,8 @@ private:
   std::vector<std::vector<std::vector<int>>> fList_;
   ThreadsafeQueue<resultPair> results_queue_;
   std::vector<ThreadPool::TaskFuture<void>> v_;
+
+  mutable std::atomic<bool> optimization_done_{false};
 
   void init_(bool);
   void cleanup_();

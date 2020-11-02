@@ -92,16 +92,21 @@ PartitionTest::runTest() {
   for (auto& item : v_)
     item.get();
 
-  double maxScore = std::numeric_limits<double>::min();
+  double maxScore = std::numeric_limits<double>::lowest();
 
   resultPair result;
   while (!results_queue_.empty()) {
     bool valid = results_queue_.waitPop(result);
+    std::cerr << "result: " << result.first << std::endl;
     if (valid && (result.first > maxScore)) {
       maxScore = result.first;
       optimalResult_ = result;
     }
   }
+  
+  std::cerr << "optimizat_done_ set to true" << std::endl;
+
+  optimization_done_ = true;
 
 }
 
@@ -151,7 +156,7 @@ PartitionTest::cleanup_() {
 resultPair
 PartitionTest::optimize_(int b, int e) {
   double rSum, paSum, pbSum;
-  double rMax = std::numeric_limits<double>::min();
+  double rMax = std::numeric_limits<double>::lowest();
   std::vector<std::vector<int>> partMax;
 
   for (auto it=fList_.cbegin()+b; it!=fList_.cbegin()+e; ++it) {
@@ -236,7 +241,8 @@ PartitionTest::formPartitions_() {
 
 resultPair
 PartitionTest::get_results() const {
-  return optimalResult_;
+  while (!optimization_done_);
+    return optimalResult_;
 }
 
 bool
