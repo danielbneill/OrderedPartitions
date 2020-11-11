@@ -434,7 +434,6 @@ if (False):
 
         Cx,Cy = np.sum(a0), np.sum(b0)        
 
-
         # if (np.sum(a0[:SPLIT_INDEX])/np.sum(b0[:SPLIT_INDEX]) > np.sum(a0)/np.sum(b0)) or \
         #    (np.sum(a0)/np.sum(b0) > np.sum(a0[SPLIT_INDEX:])/np.sum(b0[SPLIT_INDEX:])):
         if (np.sum(a0[:-1+SPLIT_INDEX])/np.sum(b0[:-1+SPLIT_INDEX]) > np.sum(a0[:SPLIT_INDEX])/np.sum(b0[:SPLIT_INDEX])):
@@ -448,11 +447,132 @@ if (False):
             print('count: {}'.format(count))
 
 if (True):
+    # The yellow region represents the True portion
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import sys
+
+    count = 0
+    alpha = 2.00
+    beta = 1.0
+    seed = 147
+    QUADRANT_ONE = False
+
+    USE_HESSIAN = False
+
+    if USE_HESSIAN:
+        def hess(x,y,alpha,beta):
+            H = np.array([[alpha*(alpha-1)*x**(alpha-2)/y**beta,
+                           -alpha*(beta)*x**(alpha-1)/y**(beta+1)],
+                          [-alpha*beta*x**(alpha-1)/y**(beta+1),
+                           beta*(beta+1)*x**alpha/y**(beta+2)]
+                          ])
+            eigs = np.linalg.eig(H)[0]
+            return all(eigs >= -1.e-6)
+ 
+
+        k = 10
+
+        def F(a,b,alpha,beta):
+            return (a**alpha)/(b**beta)
+
+        def F_sym(a,b,alpha,beta):
+            return (a**alpha)/(b**beta) + ((1-a)**alpha)/((1-b)**beta)
+
+        if (QUADRANT_ONE):
+            xaxis = np.arange(0.001, 1, .01)
+        else:
+            xaxis = np.arange(-1., 1., .01)
+        yaxis = np.arange(0.001, 1, .001)
+        xx,yy = np.meshgrid(xaxis, yaxis)
+        ee = np.zeros([xaxis.shape[0], yaxis.shape[0]])
+        for i in range(len(xaxis)):
+            for j in range(len(yaxis)):
+                ee[i,j] = hess(xaxis[i],yaxis[j],alpha,beta)
+            print('{} done'.format(xaxis[i]))
+            
+        np.unique(ee)
+     
+        z = F_sym(xx,yy,alpha,beta)
+        z = z < k
+        cmap = plt.cm.RdYlBu            
+        h = plt.contourf(xaxis,yaxis,z,cmap=cmap)
+        # plt.pause(1e-3)
+        plt.show()
+    else:
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import sys
+        
+        count = 0
+        alpha = 1.0
+        beta = 0.0
+        seed = 151
+        QUADRANT_ONE = False
+        
+        SEED = 48
+
+        # def F(a,b,alpha,beta):
+        #     return ((a/b)**(a))*np.exp(b-a)
+
+        def F(a,b,alpha,beta):
+            return (a**alpha)/(b**beta)        
+        
+        rng = np.random.RandomState(SEED)
+        if QUADRANT_ONE:
+            xaxis = np.arange(0.001, 1, .01)
+        else:
+            xaxis = np.arange(-1., 1., .01)
+        yaxis = np.arange(0.001, 1, .001)
+        count = 0
+        while True:
+            x1,x2 = rng.choice(xaxis,size=2,replace=False)
+            y1,y2 = rng.choice(yaxis,size=2,replace=False)
+            eta = rng.uniform(low=0,high=1)
+            xmid=eta*x1+(1-eta)*x2
+            ymid=eta*y1+(1-eta)*y2
+            lhs = F(xmid,ymid,alpha,beta)
+            rhs = eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
+
+            if lhs>rhs and not np.isclose(lhs,rhs):
+                print('CONVEXITY VIOLATED')
+                print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
+                print('F(p1): {} F(p2): {} lhs: {} rhs: {}'.format(F(x1,y1,alpha,beta),
+                                                                   F(x2,y2,alpha,beta),
+                                                                   F(xmid,ymid,alpha,beta),
+                                                                   eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
+                                                                   ))
+                # import pdb; pdb.set_trace()
+
+            xsum = x1+x2
+            ysum = y1+y2
+            lhs = F(xsum,ysum,alpha,beta)
+            rhs = F(x1,y1,alpha,beta)+F(x2,y2,alpha,beta)
+            if lhs>rhs and not np.isclose(lhs,rhs):
+                print('SUBADDITIVITY VIOLATED')
+                print('p1: ({},{}), p2: ({},{}), psum: ({},{})'.format(x1,y1,x2,y2,xsum,ysum))
+                print('F(p1+p2): {}, F(p1): {} F(p2): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
+                                                                                 F(x1,y1,alpha,beta),
+                                                                                 F(x2,y2,alpha,beta),
+                                                                                 rhs
+                                                                                   ))
+                # import pdb; pdb.set_trace()
+
+            count+=1
+            if not count%100000:
+                print('count: {}'.format(count))
+                
+
+if (False):
     import numpy as np
 
     count = 0
-    gamma = 2.0
+    gamma = 6.0
+    alpha = 4.9
+    beta = 4.0
     seed = 147
+    FIRST_QUADRANT = True
     
     # def F_noy(a,b,gamma):
     #     return np.sum(a)**gamma
@@ -460,15 +580,17 @@ if (True):
     # def F(a,b,gamma):
     #     return np.sum(a)**gamma/np.sum(b)
 
-
-    # def F_sym(a,b,Cx,Cy,gamma):
-    #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
-    #         return Cx**gamma/Cy
-    #     else:
-    #         return (np.sum(a)**gamma/np.sum(b)) + ((Cx-np.sum(a))**gamma/(Cy-np.sum(b)))
-
     def F(a,b,gamma):
-        return 1.*np.log((1+np.sum(a))*(1+np.sum(b)))
+        return (np.sum(a)**alpha)/(np.sum(b)**beta)
+
+    def F_sym(a,b,Cx,Cy,gamma):
+        if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
+            return F(a,b,alpha,beta)
+        else:
+            return (np.sum(a)**alpha)/(np.sum(b)**beta) + ((Cx-np.sum(a))**alpha)/((Cy-np.sum(b))**beta)
+
+    # def F(a,b,gamma):
+    #     return 1.*np.log((1+np.sum(a))*(1+np.sum(b)))
 
     # def F(a,b,gamma):
     #     return 1.*np.log(1+np.sum(a))
@@ -482,7 +604,7 @@ if (True):
     rng = np.random.RandomState(seed)
     while True:
 
-        NUM_POINTS = 5
+        NUM_POINTS = 8
 
         j = np.max([rng.choice(int(NUM_POINTS/2)), 2])
         k = rng.choice(int(NUM_POINTS/2)) + int(NUM_POINTS/2) + 1
@@ -494,9 +616,11 @@ if (True):
 
         upper_limit_a = rng.uniform(low=0., high=100.)
         upper_limit_b = rng.uniform(low=0., high=100.)
-        a0 = rng.uniform(low=-0., high=upper_limit_a, size=NUM_POINTS)
+        if FIRST_QUADRANT:
+            a0 = rng.uniform(low=-0., high=upper_limit_a, size=NUM_POINTS)
+        else:
+            a0 = rng.uniform(low=-upper_limit_a, high=upper_limit_a, size=NUM_POINTS)
         b0 = rng.uniform(low=-0., high=upper_limit_b, size=NUM_POINTS)
-
 
         # a0 = np.round(a0, 0)
         # b0 = np.round(b0, 0)
@@ -589,15 +713,15 @@ if (True):
         # print('=====')                            
                 
         # Subadditivity : (lhs1+lhs2) >= (rhs1+rhs2)
-        sets = subsets(NUM_POINTS)
-        m,n = rng.choice(len(sets), 2, replace=False)
-        lset, rset = sets[m][0], sets[n][0]
-        rset = list(set(rset).difference(set(lset)))
-        l_r_union = list(set(lset).union(set(rset)))
-        lhs1 = F(a0[lset], b0[lset], gamma)
-        lhs2 = F(a0[rset], b0[rset], gamma)
-        rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
-        rhs2 = 0.
+        # sets = subsets(NUM_POINTS)
+        # m,n = rng.choice(len(sets), 2, replace=False)
+        # lset, rset = sets[m][0], sets[n][0]
+        # rset = list(set(rset).difference(set(lset)))
+        # l_r_union = list(set(lset).union(set(rset)))
+        # lhs1 = F(a0[lset], b0[lset], gamma)
+        # lhs2 = F(a0[rset], b0[rset], gamma)
+        # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+        # rhs2 = 0.
         # lhs1 = F_sym(a0[lset], b0[lset], Cx, Cy, gamma)
         # lhs2 = F_sym(a0[rset], b0[rset], Cx, Cy, gamma)
         # rhs1 = F_sym(a0[l_r_union], b0[l_r_union], Cx, Cy, gamma)
@@ -605,12 +729,11 @@ if (True):
 
         # Weak subadditivity : (lhs1+lhs2) >= (rhs1+rhs2)
         # Subadditivity of F_sym irrelelvant
-        # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-        # l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))        
-        # lhs1 = F(a0[j:k],b0[j:k],gamma)
-        # lhs2 = F(a0[k:l],b0[k:l],gamma)
-        # rhs1 = F(a0[j:l],b0[j:l],gamma)
-        # rhs2 = 0.
+        j,k,l = np.sort(rng.choice(int(NUM_POINTS+1), 3, replace=False))
+        lhs1 = F(a0[j:k],b0[j:k],gamma)
+        lhs2 = F(a0[k:l],b0[k:l],gamma)
+        rhs1 = F(a0[j:l],b0[j:l],gamma)
+        rhs2 = 0.
 
         # Quasiconvexity - note this is not a property of the set function,
         # but of the function defined on R x R+

@@ -49,19 +49,35 @@ auto main(int argc, char **argv) -> int {
     aMixedSignss >> aMixedSign;
   }
 
-  // XXX
-  double lower_limit_a = 0., upper_limit_a = 10.;
-  double lower_limit_b = 0., upper_limit_b = 10.;
+  bool posOnly = false;
+  if (argc > 6) {
+    std::istringstream posOnlyss(argv[6]);
+    posOnlyss >> posOnly;
+  }
+  
+  constexpr double LIMIT = 1.;
+
+  double lower_limit_a = 0., upper_limit_a = LIMIT;
+  double lower_limit_b = 0., upper_limit_b = LIMIT;
 
   if ((gamma - std::floor(gamma) <= 0.) &&
       (delta - std::floor(delta) <= 0.)) {
-    lower_limit_a = -1.;
+    lower_limit_a = -LIMIT;
   }
 
-  if (aMixedSign && !(lower_limit_a < 0)) {
-    std::cerr << "aMixedSign incompatible with lower limit for a" << std::endl;
+  if (posOnly) {
+    lower_limit_a = 0.;
+  }
+
+  if (posOnly && aMixedSign) {
+    std::cerr << "Specifications of posOnly and aMixedSign are incompatible" << std::endl;
     return -1;
   }
+  if (aMixedSign && !(lower_limit_a < 0)) {
+    std::cerr << "aMixedSign is only compatible with integer powers" << std::endl;
+    return -1;
+  }
+  
 
   std::random_device rnd_device;
   std::mt19937 mersenne_engine {rnd_device()};
@@ -107,6 +123,19 @@ auto main(int argc, char **argv) -> int {
     std::cerr << "Maximal partition" << std::endl;
     pt.print_pair(pt.get_results());
     std::cerr << std::endl;
+
+    auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
+    
+    std::cerr << "a   = [ ";
+    for (auto& el : a_sorted)
+      std::cout << std::setprecision(16) << el << " ";
+    std::cerr << "]" << std::endl;
+    
+    std::cerr << "b   = [ ";
+    for (auto& el : b_sorted)
+      std::cerr << std::setprecision(16) << el << " ";
+    std::cerr << "]" << std::endl;
+
 
     // Print out problematic case    
     if (!pt.assertOrdered(pt.get_results())) {
@@ -159,7 +188,7 @@ auto main(int argc, char **argv) -> int {
       else {
 	auto a_sorted = pt.get_a(), b_sorted = pt.get_b();
 
-	std::cerr << "EXCEPTION: gamma = " << gamma << " delta = " << delta << std::endl;
+	std::cerr << "----->>> EXCEPTION <<<-----: gamma = " << gamma << " delta = " << delta << std::endl;
 	std::cerr << "a   = [ ";
 	for (auto& el : a_sorted)
 	  std::cout << std::setprecision(16) << el << " ";

@@ -129,6 +129,11 @@ def reduce(return_values, fn):
 def power_score_fn(a,b,gamma,p):
     return np.sum(a[p])**gamma/np.sum(b[p])
 
+def double_power_score_fn(a,b,gamma,p):
+    # XXX
+    # return (np.sum(a[p])**gamma)*(np.sum(b[p])**-2.0)
+    return np.sum(a[p])**gamma
+
 def log_score_fn(a,b,gamma,p):
     return -1.*np.log(1. + np.sum(a[p]))
 
@@ -154,19 +159,19 @@ class Task(object):
         for ind,part in enumerate(partitions):
             val = 0
             part_val = [0] * len(part)
-            # print('PARTITION: {!r}'.format(part))
+            print('PARTITION: {!r}'.format(part))
             for part_ind, p in enumerate(part):
                 fnArgs = (a,b,power,p)
                 part_sum = self.score_fn(*fnArgs)
                 part_val[part_ind] = part_sum
                 val += part_sum
-                # print('    SUBSET: {!r} SUBSET SCORE: {:4.4f}'.format(p, part_sum))
+                print('    SUBSET: {!r} SUBSET SCORE: {:4.4f}'.format(p, part_sum))
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
-            # print('    PARTITION SCORE: {:4.4f}'.format(val))
+            print('    PARTITION SCORE: {:4.4f}'.format(val))
         print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
-        # print()
+        print()
         return (max_sum, arg_max)
 
 class EndTask(object):
@@ -210,7 +215,9 @@ def plot_convex_hull(a0,
         import warnings
         warnings.filterwarnings('ignore')
         # ret = x**gamma/y + (Cx-x)**gamma/(Cy-y)
-        ret = -1.*(np.log(1. + x) + np.log(1. + (Cx-x)))
+        # ret = -1.*(np.log(1. + x) + np.log(1. + (Cx-x)))
+        # ret = (x**gamma)/(y**2.0) + ((Cx-x)**gamma)/((Cy-y)**2.0)
+        ret = (x**gamma) + ((Cx-x)**gamma)
         warnings.resetwarnings()
         return ret
 
@@ -218,7 +225,9 @@ def plot_convex_hull(a0,
         import warnings
         warnings.filterwarnings('ignore')
         # ret = x**gamma/y
-        ret = -1.*np.log(1. + x)
+        # ret = -1.*np.log(1. + x)
+        # ret = (x**gamma)/(y**2.0)
+        ret = x**gamma
         warnings.resetwarnings()
         return ret
 
@@ -413,11 +422,13 @@ if __name__ == '__main__':
     PARTITION_SIZE =    int(sys.argv[2]) or 2          # T
     POWER =             float(sys.argv[3]) or 2.2      # gamma
     PRIORITY_POWER =    float(sys.argv[4]) or 1.0      # tau
+    FORCE_MIXED =       float(sys.argv[5]) or False
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
 
     # SCORE_FN = power_score_fn
-    SCORE_FN = log_score_fn
+    # SCORE_FN = log_score_fn
+    SCORE_FN = double_power_score_fn
     
     num_partitions = Bell_n_k(NUM_POINTS, PARTITION_SIZE)
     num_mon_partitions = _Mon_n_k(NUM_POINTS, PARTITION_SIZE)
@@ -432,8 +443,13 @@ if __name__ == '__main__':
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
         # XXX
-        a0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
+        a0 = rng.uniform(low=-0., high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
+
+        if FORCE_MIXED:
+            while all(a0>0) or all(a0<0):
+                a0 = rng.uniform(low=-10., high=10.0, size=int(NUM_POINTS))
+                b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))                
 
         # XXX
         # a0 = np.round(a0, 2)

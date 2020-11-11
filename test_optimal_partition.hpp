@@ -23,7 +23,7 @@ public:
   static double neg_log_(double a, double b) {
     return -std::log(a)/b;
   }
-  static double exp_(double a, double b) {
+  static double expq_(double a, double b) {
     return std::exp(-a)/b;
   }
   static double log_(double a, double b) {
@@ -31,6 +31,27 @@ public:
   }
   static double log_prod_(double a, double b) {
     return -1.*std::log((1+a)*(1+b));
+  }
+  static double double_log_(double a, double b) {
+    return std::log(std::log((1+a)*(1+b)));
+  }
+  static double exp_(double a, double b) {
+    return std::exp((1-a)*(1+b));
+  }
+  static double power_sum_(double a, double b, double gamma) {
+    return std::pow(a,gamma) + std::pow(b,gamma);
+  }
+  static double power_prod_(double a, double b, double gamma) {
+    return std::pow(a,gamma)*std::pow(b,gamma);
+  }
+  static double score_summand_(double a, double b, double gamma) {
+    double eta = -2.0;
+    // return std::pow(a,gamma)*std::pow(b,eta);
+    // return std::pow(a,gamma)*std::pow(b,-2.0);
+    // return std::pow(a,3.0)*std::pow(b,-2.0);
+    // return std::pow(a/b,a)*std::exp(b-a);
+    // return std::pow(a,1.0);
+    return std::pow(a,4.5455)*std::pow(b,-3.5455) + std::pow(a,6.15)*std::pow(b,-5.15);
   }
 };
 

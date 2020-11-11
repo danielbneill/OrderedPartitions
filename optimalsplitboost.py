@@ -207,7 +207,7 @@ class OptimalSplitGradientBoostingClassifier(object):
         best_loss, best_rind, best_leaf_values = heapq.heappop(loss_heap)
 
         # XXX
-        # solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values))))
+        # solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values ))))
         solverKwargs = dict(max_depth=int(np.log2(num_partitions)))
         solverKwargs = dict(max_depth=None)        
         optimal_split_tree = self.imply_tree(best_leaf_values, **solverKwargs)
