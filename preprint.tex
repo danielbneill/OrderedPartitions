@@ -198,7 +198,7 @@ In fact the trivial partition is the optimal partition of size $t \leq 5$, and t
 
 \end{example}
 
-In fact for any pair $\left( n, t\right)$ a maximally-degenerate collapsing specification in $X$, $Y$ exists for any score function that isn't componentwise subadditive. The guarantee of a weakly consecutive maximizing partition does not constrain the domain of interest of $\cite{eq1}$ nor does it help reduce running time of the optimization scheme. In particular, any search over the consecutive partitions of size $t$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, which says nothing about the optimizing partition of strict size $t$. If, after a comprehensive search of size $t$ partitions it is found that the optimization one is nonconsecutive, we must repeat the process for size $t-1, \dots$. Thus there is no efficiency gain in general if one knows in advance only that the optimal partition is weakly consecutive. 
+In fact for any pair $\left( n, t\right)$ a maximally-degenerate collapsing specification in $X$, $Y$ exists for any convex score function that isn't subadditive. A search over the consecutive partitions of size $t$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, which says nothing about the optimizing partition of strict size $t$. There is no way to know whether the size $t$ strongly consecutive maximizing partition is globally optimal, and one must repeat the process for size $t-1, \dots$. 
 
 \vspace{4pt}
 
@@ -678,7 +678,7 @@ For $\mathcal{D}$ as above, $F(x,y) = x^{\alpha}y^{-\beta}$ a rational score fun
 Show that $F$ is convex iff $\alpha - \beta \geq 1$, with the additional requirement that $\alpha$ is even for general $X$, and $F$ is subadditive iff $\alpha - \beta \leq 1$...
 \end{proof}
 
-It is difficult to establish equivalence for the results in $\ref{thm1}$, $\ref{thm2}$, as the extension of the function $F \colon 2^\mathcal{V} \rightarrow \mathbf{R}$ to one on $\underline{\mathcal{C}}$ or $\mathcal{C}$ is not well-defined. The notion of submodularity does not seem to be related - the score function $F(x,y) = \log((1+x)(1+y))$ is submodular, for $X \subseteq \mathbf{R}^+$, but the real valued function defined on the polytope is subadditive and concave. Thus a maximum may occur on the interior of $\underline{\mathcal{C}}$ The Lovasz extension of $F$ is defined on the unit hypercube in $\mathbf{R}^n$, but the natural projections to $\mathbf{R}^2$ that extend $F$ don't preserve convexity. If we restrict attention to rational score functions, then there is an equivalence. For example,  choose $\alpha = 2 + \epsilon$, $\beta = 1$, for some $\epsilon > 0$. Set
+It is difficult to establish equivalence for the results in $\ref{thm1}$, $\ref{thm2}$, as the extension of the function $F \colon 2^\mathcal{V} \rightarrow \mathbf{R}$ to one on $\underline{\mathcal{C}}$ or $\mathcal{C}$ is not well-defined. The notion of submodularity does not seem to be related - the score function $F(x,y) = \log((1+x)(1+y))$ is submodular, for $X \subseteq \mathbf{R}^+$, but the real valued function defined on the polytope is subadditive and concave. Thus a maximum may occur on the interior of $\underline{\mathcal{C}}$. The Lovasz extension of $F$ is defined on the unit hypercube in $\mathbf{R}^n$, but the natural projections to $\mathbf{R}^2$ that extend $F$ don't preserve convexity. If we restrict attention to rational score functions, then there is an equivalence. For example,  choose $\alpha = 2 + \epsilon$, $\beta = 1$, for some $\epsilon > 0$. Set
 \[
 X = \left[ 1-\delta, \delta, 1 + \delta\right], Y = \left[ 1, \delta, 1\right]
 \] 
@@ -688,7 +688,7 @@ for some $\delta > 0$. There are 3 partitions of $\left\lbrace 1, 2, 3\right\rbr
 \text{Score}\left(\mathcal{P}_2\right) & = \frac{1}{1+\delta} + \left( 1+\delta\right)^\alpha \\
 \text{Score}\left(\mathcal{P}_3\right) & = 2^{1+\epsilon}
 \end{align*}
-The last expression is independent of $\delta$, so can choose $\delta$ small so that the last score dominates.
+We can choose $\delta$ small so that the last score dominates.
 For $\alpha = 2 - \epsilon$, $\beta = 1$, $\epsilon > 0$, and the sequences
 \[
 X = \left[ 1, \frac{1}{\delta}, 1\right], Y = \left[ \frac{1}{1+\delta}, \frac{1}{\delta}, \frac{1}{1-\delta}\right]
@@ -701,14 +701,13 @@ we have
 \end{align*}
 and letting $\delta \rightarrow 0$ gives the result, as the first summands in each score can be made arbitrarily close to each other.
 
-To extend these examples to larger $\vert \mathcal{D} \vert = M > N$, $S \geq T$, simply add $M-N$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $S \geq T$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $S - T$ of the indices $N+1, \dots, M$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
+To extend these examples to larger $\vert \mathcal{D} \vert = n > 3$, $s \geq t$, simply add $n-3$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $s \geq t$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $s - t$ of the indices $4, \dots, n$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
 \[
 \left( 1-\delta\right)^\alpha + \frac{\delta^\alpha}{\delta} + \left( 1+\delta\right)^\alpha
 \]
-which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\alpha < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\alpha > 0$ and $\left( N, T\right)$. Therefore $\alpha = 2$.
+which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\alpha < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\alpha > 0$ and $\left( n, t\right)$. Therefore $\alpha = 2$. This argument can be easily generalized to the cases $\alpha - \beta > 1$ and $\alpha - \beta < 1$. 
 
-
-Note that for $\gamma = 2$ and priority function $G\left( x,y\right) = \frac{x^{\tau}}{y}$, $\tau = 1$ is the only priority power that guarantees Property S is satisfied. To see this let
+In addition for $\alpha = 2$, $\beta = 1$ and priority function $G\left( x,y\right) = \frac{x^{\tau}}{y}$, $\tau = 1$ is the only priority power that guarantees the existence of a strongly consecutive maximal partition. To see this let
 \[
 X = \left[ x-\delta, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
 \] 
@@ -735,7 +734,7 @@ Choosing, e.g. $x = 1$, $\delta = .25$ gives
 \text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{3}{2}\epsilon + \epsilon^2 \\
 \text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= 2\epsilon + \epsilon^2
 \end{align*}
-By choosing $epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
+By choosing $\epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
 For $ 0 \leq \tau < 1$ and the priority function $G(X,Y) = \frac{x^{\tau}}{y}$, choose $x$ large relative to $\delta$ forces the priority ordering $G(x_0, y_0) \leq G(x_2, y_2) \leq G(x_1, y_1)$. So the  highest and second highest records exchange priority ordering, and the partition $\mathcal{P}_1$ stays the same, while $\mathcal{P}_1$ now corresponds to $\left\lbrace \left[ 0, 2\right], \left[ 1\right]\right\rbrace$, $\mathcal{P}_2$ to $\left\lbrace \left[ 0, 1\right], \left[ 2\right]\right\rbrace$, only the last being ordered. Perturbing the original sequences by
 \[
 X\left(\epsilon\right) = \left[ x-\delta, \delta, x + \delta + \epsilon\right], Y = \left[ x, \delta, x\right]
@@ -747,69 +746,27 @@ yields
 \end{align*}
 We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
 
+\section{Applications}
 
-Theorem 1 is a special case of the following.
+The approach above provide an alternative proof of the "fast subset scan" (LTSS) property of spatial scan statistics (see $\cite{article6}$). We seek to detect emerging outbreaks - disease, terrorist activity, etc. - based on cross-sectional or time series data of spattial events. In this setting, a data stream of records $\left\lbrace \mathcal{D_t}, \mathcal{D}_{t+1}, \dots \right\rbrace$ is monitored over time at a set of spatial locations $\left\lbrace s_1, s_2, \dots, s_N \right\rbrace$. For each stream $\mathcal{D}_t$ and location $s_j$ the record entries $R^t_j = (x^t_j, y^t_j)$ may represent occurrences of an event and baselines or expectations, respectively. The $y_i$ values could also represent size or population statistics in absence of baselines, while concurrent estimates of baselines could be made using a Bayesian approach, etc. The goal is to compute any spatial regions (unions of the $s_i$) for which occurences are significantly high. Classical clustering techniques seek to find a cluster representation for all data points are not as commmonly used as parametric $\textit{spatial scan statistics}$ methods, which have higher detection power. The methods rely on a parametric specification for the generation of the counts or occurrences $x^t_j$, for fixed $j$, and specify as score function the likelihood ratio statistic which is generally $\theta = \log\left[ \frac{P\left( \mathcal{D} | H_1\right)}{P\left( \mathcal{D}\right | H_0)}\right]$, where $H_0$ represents sampling under the population density, while $H_1$, the alternative represeents sampling with a higher mean. The most common distributional choices are Poisson and Gaussian. The two qualitative specifications of $Y$, as an expectation of occurences, or as a population representation, give rise to two test statistics for each distributional choice. 
 
-\begin{thm} \label{thm1}
-Let $\mathcal{D}$, $F$, $G$ be as above, with $\tau = 1$, and $F$ subadditive. Then there is a maximal strongly consecutive partition for any $X \subseteq \mathbb{R}$, $Y \subseteq \mathbb{R}^+$. 
-\end{thm}
-\begin{proof}
-The proof is the same, only subadditivity is used to assure that $\argmin_{(x,y) \in \underline{\mathcal{C}}} F\left( x,y\right) = \argmin_{(x,y) \in \mathcal{C}} F\left( x,y\right)$.
-\end{proof}
-
-Since submodular, positive functions are subadditive, we have the following.
-
-\begin{corollary} \label{cor0}
-Let $\mathcal{D}$, $F$, $G$ be a dataset, score function, and standard priority. Suppose $F$ is submodular, positive. Then there is a maximal strongly consecutive partition.
-\end{corollary}
-
-The approach above provide an alternative proof of the Linear Time Subset Scanning (LTSS) property of certain subset statistics for spatial scanning problems, in which case a spatial scan statisitic provides the score function (see $\cite{article6}$). The result provides for linear-time cluster detection in the context of disease outbreak, terrorist attacks, etc.
-
-\begin{corollary} \label{cor1}
-[See Theorem 1, $\cite{article6}$] Let $\mathcal{D}$, $F$, $G$ be as above, with $F$ quasiconvex. Then $F$ satisfies the Linear Time Subset Scanning property of $\cite{article6}$, i.e., the solution to
+The large combinatorial optimization problems resulting from this specification are amenable to a linear-time exact search, referred to as the linear time subset scan property. Specifically, it is shown that the program
 \[
-\mathcal{P_0} = \argmax_{S \subseteq N} F(\sum_{i \in S}x_i, \sum_{i \in S}y_i)
+\mathcal{S^*} = \argmax_{S \subseteq N} F(\sum_{i \in S}x_i, \sum_{i \in S}y_i)
 \]
-is a consecutive subset of $N$.
-\end{corollary}
-\begin{proof}
-Since $F(\lambda X_1 + \left( 1 - \lambda\right)X_2, \lambda Y_1 + \left( 1 - \lambda\right) Y_2) \leq \max{\left(F(X_1, Y_1), F(X_2, Y_2)\right)}$, for all $X_1, X_2$, $Y_1, Y_2 \in \mathcal{C}$, $\lambda \in \left[ 0,1\right]$, it is easy to show that $F$ attains a maximal value over $\mathcal{C}$ at an extreme point, which is a consecutive partition, by Proposition $\cite{prop0}$.
-\end{proof}
-
-A much larger class of score functions satisfy Property W, guaranteeing a weakly consecutive maximal partition.
+admits a consecutive subset solution $S^*$ under some mild restrictions on $F$. Our method gives an alternative derivation of the fundamental LTSS result.
 
 
-In addition, if $F$ is submodular on $2^N$, the optimal partitions display an interleaving property with varying $T$.
-\begin{thm} \label{thm2}
-With $D$, $F$, $G$ as above, assume that $F$ is submodular on $2^N$. Then there exist maximal consecutive parititions, for $\mathcal{P}_T = \left\lbrace \pi_1^T, \dots, \pi_T^T\right\rbrace$, satisfying, for all $T$, $1 \leq i \leq T-1$
-\begin{align*}
-\min{\pi_i^T} &\leq \min{\pi_i^{T-1}} \leq \min{\pi_{i+1}^T} \\
-\max{\pi_i^T} &\leq \max{\pi_i^{T-1}} \leq \max{\pi_{i+1}^T} \\
-\end{align*}
-and $\min{\pi_T^T} \leq \max{\pi_T^T} \leq \max{\pi_{T-1}^{T-1}}$.
+\begin{thm} \label{thm3}
+[See Theorem 1, $\cite{article6}$] Let $\mathcal{D}$ be a data set of records, and $F$ a quasiconvex score function. Then the solution to
+\[
+\mathcal{S^*} = \argmax_{S \subseteq N} F(\sum_{i \in S}x_i, \sum_{i \in S}y_i)
+\]
+is a consecutive nonsplitting subset of $\mathcal{V}$.
 \end{thm}
 \begin{proof}
-adapt arguments from $\cite{article5}$.
+Since $F$ is quasiconvex, the solution subset $\argmax F\restriction{\mathcal{C}}$ occurs on an extreme point of $\mathcal{C}$, which by Proposition 1 is consecutive nonsplitting.
 \end{proof}
-
-A weaker property is introduced, placing constraints on the set $X$.
-\vspace{8pt}
-
-\begin{addmargin}[2em]{2em} \label{propA}
-\begin{list}{(B)}{}
-\item For given $F$, $G$ score and priority functions, any $n$ and any $T < n$, the solution to $\ref{eq1}$ is achieved at a strongly consecutive partition, for any $X, Y \subseteq \mathbb{R}^+$
-\end{list}
-\end{addmargin}
-\vspace{8pt}
-
-\vspace{16pt}
-
-$\underline{\text{Additional cases - write up}}$
-\begin{enumerate}
-    \item Property (B) holds for $\gamma = 1$
-    \item Property (A) holds for any quasiconvex function if $T = 2$ and $X$ is of mixed-sign
-    \item Interleaving property allows us to fix problematic weakly consecutive case, $\gamma = 4$, say, by starting with $S = 2$ and considering interleaving partitions to move from $S, S+1, \dots, T$. If any one of the subsets of the partition at step $S$ contains $X$ values of the same sign, it may result in a non-consecutive split of that subset at the next step, if not, the subsets are interleaving, consecutive.
-\end{enumerate}
 
 \section{Implementation}
 We address a gap in the current literature concerning the case for which $F$ is not subadditive, but admits a weakly maximal consecutive partition. As shown previously, the arguments in $\cite{article1}, \cite{article2}$ only guarantee the existence of maximal weakly consecutive partitions when the score function $F$ is convex in all variables, or quasiconvex. The weakly consecutive partition may have strict size $S$ for $S < T$, and the collapse of size may be complete, to $S = 1$ as we have seen. Any search would require a complete scan of all partitions at level $T$ to find the optimal score, and if the optimal partition is not consecutive, the search would resume at levels $T-1, ...$. There is no efficiency gain unless we know $\textit{a priori}$ that a strict size $S$ optimal consecutive partition exists, or something about the structure of the optimal partition of strict size $T$. We can relax the supermodularity requirment on $F$, obtaining
@@ -1224,6 +1181,94 @@ MAX_SUM: 423.1814869694064, MAX_PARTITION: [[0], [1, 2, 3]]
 
 \end{verbatim}
 
+Partition scan statistics in a separable exponential family
+
+Definition of f-divergence: $D_f(P || Q) = \sum Q_i f(P_i / Q_i)$ for probability distributions $P$ and $Q$, s.t. $\sum P_i = 1$, $\sum Q_i = 1$.
+
+For all partition scan statistics in a separable exponential family (defined as in Neill, 2012), the log-likelihood ratio is proportional to the f-divergence between the two additive sufficient statistics C and B:
+\[
+F(P) = B_{all}*D_f(C || B),
+\]
+
+where $f(x) = \phi_0(x*C_{all}/B_{all}) - \phi_0(C_{all}/B_{all})$, with $\phi_0(q)$ defined as in Neill (2012).
+
+
+Thus 
+
+\begin{align*}
+F(P) &= B_{all} \sum_{P_i \in P} (B_i/B_{all}) f((C_i/C_{all})/(B_i/B_{all})) \\
+&= (\sum_{P_i \in P} B_i \phi_0(C_i/B_i)) - B_{all} \phi_0(C_{all}/B_{all}).
+\end{align*}
+
+
+Example 1: Gaussian
+\begin{align*}
+\phi_0(q) &= q^2 / 2 \\
+f(x) &= \phi_0(x*C_{all}/B_{all}) - \phi_0(C_{all}/B_{all}) = (C_{all}^2/2B_{all}^2)*(x^2-1) \\
+F(P) &= (\sum_{P_i \in P} (C_i^2 / 2B_i)) - C_{all}^2 / 2B_{all}
+\end{align*}
+
+
+Example 2: Poisson
+\begin{align*}
+\phi_0(q) &= q \\log q - q \\
+f(x) &= \phi_0(x*C_{all}/B_{all}) - \phi_0(C_{all}/B_{all}) \\
+&= (x*C_{all}/B_{all}) \log (x*C_{all}/B_{all}) - (x*C_{all}/B_{all}) -
+(C_{all}/B_{all}) \log (C_{all}/B_{all}) + (C_{all}/B_{all}) \\
+F(P) &= \sum_{P_i \in P} (C_i \log (C_i/B_i)) - C_{all} \log (C_{all}/B_{all})
+\end{align*}
+
+Example 3: Exponential
+\begin{align*}
+\phi_0(q) &= -\log q \\
+f(x) &= \phi_0(x*C_{all}/B_{all}) - \phi_0(C_{all}/B_{all}) = -\log(x*C_{all}/B_{all}) + \log(C_{all}/B_{all}) = -\log x \\
+F(P) &= \sum_{P_i \in P} (B_i \log (B_i/C_i)) - B_{all} \log (B_{all}/C_{all})
+\end{align*}
+
+Example 4: Binomial
+\begin{align*}
+\phi_0(q) &= q \log(q) + (1-q) \log (1-q) \\
+f(x) &= \phi_0(x*C_{all}/B_{all}) - \phi_0(C_{all}/B_{all}) = x*C_{all}/B_{all} \log (x*C_{all}/B_{all}) \\
+&+ (1-x*C_{all}/B_{all}) \log (1-x*C_{all}/B_{all}) - (C_{all}/B_{all}) \log (C_{all}/B_{all}) \\
+&- (1-C_{all}/B_{all}) \log (1-C_{all}/B_{all}) \\
+F(P) &= \sum_{P_i \in P} (C_i \log C_i/B_i + (B_i-C_i) \log (1-C_i/B_i)) \\
+&- C_{all} \log (C_{all}/B_{all}) - (B_{all}-C_{all}) \log (1-C_{all}/B_{all})
+\end{align*}
+
+*** All f-divergences $D_f(C || B)$ are convex and subadditive.  Convexity is a well-known property of f-divergences; subadditivity can be shown as follows:
+
+Let $(C,B) = (C_1,B_1) + (C_2,B_2)$.
+Then $D_f(C_1 || B_1) + D_f(C_2 || B_2) = B_1 f(C_1/B_1) + B_2 f(C_2/B_2) > B f(C/B) = D_f(C || B)$,
+since $\lambda f(C_1/B_1) + (1-\lambda) f(C_2/B_2) > f(\lambda(C_1/B_1) + (1-\lambda)(C_2/B_2))$,
+for $\lambda = B_1 / (B_1 + B_2) = B_1 / B$, because of convexity of $f$.
+
+Therefore, all partition scan statistics in a separable exponential family satisfy CPP. ***
+
+Additionally, all other f-divergences will satisfy CPP.
+
+Example: Total variation distance $f(x) = |x-1|/2$
+
+\begin{align*}
+F(P) &= B_{all} * \sum_{P_i \in P} B_i f((C_i/C_{all})/(B_i/B_{all})) \\
+&= B_{all}/2 * \sum_{P_i \in P} |C_i(B_{all}/C_{all}) - B_i| \\
+&= C_{all}/2 * \sum_{P_i \in P} |C_i - E[C_i]| where E[C_i] = B_i (C_{all}/B_{all})
+\end{align*}
+
+
+Example: Squared Hellinger distance $f(x) = (1-sqrt(x))^2$
+\begin{align*}
+F(P) &= B_{all} * \sum_{P_i \in P} B_i f((C_i/C_{all})/(B_i/B_{all})) \\
+&= B_{all} * \sum_{P_i \in P} (sqrt(B_i)-sqrt(C_iB_{all}/C_{all}))^2 \\
+& =C_{all} * \sum_{P_i \in P} (sqrt(C_i) - sqrt(E[C_i])^2
+\end{align*}
+
+Example: The f-divergence corresponding to an alpha-divergence of order 4,
+$D_f(P || Q)$ where $f(x) = (1/12)(x^4 - 1)$
+
+\begin{align*}
+F(P) &= B_{all} * \sum_{P_i \in P} B_i f((C_i/C_{all})/(B_i/B_{all})) \\
+&= B_{all} \sum B_i ((C_iB_{all} / B_iC_{all})^4 - 1)
+\end{align*}
 
 
 It is not clear how to achieve the optimal partition in one step. Even the substitution
@@ -1234,8 +1279,6 @@ does not represent an improvemnt. The improvement is obtained by substition to o
 
 In this case it is seems necessary to remove the maximal element from $X_1$ to get to $\left[ \left[ 0 \right], \left[ 1, 2, 3\right]\right]$, which is the operation perfomed in that case above. The partition is then ordered, so the algorithm halts, but if it weren't, we would have $X_1 \leq 0$, $X_2 \geq 0$, the maximal record now in $X_2$, which would become the new $X_1$, and the algorithm would proceed. 
 
-\section*{Acknowledgement}
-I would like to thank Daniel Niell at NYU Courant and Center for Urban Science and Progress for suggestions for further directions and many helpful discussions
 \begin{thebibliography}{1}
 
    \bibitem{article1} Chakravarty, A. K., J. B. Orlin, and U. G. Rothblum. A partitioning problem with additive objective with an application to optimal inventory groupings for joint replenishment. {\em Operations Research}. 30, no. 5, 1982: 1018-1022.

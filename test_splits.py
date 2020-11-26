@@ -9,7 +9,7 @@ from itertools import chain, islice, combinations
 import matplotlib.pyplot as plot
 from scipy.spatial import ConvexHull, Delaunay
 
-SEED = 3369
+SEED = 3371
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -96,7 +96,7 @@ def knuth_partition(ns, m):
     return f(m, n, 0, n, a)
 
 def Bell_n_k(n, k):
-    ''' Number of partitions of {1,...,n} into
+    ''' Number of partitions of  1,...,n} into
         k subsets, a restricted Bell number
     '''
     if (n == 0 or k == 0 or k > n): 
@@ -130,10 +130,27 @@ def power_score_fn(a,b,gamma,p):
     return np.sum(a[p])**gamma/np.sum(b[p])
 
 def double_power_score_fn(a,b,gamma,p):
-    # XXX
-    # return (np.sum(a[p])**gamma)*(np.sum(b[p])**-2.0)
-    return np.sum(a[p])**gamma
+    return (np.sum(a[p])**gamma)*(np.sum(b[p])**-3.00)
 
+def sum_power(a,b,gamma,p):
+    return (np.sum(a[p]) + np.sum(b[p]))**gamma
+
+def Gaussian_llr(a,b,gamma,p):
+    asum = np.sum(a[p])
+    bsum = np.sum(b[p])
+    if asum > bsum:
+        return np.power((asum-bsum),2.0)/(2*bsum)
+    else:
+        return 0
+    
+def Poisson_llr(a,b,gamma,p):
+    asum = np.sum(a[p])
+    bsum = np.sum(b[p])
+    if asum > bsum:
+        return asum*np.log(asum/bsum) + bsum - asum
+    else:
+        return 0
+    
 def log_score_fn(a,b,gamma,p):
     return -1.*np.log(1. + np.sum(a[p]))
 
@@ -159,19 +176,18 @@ class Task(object):
         for ind,part in enumerate(partitions):
             val = 0
             part_val = [0] * len(part)
-            print('PARTITION: {!r}'.format(part))
+            # print('PARTITION: {!r}'.format(part))
             for part_ind, p in enumerate(part):
                 fnArgs = (a,b,power,p)
                 part_sum = self.score_fn(*fnArgs)
                 part_val[part_ind] = part_sum
                 val += part_sum
-                print('    SUBSET: {!r} SUBSET SCORE: {:4.4f}'.format(p, part_sum))
+                # print('    SUBSET: {!r} SUBSET SCORE: {:4.4f}'.format(p, part_sum))
             if self.cond(val, max_sum) == val:
                 max_sum = val
                 arg_max = part
-            print('    PARTITION SCORE: {:4.4f}'.format(val))
-        print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {!r}'.format(max_sum, arg_max))
-        print()
+            # print('    PARTITION SCORE: {:4.4f}'.format(val))
+        print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {}'.format(max_sum, list(arg_max)))
         return (max_sum, arg_max)
 
 class EndTask(object):
@@ -217,7 +233,9 @@ def plot_convex_hull(a0,
         # ret = x**gamma/y + (Cx-x)**gamma/(Cy-y)
         # ret = -1.*(np.log(1. + x) + np.log(1. + (Cx-x)))
         # ret = (x**gamma)/(y**2.0) + ((Cx-x)**gamma)/((Cy-y)**2.0)
-        ret = (x**gamma) + ((Cx-x)**gamma)
+        # ret = (x**gamma) + ((Cx-x)**gamma)
+        ret = F_orig(x,y,gamma) + F_orig(Cx-x,Cy-y,gamma)
+        
         warnings.resetwarnings()
         return ret
 
@@ -226,8 +244,13 @@ def plot_convex_hull(a0,
         warnings.filterwarnings('ignore')
         # ret = x**gamma/y
         # ret = -1.*np.log(1. + x)
-        # ret = (x**gamma)/(y**2.0)
-        ret = x**gamma
+        ret = (x**gamma)/(y**2.0)
+        # ret = x**gamma
+        # XXX
+        # if x > y:
+        # ret = x*np.log(x/y) + y - x
+        # else:
+        #     ret = 0        
         warnings.resetwarnings()
         return ret
 
@@ -377,7 +400,7 @@ def plot_polytope(a0, b0, plot_constrained=True, score_fn=power_score_fn, show_p
 
     return vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym
 
-def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=max):
+def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, CONSEC_ONLY=False, cond=max):
     ind = np.argsort(a0**PRIORITY_POWER/b0)
     (a,b) = (seq[ind] for seq in (a0,b0))
 
@@ -409,6 +432,8 @@ def optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER, cond=ma
             slices_left -= 1
     else:
         partitions = list(knuth_partition(range(0, len(a)), PARTITION_SIZE))
+        if CONSEC_ONLY:
+            partitions = [p for p in partitions if all(np.diff([x for x in chain.from_iterable(p)]) == 1)]
         allResults = [Task(a, b, partitions, power=POWER, cond=cond, score_fn=SCORE_FN)()]
     
             
@@ -422,13 +447,15 @@ if __name__ == '__main__':
     PARTITION_SIZE =    int(sys.argv[2]) or 2          # T
     POWER =             float(sys.argv[3]) or 2.2      # gamma
     PRIORITY_POWER =    float(sys.argv[4]) or 1.0      # tau
-    FORCE_MIXED =       float(sys.argv[5]) or False
+    UNCONSTRAINED =       float(sys.argv[5]) or False
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
 
     # SCORE_FN = power_score_fn
     # SCORE_FN = log_score_fn
     SCORE_FN = double_power_score_fn
+    # SCORE_FN = sum_power
+    # SCORE_FN = Poisson_llr
     
     num_partitions = Bell_n_k(NUM_POINTS, PARTITION_SIZE)
     num_mon_partitions = _Mon_n_k(NUM_POINTS, PARTITION_SIZE)
@@ -443,13 +470,12 @@ if __name__ == '__main__':
         # b0 = rng.choice(range(1,11), NUM_POINTS, True)
 
         # XXX
-        a0 = rng.uniform(low=-0., high=10.0, size=int(NUM_POINTS))
+        a0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
         b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))
 
-        if FORCE_MIXED:
-            while all(a0>0) or all(a0<0):
-                a0 = rng.uniform(low=-10., high=10.0, size=int(NUM_POINTS))
-                b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))                
+        if UNCONSTRAINED:
+            a0 = rng.uniform(low=-10., high=10.0, size=int(NUM_POINTS))
+            b0 = rng.uniform(low=0., high=10.0, size=int(NUM_POINTS))                
 
         # XXX
         # a0 = np.round(a0, 2)
@@ -523,33 +549,59 @@ if __name__ == '__main__':
         if False:
             print('TRIAL: {} : max_raw: {:4.6f} pttn: {!r}'.format(trial, *r_max_raw))
 
+        ss = [list(range(0,i)) for i in range(1,len(a0))] + [list(range(i,len(a0))) for i in range(len(a0)-1,-1,-1)]
+        # res = Task(a0,b0,ss,power=POWER,cond=max,score_fn=SCORE_FN)()
+        [print((p,SCORE_FN(a0,b0,POWER,p))) for p in ss]
+        print('OPTIMIZATION OVER ALL PARTITIONS')
+        print('================================')        
+        optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
+        print('OPTIMIZATION OVER CONSECUTIVE PARTITIONS')
+        print('========================================')
+        con_optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER, CONSEC_ONLY=True) for i in range(1, 1+len(a0))]
+        print('SUMMARY')
+        print('=======')
+        print('a0 = {}'.format(a0))
+        print('b0 = {}'.format(b0))
+
+        # if 1+np.argmax([SCORE_FN(a0,b0,POWER,p) for p in ss]) == len(ss):
+        # if 1+np.argmax([SCORE_FN(a0,b0,POWER,p) for p in ss]) == 0:            
+        #     import pdb
+        #     pdb.set_trace()
+
+        if not all(np.diff([o[1][1][0] for o in con_optim_all[1:]]) <= 0):
+            import pdb
+            pdb.set_trace()
+
         try:
             assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
         except AssertionError as e:
 
-            # Stop if exception found
+            # all_scores = [(i,F_orig(a0[:i], b0[:i], POWER)) for i in range(1,len(a0))] + \
+            #              [(i,F_orig(a0[i:], b0[i:], POWER)) for i in range(1,len(a0))] + \
+            #              [(len(a0),F_orig(a0, b0, POWER))]
+            # all_sym_scores = [(i, F_orig(a0[:i], b0[:i], POWER) + F_orig(a0[i:], b0[i:], POWER))
+            #                   for i in range(1,len(a0))] + \
+            #                   [(len(a0), F_orig(a0, b0, POWER))]            
+            # optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
 
-            vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=True)
-            
-            def F_orig(x,y,gamma):
-                return SCORE_FN(x,y,gamma,range(len(x)))
-            def F_symmetric(x,y,Cx,Cy,gamma):
-                if np.sum(x) == Cx:
-                    return F_orig(Cx,Cy,gamma)
-                else:
-                    return F_orig(x,y,gamma,range(len(x))) + F_orig(Cx-x,Cy-y,gamma,range(len(x)))
-                
-            all_scores = [(i,F_orig(a0[:i], b0[:i], POWER)) for i in range(1,len(a0))] + \
-                         [(i,F_orig(a0[i:], b0[i:], POWER)) for i in range(1,len(a0))] + \
-                         [(len(a0),F_orig(a0, b0, POWER))]
-            all_sym_scores = [(i, F_orig(a0[:i], b0[:i], POWER) + F_orig(a0[i:], b0[i:], POWER))
-                              for i in range(1,len(a0))] + \
-                              [(len(a0), F_orig(a0, b0, POWER))]            
+            # vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=True)        
+            ss = [list(range(0,i)) for i in range(1,len(a0))] + [list(range(i,len(a0))) for i in range(len(a0)-1,-1,-1)]
+            _ = [print((p,SCORE_FN(a0,b0,POWER,p))) for p in ss]                        
+            # res = Task(a0,b0,ss,power=POWER,cond=max,score_fn=SCORE_FN)()
+            print('OPTIMIZATION OVER ALL PARTITIONS')
+            print('================================')        
             optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
-
-            import pdb
-            pdb.set_trace()
-
+            print('OPTIMIZATION OVER CONSECUTIVE PARTITIONS')
+            print('========================================')
+            con_optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER, CONSEC_ONLY=True) for i in range(1, 1+len(a0))]
+            print('SUMMARY')
+            print('=======')
+            print('a0 = {}'.format(a0))
+            print('b0 = {}'.format(b0))
+            
+            # import pdb
+            # pdb.set_trace()
+                
             if False:
                 if not os.path.exists('./violations'):
                     os.mkdir('./violations')

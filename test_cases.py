@@ -446,7 +446,7 @@ if (False):
         if not count%10000:
             print('count: {}'.format(count))
 
-if (True):
+if (False):
     # The yellow region represents the True portion
     
     import numpy as np
@@ -506,9 +506,11 @@ if (True):
         import sys
         
         count = 0
-        alpha = 1.0
-        beta = 0.0
+        alpha = 3.0
+        beta = 2.0
         seed = 151
+        q = 1.1
+        epsilon = .002
         QUADRANT_ONE = False
         
         SEED = 48
@@ -517,8 +519,53 @@ if (True):
         #     return ((a/b)**(a))*np.exp(b-a)
 
         def F(a,b,alpha,beta):
-            return (a**alpha)/(b**beta)        
-        
+            return (a**alpha)/(b**beta)
+
+        # def F(a,b,alpha,beta):
+        #     if a > b:
+        #         return a*np.log(a/b) + b - a
+        #     else:
+        #         return 0
+
+        # def F(a,b,alpha,beta):
+        #     if a > b:
+        #         return (a-b)**2/2/b
+        #     else:
+        #         return 0
+
+        # def F(a,b,alpha,beta):
+        #     Ca = 1-a
+        #     Cb = 1-b
+        #     if a/b > Ca/Cb:
+        #         return a*np.log(a/b) + Ca*np.log(Ca/Cb) - (a+Ca)*np.log((a+Ca)/(b+Cb))                
+        #     else:
+        #         return 0
+
+        # def F(a,b,alpha,beta):
+        #     Ca=1-a
+        #     Cb=1-b
+        #     if a/b>Ca/Cb:
+        #         return (a**2/b) + (Ca**2/Cb) - ((a+Ca)**2/(b+Cb))
+        #     else:
+        #         return 0
+
+        #######
+        # def F_(a,b,alpha,beta):
+        #     return np.exp(-q*b)*np.power(q,a)/np.exp(-b)
+
+        # def F(a,b,alpha,beta):
+        #     return np.log(F_(a,b,alpha,beta))
+
+        # def F(a,b,alpha,beta):
+        #     return (1-b)
+
+        # def F(a,b,alpha,beta):
+        #     return np.max([((1-epsilon)*np.exp(-q*a)*(np.power(q*a,b))), epsilon*np.exp(-b)*(np.power(a,a))])/ \
+        #            np.max([((1-epsilon)*np.exp(-q*a)*(np.power(a,b))), epsilon*np.exp(-b)*(np.power(a,a))])
+
+        # def F(a,b,alpha,beta):
+        #     return np.log(np.power(q,a)*np.exp(b*(1-q)))
+
         rng = np.random.RandomState(SEED)
         if QUADRANT_ONE:
             xaxis = np.arange(0.001, 1, .01)
@@ -535,7 +582,10 @@ if (True):
             lhs = F(xmid,ymid,alpha,beta)
             rhs = eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
 
-            if lhs>rhs and not np.isclose(lhs,rhs):
+            # XXX
+            # Don't check convexity
+            # if lhs>rhs and not np.isclose(lhs,rhs):
+            if (False):
                 print('CONVEXITY VIOLATED')
                 print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
                 print('F(p1): {} F(p2): {} lhs: {} rhs: {}'.format(F(x1,y1,alpha,beta),
@@ -556,7 +606,7 @@ if (True):
                                                                                  F(x1,y1,alpha,beta),
                                                                                  F(x2,y2,alpha,beta),
                                                                                  rhs
-                                                                                   ))
+                                                                                 ))
                 # import pdb; pdb.set_trace()
 
             count+=1
@@ -564,14 +614,14 @@ if (True):
                 print('count: {}'.format(count))
                 
 
-if (False):
+if (True):
     import numpy as np
 
     count = 0
-    gamma = 6.0
-    alpha = 4.9
-    beta = 4.0
-    seed = 147
+    gamma = 2.0
+    alpha = 2.0
+    beta =  1.0
+    seed = 151
     FIRST_QUADRANT = True
     
     # def F_noy(a,b,gamma):
@@ -580,14 +630,17 @@ if (False):
     # def F(a,b,gamma):
     #     return np.sum(a)**gamma/np.sum(b)
 
+    # def F(a,b,gamma):
+    #     return (np.sum(a) + np.sum(b))**alpha
+
     def F(a,b,gamma):
         return (np.sum(a)**alpha)/(np.sum(b)**beta)
 
-    def F_sym(a,b,Cx,Cy,gamma):
-        if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
-            return F(a,b,alpha,beta)
-        else:
-            return (np.sum(a)**alpha)/(np.sum(b)**beta) + ((Cx-np.sum(a))**alpha)/((Cy-np.sum(b))**beta)
+    # def F_sym(a,b,Cx,Cy,gamma):
+    #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
+    #         return F(a,b,alpha,beta)
+    #     else:
+    #         return (np.sum(a)**alpha)/(np.sum(b)**beta) + ((Cx-np.sum(a))**alpha)/((Cy-np.sum(b))**beta)
 
     # def F(a,b,gamma):
     #     return 1.*np.log((1+np.sum(a))*(1+np.sum(b)))
@@ -606,21 +659,14 @@ if (False):
 
         NUM_POINTS = 8
 
-        j = np.max([rng.choice(int(NUM_POINTS/2)), 2])
-        k = rng.choice(int(NUM_POINTS/2)) + int(NUM_POINTS/2) + 1
-        j,k,l = np.sort(rng.choice(int(NUM_POINTS), 3, replace=False))
-        
-        # l,m,n,o = np.sort(rng.choice(int(NUM_POINTS), 4, replace=False))
-        # l,m = np.sort(rng.choice(int(NUM_POINTS), 2, replace=False))
-        # n,o = np.sort(rng.choice(int(NUM_POINTS), 2, replace=False))
-
+        lower_limit_a = rng.uniform(low=-100., high=100.)
+        lower_limit_b = 0.
         upper_limit_a = rng.uniform(low=0., high=100.)
-        upper_limit_b = rng.uniform(low=0., high=100.)
+        upper_limit_b = rng.uniform(low=0., high=100.)        
         if FIRST_QUADRANT:
-            a0 = rng.uniform(low=-0., high=upper_limit_a, size=NUM_POINTS)
-        else:
-            a0 = rng.uniform(low=-upper_limit_a, high=upper_limit_a, size=NUM_POINTS)
-        b0 = rng.uniform(low=-0., high=upper_limit_b, size=NUM_POINTS)
+            lower_limit_a = 0.
+        a0 = rng.uniform(low=lower_limit_a, high=upper_limit_a, size=NUM_POINTS)
+        b0 = rng.uniform(low=lower_limit_b, high=upper_limit_b, size=NUM_POINTS)
 
         # a0 = np.round(a0, 0)
         # b0 = np.round(b0, 0)
@@ -633,20 +679,33 @@ if (False):
         # STRONG SUBMODULARITY
         # ====================
         # Submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => submodular
-        # sets = subsets(NUM_POINTS)
-        # m,n = rng.choice(len(sets), 2, replace=False)
-        # lset, rset = sets[m][0], sets[n][0]
-        # l_r_int = list(set(lset).intersection(set(rset)))
-        # l_r_union = list(set(lset).union(set(rset)))
-        # lhs1 = F(a0[lset], b0[lset], gamma)
-        # lhs2 = F(a0[rset], b0[rset], gamma)
-        # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
-        # rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
-        # print('lset: {}'.format(lset))
-        # print('rset: {}'.format(rset))
-        # print('l_r_int: {}'.format(l_r_int))
-        # print('l_r_union: {}'.format(l_r_union))
-        # print('=====')
+        sets = subsets(NUM_POINTS)
+        m,n = rng.choice(len(sets), 2, replace=False)
+        lset, rset = sets[m][0], sets[n][0]
+        l_r_int = list(set(lset).intersection(set(rset)))
+        l_r_union = list(set(lset).union(set(rset)))
+        lhs1 = F(a0[lset], b0[lset], gamma)
+        lhs2 = F(a0[rset], b0[rset], gamma)
+        rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+        rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+        print('lset: {}'.format(lset))
+        print('rset: {}'.format(rset))
+        print('l_r_int: {}'.format(l_r_int))
+        print('l_r_union: {}'.format(l_r_union))
+        print('=====')
+
+        # REAL-VALUED SUBMODULARITY
+        # =========================
+        # x1,x2 = rng.uniform(low=lower_limit_a, high=upper_limit_a, size=2)
+        # y1,y2 = rng.uniform(low=lower_limit_b, high=upper_limit_b, size=2)
+        # xmin = np.min([x1,x2])
+        # ymin = np.min([y1,y2])
+        # xmax = np.max([x1,x2])
+        # ymax = np.max([y1,y2])
+        # lhs1 = F([x1],[y1], gamma)
+        # lhs2 = F([x2],[y2], gamma)
+        # rhs1 = F([xmin], [ymin], gamma)
+        # rhs2 = F([xmax], [ymax], gamma)
 
         # CONSECUTIVE SUBMODULARITY
         # =========================
@@ -656,6 +715,7 @@ if (False):
         # F is weakly submodular, F_noy is weakly supermodular
         # F is subadditive, hence weakly subadditive, but
         # F_noy is superadditive
+        # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))        
         # lhs1 = F(a0[j:(k+1)],b0[j:(k+1)],gamma)
         # lhs2 = F(a0[(j+1):(k+2)],b0[(j+1):(k+2)],gamma)
         # rhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
@@ -690,6 +750,7 @@ if (False):
         # lhs2 = F(a0[k:m], b0[k:m], gamma)
         # rhs1 = F(a0[j:m], b0[j:m], gamma)
         # rhs2 = F(a0[k:l], b0[k:l], gamma)
+        # print('j,k,l,m: {},{},{}.{}'.format(j,k,l,m))
  
         # CONSECUTIVE NONSPLITTING SUBMODULARITY
         # ======================================
@@ -729,11 +790,11 @@ if (False):
 
         # Weak subadditivity : (lhs1+lhs2) >= (rhs1+rhs2)
         # Subadditivity of F_sym irrelelvant
-        j,k,l = np.sort(rng.choice(int(NUM_POINTS+1), 3, replace=False))
-        lhs1 = F(a0[j:k],b0[j:k],gamma)
-        lhs2 = F(a0[k:l],b0[k:l],gamma)
-        rhs1 = F(a0[j:l],b0[j:l],gamma)
-        rhs2 = 0.
+        # j,k,l = np.sort(rng.choice(int(NUM_POINTS+1), 3, replace=False))
+        # lhs1 = F(a0[j:k],b0[j:k],gamma)
+        # lhs2 = F(a0[k:l],b0[k:l],gamma)
+        # rhs1 = F(a0[j:l],b0[j:l],gamma)
+        # rhs2 = 0.
 
         # Quasiconvexity - note this is not a property of the set function,
         # but of the function defined on R x R+
@@ -766,6 +827,9 @@ if (False):
         # rhs1 = 0.
         # rhs2 = 0.
 
+        # print('lhs: {}'.format(lhs1+lhs2))
+        # print('rhs: {}'.format(rhs1+rhs2))
+        
         if ((lhs1+lhs2)<(rhs1+rhs2)) and not np.isclose(lhs1+lhs2, rhs1+rhs2):
         # if not np.isclose(lhs1+lhs2, rhs1+rhs2):
             print('FOUND')
@@ -773,8 +837,8 @@ if (False):
             print(rhs1+rhs2)
             print('a0: ', a0)
             print('b0: ', b0)
-            # import pdb
-            # pdb.set_trace()
+            import pdb
+            pdb.set_trace()
             sys.exit()
 
         count+=1
