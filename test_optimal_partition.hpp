@@ -55,10 +55,13 @@ public:
     // Poisson EBS
     // return a > b ? a*std::log(a/b) + b - a : 0.;
     // Gaussian EBS
-    return a > b ? std::pow(a-b,2.)/(2*b) : 0.;
+    // return a > b ? std::pow(a-b,2.)/(2*b) : 0.;
     // return std::exp(a) - std::exp(b) - (a-b)*std::exp(b);
     // return std::pow(a,gamma)*std::pow(b,-3.0);
+    return (std::pow(a,6.0))*(std::pow(b,-5.0));
     // return std::pow(a,gamma)*std::pow(b,-1.0) + 1.2;
+    // return std::log((1+a)*(1+b));
+    return a;
   }
 };
 

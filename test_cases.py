@@ -4,8 +4,6 @@ import sys
 def subsets(ns):
     return list(chain(*[[[list(x)] for x in combinations(range(ns), i)] for i in range(1,ns+1)]))
 
-
-
 if (False):
 #### Reconstruct ####
     import numpy as np
@@ -446,7 +444,7 @@ if (False):
         if not count%10000:
             print('count: {}'.format(count))
 
-if (False):
+if (True):
     # The yellow region represents the True portion
     
     import numpy as np
@@ -454,10 +452,10 @@ if (False):
     import sys
 
     count = 0
-    alpha = 2.00
+    alpha = 2.0
     beta = 1.0
     seed = 147
-    QUADRANT_ONE = False
+    QUADRANT_ONE = True
 
     USE_HESSIAN = False
 
@@ -506,20 +504,24 @@ if (False):
         import sys
         
         count = 0
-        alpha = 3.0
+        alpha = 4.0
         beta = 2.0
         seed = 151
-        q = 1.1
+        q = 2.0
         epsilon = .002
-        QUADRANT_ONE = False
+        QUADRANT_ONE = True
         
         SEED = 48
 
         # def F(a,b,alpha,beta):
-        #     return ((a/b)**(a))*np.exp(b-a)
+        #     return (a**alpha)/(b**beta)
 
         def F(a,b,alpha,beta):
-            return (a**alpha)/(b**beta)
+            return np.log((1+a)*(1+b))
+
+        # def F(a,b,alpha,beta):
+        #     return ((a/b)**(a))*np.exp(b-a)
+        
 
         # def F(a,b,alpha,beta):
         #     if a > b:
@@ -550,14 +552,14 @@ if (False):
         #         return 0
 
         #######
-        # def F_(a,b,alpha,beta):
+        # def F(a,b,alpha,beta):
         #     return np.exp(-q*b)*np.power(q,a)/np.exp(-b)
 
         # def F(a,b,alpha,beta):
         #     return np.log(F_(a,b,alpha,beta))
 
         # def F(a,b,alpha,beta):
-        #     return (1-b)
+        #     return np.log((1+a)*(1+b))
 
         # def F(a,b,alpha,beta):
         #     return np.max([((1-epsilon)*np.exp(-q*a)*(np.power(q*a,b))), epsilon*np.exp(-b)*(np.power(a,a))])/ \
@@ -582,39 +584,45 @@ if (False):
             lhs = F(xmid,ymid,alpha,beta)
             rhs = eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
 
-            # XXX
-            # Don't check convexity
-            # if lhs>rhs and not np.isclose(lhs,rhs):
             if (False):
-                print('CONVEXITY VIOLATED')
-                print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
-                print('F(p1): {} F(p2): {} lhs: {} rhs: {}'.format(F(x1,y1,alpha,beta),
-                                                                   F(x2,y2,alpha,beta),
-                                                                   F(xmid,ymid,alpha,beta),
-                                                                   eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
-                                                                   ))
-                # import pdb; pdb.set_trace()
+                if lhs>rhs and not np.isclose(lhs,rhs):
+                    print('CONVEXITY VIOLATED')
+                    print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
+                    print('F(p1): {} F(p2): {} lhs: {} rhs: {}'.format(F(x1,y1,alpha,beta),
+                                                                       F(x2,y2,alpha,beta),
+                                                                       F(xmid,ymid,alpha,beta),
+                                                                       eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
+                                                                       ))
+            if (True):
+                xsum = x1+x2
+                ysum = y1+y2
+                lhs = F(xsum,ysum,alpha,beta)
+                rhs = F(x1,y1,alpha,beta)+F(x2,y2,alpha,beta)
+                if lhs>rhs and not np.isclose(lhs,rhs):
+                    print('SUBADDITIVITY VIOLATED')
+                    print('p1: ({},{}), p2: ({},{}), psum: ({},{})'.format(x1,y1,x2,y2,xsum,ysum))
+                    print('F(p1+p2): {}, F(p1): {} F(p2): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
+                                                                                     F(x1,y1,alpha,beta),
+                                                                                     F(x2,y2,alpha,beta),
+                                                                                     rhs
+                                                                                     ))
 
-            xsum = x1+x2
-            ysum = y1+y2
-            lhs = F(xsum,ysum,alpha,beta)
-            rhs = F(x1,y1,alpha,beta)+F(x2,y2,alpha,beta)
-            if lhs>rhs and not np.isclose(lhs,rhs):
-                print('SUBADDITIVITY VIOLATED')
-                print('p1: ({},{}), p2: ({},{}), psum: ({},{})'.format(x1,y1,x2,y2,xsum,ysum))
-                print('F(p1+p2): {}, F(p1): {} F(p2): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
-                                                                                 F(x1,y1,alpha,beta),
-                                                                                 F(x2,y2,alpha,beta),
-                                                                                 rhs
-                                                                                 ))
-                # import pdb; pdb.set_trace()
+            if (False):
+                lhs = F(x1,y1,alpha,beta)
+                rhs = F(x1+eta,y1+eta,alpha,beta)
+                if lhs>rhs and not np.isclose(lhs,rhs):
+                    print('MONOTONICITY VIOLATED')
+                    print('F(p1): {}, F(p1+delta): {}'.format(F(x1,y1,alpha,beta),
+                                                              F(x1+x2,y1+y2,alpha,beta),
+                                                              ))
+                    
 
             count+=1
             if not count%100000:
                 print('count: {}'.format(count))
                 
 
-if (True):
+if (False):
     import numpy as np
 
     count = 0
@@ -633,8 +641,26 @@ if (True):
     # def F(a,b,gamma):
     #     return (np.sum(a) + np.sum(b))**alpha
 
+    # def F(a,b,gamma):
+    #     return np.log((1+np.sum(a))*(1+np.sum(b)))
+
+    # def F(a,b,gamma):
+    #    return (np.sum(a)**alpha)/(np.sum(b)**beta)
+
+    # def F_sym(a,b,gamma):
+    #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
+    #         return F(Cx,Cy,gamma)
+    #     else:
+    #         asum = np.sum(a)
+    #         bsum = np.sum(b)
+    #         return F(asum,bsum,gamma) + F(Cx-asum,Cy-bsum,gamma)
+
     def F(a,b,gamma):
-        return (np.sum(a)**alpha)/(np.sum(b)**beta)
+        return np.log(((1+np.sum(a))**1)*((1+np.sum(b))**1))
+
+    # def F(a,b,gamma):
+    #     q = 1.5
+    #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b)) - 1
 
     # def F_sym(a,b,Cx,Cy,gamma):
     #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
@@ -676,23 +702,58 @@ if (True):
         Cx = np.sum(a0)
         Cy = np.sum(b0)
 
+        # EXPANDING
+        # =========
+        if (False):
+            i = rng.choice(int(NUM_POINTS/2)-1)+1
+            lhs1 = F(a0[i:], b0[i:], gamma)
+            lhs2 = 0.
+            rhs1 = F(a0[:i], b0[:i], gamma)
+            rhs2 = 0.
+
+        # DISCRETE MONOTONICITY
+        # =====================
+        if (False):
+            sets = subsets(NUM_POINTS)
+            m,n = rng.choice(len(sets), 2, replace=False)
+            lset, rset = sets[m][0], sets[n][0]
+            l_r_int = list(set(lset).intersection(set(rset)))
+            l_r_union = list(set(lset).union(set(rset)))            
+            # i = rng.choice(int(NUM_POINTS-1))+1
+            lhs1 = -F(a0[l_r_int], b0[l_r_int], gamma)
+            lhs2 = F(a0[l_r_union], b0[l_r_union], gamma)
+            rhs1 = 0.
+            rhs2 = 0.
+
+        # DISCRETE CONVEXITY
+        # ==================
+        if (False):
+            i,j = np.sort(rng.choice(int(NUM_POINTS),2, replace=False))
+            j += 1
+            rhs1 = F(a0[(i):(j)], b0[(i):(j)], gamma)
+            rhs2 = -F(a0[(i):(j-1)], b0[(i):(j-1)], gamma)
+            lhs1 = F(a0[(i+1):(j)], b0[(i+1):(j)], gamma)
+            lhs2 = -F(a0[(i+1):(j-1)], b0[(i+1):(j-1)], gamma)
+
+
         # STRONG SUBMODULARITY
         # ====================
         # Submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => submodular
-        sets = subsets(NUM_POINTS)
-        m,n = rng.choice(len(sets), 2, replace=False)
-        lset, rset = sets[m][0], sets[n][0]
-        l_r_int = list(set(lset).intersection(set(rset)))
-        l_r_union = list(set(lset).union(set(rset)))
-        lhs1 = F(a0[lset], b0[lset], gamma)
-        lhs2 = F(a0[rset], b0[rset], gamma)
-        rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
-        rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
-        print('lset: {}'.format(lset))
-        print('rset: {}'.format(rset))
-        print('l_r_int: {}'.format(l_r_int))
-        print('l_r_union: {}'.format(l_r_union))
-        print('=====')
+        if (False):
+            sets = subsets(NUM_POINTS)
+            m,n = rng.choice(len(sets), 2, replace=False)
+            lset, rset = sets[m][0], sets[n][0]
+            l_r_int = list(set(lset).intersection(set(rset)))
+            l_r_union = list(set(lset).union(set(rset)))
+            lhs1 = F(a0[lset], b0[lset], gamma)
+            lhs2 = F(a0[rset], b0[rset], gamma)
+            rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+            rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+        # print('lset: {}'.format(lset))
+        # print('rset: {}'.format(rset))
+        # print('l_r_int: {}'.format(l_r_int))
+        # print('l_r_union: {}'.format(l_r_union))
+        # print('=====')
 
         # REAL-VALUED SUBMODULARITY
         # =========================
@@ -721,26 +782,44 @@ if (True):
         # rhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
         # rhs2 = F(a0[(j+1):(k+1)],b0[(j+1):(k+1)],gamma)
 
-        # CONSECUTIVE SUBMODULARITY
+        # CONSECUTIVE SUPERMODULARITY
         # =========================
+        # Weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
+        # XXX
+        # inequality flips for gamma=2 when replacing F with F_noy;
+        # F is weakly submodular, F_noy is weakly supermodular
+        # F is subadditive, hence weakly subadditive, but
+        # F_noy is superadditive
+        # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))        
+        # rhs1 = F(a0[j:(k+1)],b0[j:(k+1)],gamma)
+        # rhs2 = F(a0[(j+1):(k+2)],b0[(j+1):(k+2)],gamma)
+        # lhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
+        # lhs2 = F(a0[(j+1):(k+1)],b0[(j+1):(k+1)],gamma)
+
+        # CONSECUTIVE SUBMODULARITY [MAIN CONCEPT]
+        # ========================================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
-        # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-        # l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-        # lset, rset = set(range(j,k)), set(range(l,m))
-        # l_r_int = lset.intersection(rset)
-        # l_r_union = lset.union(rset)
-        # lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
-        # lhs1 = F(a0[lset], b0[lset], gamma)
-        # lhs2 = F(a0[rset], b0[rset], gamma)
-        # rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
-        # rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
-        # print('lset: {}'.format(lset))
-        # print('rset: {}'.format(rset))
-        # print('l_r_int: {}'.format(l_r_int))
-        # print('l_r_union: {}'.format(l_r_union))
-        # print(lhs1+lhs2,rhs1+rhs2)
-        # print(j,k,l,m)
-        # print('========')
+        if (False):
+            p,q = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
+            j,k = p+1,q
+            l,m = p,q-1
+            # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
+            # l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
+            lset, rset = set(range(j,k)), set(range(l,m))
+            l_r_int = lset.intersection(rset)
+            l_r_union = lset.union(rset)
+            lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
+            lhs1 = F(a0[lset], b0[lset], gamma)
+            lhs2 = F(a0[rset], b0[rset], gamma)
+            rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
+            rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+            print('lset: {}'.format(lset))
+            print('rset: {}'.format(rset))
+            print('l_r_int: {}'.format(l_r_int))
+            print('l_r_union: {}'.format(l_r_union))
+            print(lhs1+lhs2,rhs1+rhs2)
+            print(j,k,l,m)
+            print('========')
 
         # CONSECUTIVE SUBMODULARITY
         # =========================
@@ -796,6 +875,23 @@ if (True):
         # rhs1 = F(a0[j:l],b0[j:l],gamma)
         # rhs2 = 0.
 
+        # Convexity
+        # j,k = rng.choice(range(2, int(NUM_POINTS)), 2, replace=False)
+        # eta = rng.uniform(low=0., high=1.)
+        # x1,y1 = np.sum(a0[:j]), np.sum(b0[:j])
+        # x2,y2 = np.sum(a0[:k]), np.sum(b0[:k])
+        # xmid = eta*x1 + (1-eta)*x2
+        # ymid = eta*y1 + (1-eta)*y2
+        # lhs1 = eta*F(x1,y1,gamma)
+        # lhs2 = (1-eta)*F(x2,y2,gamma)
+        # rhs1 = F(xmid,ymid,gamma)
+        # rhs2 = 0.
+        # lhs1 = eta*F_sym(x1,y1,Cx,Cy,gamma)
+        # lhs2 = (1-eta)*F_sym(x2,y2,Cx,Cy,gamma)
+        # rhs1 = F_sym(xmid,ymid,Cx,Cy,gamma)
+        # rhs2 = 0.
+
+        
         # Quasiconvexity - note this is not a property of the set function,
         # but of the function defined on R x R+
         # j,k = rng.choice(range(2, int(NUM_POINTS)), 2, replace=False)
