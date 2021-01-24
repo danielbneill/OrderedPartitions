@@ -444,7 +444,7 @@ if (False):
         if not count%10000:
             print('count: {}'.format(count))
 
-if (True):
+if (False):
     # The yellow region represents the True portion
     
     import numpy as np
@@ -504,30 +504,48 @@ if (True):
         import sys
         
         count = 0
-        alpha = 4.0
-        beta = 2.0
+        alpha = 2.0
+        beta = 1.0
+        
         seed = 151
         q = 2.0
         epsilon = .002
         QUADRANT_ONE = True
         
-        SEED = 48
+        SEED = 49
 
         # def F(a,b,alpha,beta):
         #     return (a**alpha)/(b**beta)
 
+        # def F(a,b,alpha,beta):
+        #     return (a**alpha)/(b**beta)
+
+        # def F(a,b,alpha,beta):
+        #     return a**2 + b**2
+
         def F(a,b,alpha,beta):
-            return np.log((1+a)*(1+b))
+            return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
+
+        # def F(a,b,alpha,beta):
+        #     return -np.log((1+a)*(1+b))
 
         # def F(a,b,alpha,beta):
         #     return ((a/b)**(a))*np.exp(b-a)
         
-
         # def F(a,b,alpha,beta):
         #     if a > b:
         #         return a*np.log(a/b) + b - a
         #     else:
         #         return 0
+
+        # Poisson
+        # def F(a,b,alpha,beta):
+        #     asum = a
+        #     bsum = b
+        #     if asum > bsum:
+        #         return asum*np.log(asum/bsum) + bsum - asum
+        #     else:
+        #         return 0.
 
         # def F(a,b,alpha,beta):
         #     if a > b:
@@ -553,6 +571,10 @@ if (True):
 
         #######
         # def F(a,b,alpha,beta):
+        #     return a**2
+        
+        # def F(a,b,alpha,beta):
+        #     q = 2.0
         #     return np.exp(-q*b)*np.power(q,a)/np.exp(-b)
 
         # def F(a,b,alpha,beta):
@@ -584,7 +606,7 @@ if (True):
             lhs = F(xmid,ymid,alpha,beta)
             rhs = eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
 
-            if (False):
+            if (True):
                 if lhs>rhs and not np.isclose(lhs,rhs):
                     print('CONVEXITY VIOLATED')
                     print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
@@ -607,6 +629,41 @@ if (True):
                                                                                      rhs
                                                                                      ))
 
+            if (True):
+                mu = rng.uniform(low=0., high=1.)
+                eta = rng.uniform(low=0., high=1.)
+                lhs= F(x1,y1,alpha,beta)
+                rhs1 = F(x1+mu,y1,alpha,beta)
+                rhs2 = F(x1,y1-np.min([eta,y1]),alpha,beta)
+                if (lhs>rhs1) or (lhs>rhs2):
+                    print('EXPANDINGNESS VIOLATED')
+
+            if (True):
+                mu = rng.uniform(low=0., high=3.)
+                lhs = F(mu*x1,mu*y1,alpha,beta)
+                rhs = mu*F(x1,y1,alpha,beta)
+                if lhs>rhs and not np.isclose(lhs,rhs):
+                    print('SUBHOMOGENEITY VIOLATED')
+                    print('p1: ({},{}), mu: {}, psum: ({},{})'.format(x1,y1,mu,xsum,ysum))
+                    print('F(p1+mu): {}, F(p1): {} F(mu): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
+                                                                                     F(x1,y1,alpha,beta),
+                                                                                     F(mu,mu,alpha,beta),
+                                                                                     rhs
+                                                                                     ))
+
+            if (True):
+                mu = rng.uniform(low=0., high=3.)
+                lhs = F(mu*x1,mu*y1,alpha,beta)
+                rhs = mu*F(x1,y1,alpha,beta)
+                if not np.isclose(lhs,rhs):
+                    print('HOMOGENEITY VIOLATED')
+                    print('p1: ({},{}), mu: {}, psum: ({},{})'.format(x1,y1,mu,xsum,ysum))
+                    print('F(p1+mu): {}, F(p1): {} F(mu): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
+                                                                                     F(x1,y1,alpha,beta),
+                                                                                     F(mu,mu,alpha,beta),
+                                                                                     rhs
+                                                                                     ))                    
+
             if (False):
                 lhs = F(x1,y1,alpha,beta)
                 rhs = F(x1+eta,y1+eta,alpha,beta)
@@ -622,14 +679,15 @@ if (True):
                 print('count: {}'.format(count))
                 
 
-if (False):
+if (True):
     import numpy as np
 
     count = 0
     gamma = 2.0
     alpha = 2.0
     beta =  1.0
-    seed = 151
+    q = 2.0
+    seed = 1522
     FIRST_QUADRANT = True
     
     # def F_noy(a,b,gamma):
@@ -645,7 +703,32 @@ if (False):
     #     return np.log((1+np.sum(a))*(1+np.sum(b)))
 
     # def F(a,b,gamma):
+    #     return np.sum(a)**alpha
+    
+    # Rational
+    # def F(a,b,gamma):
     #    return (np.sum(a)**alpha)/(np.sum(b)**beta)
+
+    # def F(a,b,gamma):
+    #     return np.sum(a)**2 + np.sum(b)**2
+
+    # def F(a,b,gamma):
+    #     return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
+
+    def F(a,b,gamma):
+        return (np.sum(a)**alpha)/(np.sum(b)**beta)
+
+    # def F(a,b,gamma):
+    #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b))
+
+    # Poisson
+    # def F(a,b,gamma):
+    #     asum = np.sum(a)
+    #     bsum = np.sum(b)
+    #     if asum > bsum:
+    #         return asum*np.log(asum/bsum) + bsum - asum
+    #     else:
+    #         return 0.
 
     # def F_sym(a,b,gamma):
     #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
@@ -655,12 +738,12 @@ if (False):
     #         bsum = np.sum(b)
     #         return F(asum,bsum,gamma) + F(Cx-asum,Cy-bsum,gamma)
 
-    def F(a,b,gamma):
-        return np.log(((1+np.sum(a))**1)*((1+np.sum(b))**1))
+    # def F(a,b,gamma):
+    #     return np.log(((1+np.sum(a))**1)*((1+np.sum(b))**1))
 
     # def F(a,b,gamma):
-    #     q = 1.5
-    #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b)) - 1
+    #     q = 2.0
+    #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b))
 
     # def F_sym(a,b,Cx,Cy,gamma):
     #     if (np.sum(a) == Cx) or (np.sum(a) == 0.) or (np.sum(b) == Cy) or (np.sum(b) == 0):
@@ -683,7 +766,7 @@ if (False):
     rng = np.random.RandomState(seed)
     while True:
 
-        NUM_POINTS = 8
+        NUM_POINTS = 100
 
         lower_limit_a = rng.uniform(low=-100., high=100.)
         lower_limit_b = 0.
@@ -757,16 +840,17 @@ if (False):
 
         # REAL-VALUED SUBMODULARITY
         # =========================
-        # x1,x2 = rng.uniform(low=lower_limit_a, high=upper_limit_a, size=2)
-        # y1,y2 = rng.uniform(low=lower_limit_b, high=upper_limit_b, size=2)
-        # xmin = np.min([x1,x2])
-        # ymin = np.min([y1,y2])
-        # xmax = np.max([x1,x2])
-        # ymax = np.max([y1,y2])
-        # lhs1 = F([x1],[y1], gamma)
-        # lhs2 = F([x2],[y2], gamma)
-        # rhs1 = F([xmin], [ymin], gamma)
-        # rhs2 = F([xmax], [ymax], gamma)
+        if (False):
+            x1,x2 = rng.uniform(low=lower_limit_a, high=upper_limit_a, size=2)
+            y1,y2 = rng.uniform(low=lower_limit_b, high=upper_limit_b, size=2)
+            xmin = np.min([x1,x2])
+            ymin = np.min([y1,y2])
+            xmax = np.max([x1,x2])
+            ymax = np.max([y1,y2])
+            lhs1 = F([x1],[y1], gamma)
+            lhs2 = F([x2],[y2], gamma)
+            rhs1 = F([xmin], [ymin], gamma)
+            rhs2 = F([xmax], [ymax], gamma)
 
         # CONSECUTIVE SUBMODULARITY
         # =========================
@@ -796,16 +880,36 @@ if (False):
         # lhs1 = F(a0[j:(k+2)],b0[j:(k+2)],gamma)
         # lhs2 = F(a0[(j+1):(k+1)],b0[(j+1):(k+1)],gamma)
 
+        # INEQUALITY1 RELATED TO CONSECUTIVE SUBMODULARITY
+        # ===============================================
+        if (False):
+            j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
+            lset1, lset2 = list(range(j,l)), list(range(k,m))
+            rset1, rset2, rset3 = list(range(j,k)), list(range(k,l)), list(range(l,m))
+            lhs1 = F(a0[lset1],b0[lset1],gamma) + F(a0[lset2],b0[lset2],gamma)
+            lhs2 = 0.
+            # rhs1 = F(a0[list(range(j,l))],b0[list(range(j,l))],gamma) + F(a0[list(range(k,m))],b0[list(range(k,m))],gamma)
+            rhs1 = .5*F(2.*a0[rset1],2.*b0[rset1],gamma) + F(2.*a0[rset2],2.*b0[rset2],gamma) + .5*F(2.*a0[rset3],2.*b0[rset3],gamma)
+            # rhs1 = F(a0[rset1],b0[rset1],gamma) + 2.*F(a0[rset2],b0[rset2],gamma) + F(a0[rset3],b0[rset3],gamma)            
+            rhs2 = 0.
+
+        # INEQUALITY2 RELATED TO CONSECUTIVE SUBMODULARITY
+        # ===============================================
+        if (False):
+            j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
+            lset1, lset2, lset3 = list(range(j,k)), list(range(k,l)), list(range(l,m))
+            rset1, rset2 = list(range(j,l)), list(range(k,m))
+            lhs1 = F(a0[lset1],b0[lset1],gamma) + 2*F(a0[lset2],b0[lset2],gamma) + F(a0[lset3],b0[lset3],gamma)
+            lhs2 = 0.
+            rhs1 = F(a0[rset1],b0[rset1],gamma) + F(a0[rset2],b0[rset2],gamma)
+            rhs2 = 0.
+
         # CONSECUTIVE SUBMODULARITY [MAIN CONCEPT]
         # ========================================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
         if (False):
-            p,q = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-            j,k = p+1,q
-            l,m = p,q-1
-            # j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-            # l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
-            lset, rset = set(range(j,k)), set(range(l,m))
+            j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))            
+            lset, rset = set(range(j,l)), set(range(k,m))
             l_r_int = lset.intersection(rset)
             l_r_union = lset.union(rset)
             lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
@@ -821,6 +925,119 @@ if (False):
             print(j,k,l,m)
             print('========')
 
+        # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
+        # ===============================================
+        if (True):
+            j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))                        
+            lset, rset = set(range(j,l)), set(range(k,m))
+            p1, p2 = list(range(j,k)), list(range(l,m))
+            l_r_int = lset.intersection(rset)
+            l_r_union = lset.union(rset)
+            lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
+            # Case 1
+            lhs1 = F(a0[lset], b0[lset], gamma)
+            lhs2 = F(a0[rset], b0[rset], gamma)
+            rhs1 = F(a0[l_r_union], b0[l_r_union],gamma)
+            rhs2 = F(a0[l_r_int],b0[l_r_int],gamma)
+            # Case 2
+            # rhs1 = F(a0[p1], b0[p1], gamma)
+            # rhs2 = F(a0[p2], b0[p2], gamma)
+            # Case 3
+            # lhs1 = F(a0[2*l_r_int+p1+p2],b0[2*l_r_int+p1+p2],gamma)
+            # lhs2 = 0.
+            # rhs1 = F(a0[l_r_int],b0[l_r_int],gamma)
+            # rhs2 = F(a0[p1+l_r_int+p2],b0[p1+l_r_int+p2],gamma)
+            # Case 4
+            # lhs1 = F(a0[lset],b0[lset],gamma)
+            # lhs2 = F(a0[rset],b0[rset],gamma)
+            # rhs1 = F(a0[l_r_int],b0[l_r_int],gamma)
+            # rhs2 = F(a0[l_r_union],b0[l_r_union],gamma)
+            # Case 5
+            lhs1 = F(a0[lset],b0[lset],gamma)
+            lhs2 = 0.
+            rhs1 = (np.sum(b0[range(k,l)])/np.sum(b0[range(j,m)]))*F(a0[range(k,l)],b0[range(k,l)],gamma)
+            rhs2 = 0.
+            print('lset: {}'.format(lset))
+            print('rset: {}'.format(rset))
+            print('l_r_int: {}'.format(l_r_int))
+            print('l_r_union: {}'.format(l_r_union))
+            print(lhs1+lhs2,rhs1+rhs2)
+            print(j,k,l,m)
+            print('========')
+            def g(delta):
+                z = l_r_int
+                return F(np.concatenate([a0[lset],delta*a0[z]]),np.concatenate([b0[lset],delta*b0[z]]),gamma) + \
+                       F(np.concatenate([a0[rset],delta*a0[z]]),np.concatenate([b0[rset],delta*b0[z]]),gamma) - \
+                       F(np.concatenate([a0[l_r_int],delta*a0[z]]),np.concatenate([b0[l_r_int],delta*b0[z]]),gamma) - \
+                       F(np.concatenate([a0[l_r_union],delta*a0[z]]),np.concatenate([b0[l_r_union],delta*b0[z]]),gamma)
+            # import matplotlib.pyplot as plot
+            xaxis = np.arange(0,1.,.01)
+            yaxis = [g(x) for x in xaxis]
+            assert np.all(np.array(yaxis)>0)
+            TRIALS = 100
+            for _ in range(TRIALS):
+                theta = rng.uniform(low=0.,high=1.)
+                delta1, delta2 = np.sort(rng.uniform(low=0.,high=1.,size=2))
+                lhs = g(theta*delta1+(1-theta)*delta2)
+                rhs = theta*g(delta1)+(1-theta)*g(delta2)
+                if (not lhs <= rhs) and (not np.isclose(lhs,rhs)):
+                    import matplotlib.pyplot as plot
+                    plot.plot(xaxis,yaxis)
+                    plot.pause(1e-3)
+                    import pdb
+                    pdb.set_trace()
+                    plot.close()
+
+        # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
+        # ===============================================
+        if (False):
+            j,k = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
+            l,m = np.sort(rng.choice(int(NUM_POINTS+1), 2, replace=False))
+            lset, rset = set(range(j,l)), set(range(k,m))
+            l_r_int = lset.intersection(rset)
+            l_r_union = lset.union(rset)
+            lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
+            # Case 1
+            # lhs1 = F(a0[l_r_union],b0[l_r_int],gamma)
+            # lhs2 = F(a0[l_r_int],b0[l_r_union],gamma)
+            # rhs1 = F(a0[lset],b0[lset],gamma)
+            # rhs2 = F(a0[rset],b0[rset],gamma)
+            # Case 2
+            # lhs1 = F(a0[lset],b0[lset],gamma)
+            # lhs2 = F(a0[rset],b0[rset],gamma)
+            # rhs1 = F(a0[l_r_int],b0[l_r_int],gamma)
+            # rhs2 = F(a0[l_r_union],b0[l_r_union],gamma)
+            lhs1 = F(a0[lset],b0[lset],gamma)
+            lhs2 = F(a0[rset],b0[rset],gamma)
+            rhs1 = F(a0[l_r_int],b0[l_r_union],gamma)
+            rhs2 = F(a0[l_r_union],b0[l_r_int],gamma)
+            print('lset: {}'.format(lset))
+            print('rset: {}'.format(rset))
+            print('l_r_int: {}'.format(l_r_int))
+            print('l_r_union: {}'.format(l_r_union))
+            print(lhs1+lhs2,rhs1+rhs2)
+            print(j,k,l,m)
+            print('========')
+            if (j>0) and (j<k) and (k<l) and (l<m):
+                import pdb
+                pdb.set_trace()
+
+        # ISOTONE
+        # =======
+        if (False):
+            x1,x2 = np.sort(rng.uniform(low=0., high=1., size=2))
+            y1,y2 = np.sort(rng.uniform(low=0., high=1., size=2))
+            if (x1/y1) > (x2/y2):
+                p1,q1=x2,y2
+                p2,q2=x1,y1
+            else:
+                p1,q1=x1,y1
+                p2,q2=x2,y2
+            rhs1 = F([p1],[q1],gamma)
+            rhs2 = 0.
+            lhs1 = F([p2],[q2],gamma)
+            lhs2 = 0.
+        
         # CONSECUTIVE SUBMODULARITY
         # =========================
         # Yet another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
@@ -925,17 +1142,21 @@ if (False):
 
         # print('lhs: {}'.format(lhs1+lhs2))
         # print('rhs: {}'.format(rhs1+rhs2))
-        
+
         if ((lhs1+lhs2)<(rhs1+rhs2)) and not np.isclose(lhs1+lhs2, rhs1+rhs2):
         # if not np.isclose(lhs1+lhs2, rhs1+rhs2):
             print('FOUND')
+            # print('lset: {}'.format(lset))
+            # print('rset: {}'.format(rset))
+            # print('l_r_int: {}'.format(l_r_int))
+            # print('l_r_union: {}'.format(l_r_union))           
             print(lhs1+lhs2)
             print(rhs1+rhs2)
             print('a0: ', a0)
             print('b0: ', b0)
             import pdb
             pdb.set_trace()
-            sys.exit()
+            # sys.exit()
 
         count+=1
 
