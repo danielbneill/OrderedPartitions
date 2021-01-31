@@ -13,6 +13,7 @@
 \usepackage{listings}
 \usepackage{scrextend}
 \usepackage{dirtytalk}
+\usepackage{titlesec}
 % \usepackage[demo]{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
@@ -23,6 +24,10 @@
 \rhead{Consecutive Partitions For Power Score Functions}
 \cfoot{\thepage}
 \pagestyle{fancy}
+
+
+\setcounter{secnumdepth}{4}
+
 
 \hypersetup{colorlinks=true, urlcolor=blue}
 
@@ -53,81 +58,49 @@
 \begin{document}
 \sloppy
 
-\begin{abstract}
-	A number of combinatorial optimization problems involve maximization or minimization of the sum of an $\mathbb{R}$-valued set function $F$ over subsets of a partitions of a base set $S$. A common case occurs when the base set is finite $\left\lbrace 1, \dots, n\right\rbrace$, and each element is associated with attributes $x_i$, $y_i$ contributing to a score -the inner step of many iterative algorithms - gradient boosting, unsupervized clustering, image compression, network detection - rely on maximization of a power function $F(x,y) = x^{\alpha}y^{-\beta}$ over a suitably labeled base set. It is well-known that the maximization problem for submodular $F$ is NP-hard. We give a set of conditions on $F$ so that exact results can be obtained by constrained maximization over a much smaller set of partitions, for any attribute labeling. We also address a gap in the existing literature by clearly distinguishing strict and weak size $T$ partitions and giving sufficient conditions for the existence of strongly optimal partitions. The results allow for $\mathcal{O}\left( n^{T-1}\right)$ maximization cost, although it is shown that with unbounded memory the problem is no worse than $\mathcal{O}\left(n^2\right)$. Finally many of the linear time subset scan algorithms (LTSS) in a spatial scan statistics setting can be obtained with this approach.
-\end{abstract}
+\begin{abstract} 
+	We consider a class of combinatorial optimization problems requiring the maximization or minimization of the sum of an $\mathbb{R}$-valued objective set function $F$ over partitions of a finite base set $\mathcal{V} = \left\lbrace1, \dots, n\right\rbrace$. In many applications, each element is associated with attributes $x_i$, $y_i$ contributing to a score for the set, attribute, or  region associated with $i$, and $F$ is a restriction of a real-valued objective $f$ to the attribute tuple. The iterative step of many optimization algorithms - gradient, boosting, unsupervized clustering, image compression - rely on maximization of a rational $F$ over a suitable base set. It is well-known that the maximization problem for submodular $F$ is NP-hard. We give a set of conditions on $f$ for which the associated set-valued $F$ admits an exact solution by optimization over a constrained set of partitions, for any attribute labeling. We also address a gap in the existing literature by clearly distinguishing strong and weak versions of the constraints and suitable conditions on $f$ under which they hold. The results allow for $\mathcal{O}\left( n^{T-1}\right)$ maximization cost, although it is shown that with unbounded memory the problem is no worse than $\mathcal{O}\left(n^2\right)$. Finally, for the most common $X \geq 0$, $Y > 0$ case, we give conditions on $F$ under which the strong property holds, without the need to rely on properties of $f$ .\end{abstract}
 
 \section{Preliminaries}
-Let $n \in \mathbb{N}$ be positive and set $\mathcal{V} = \{1, \dots, n\}$. Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. The tuple $\left(x_i, y_i\right)$ is called a $\textit{record}$ and denoted by $R_i$. Denote by $\mathcal{D} = \mathcal{D}_{X,Y}$ the set of records $\left\lbrace \left( x_i, y_i\right) \right\rbrace$ associated with the sequences $X$, $Y$. The sequence of records is assumed to have an order induced by a priority function on the sequences $X$, $Y$.
+Let $n \in \mathbb{N}$ be positive and set $\mathcal{V} = \{1, \dots, n\}$. Let $X = \left\lbrace x_1, \dots, x_n\right\rbrace$, $Y = \left\lbrace y_1, \dots, y_n\right\rbrace$ be real sequences with $y_i > 0$, for all $i$. In many of the applications that follow, the tuple $(x_i, y_i)$ corresponds to occurence and baseline attributes for a spatial location $i$, Denote by $\mathcal{D} = \mathcal{D}_{X,Y}$ the set of tuples $\left\lbrace \left( x_i, y_i\right) \right\rbrace$ associated with a given  $X$, $Y$. $\mathcal{D}$ is assumed to have an order induced by a priority function on the sequences $X$, $Y$.
 
 \begin{definition}
-A priority function is a function $G\colon \mathbb{R} \times \mathbb{R}^{+} \to \mathbb{R}$ that induces an ordering on the tuples $R_i = \left(x_i, y_i\right)$. We refer to $G(x,y) = \frac{x^{\tau}}{y}$ as a power priority function, and the case $\tau = 1$ as the standard priority function. The ordering induced on the sequences $X$, $Y$ induced by $G$ is denoted by $R_{(1)}, R_{(2)}, \dots R_{(n)}$, representing, in order, the highest priority record, next highest, etc., with $x_{\left( i\right)}$, $y_{\left( i\right)}$ the components of the record $R_{\left( i\right)}$.
+A priority function is a function $G\colon \mathbb{R} \times \mathbb{R}^{+} \to \mathbb{R}$ that induces an ordering on the dataset $\mathcal{D}$. We refer to $g(x,y) = \frac{x^{\tau}}{y}$ as a power priority function, and the case $\tau = 1$ as the standard priority function. 
 \end{definition}
 
-No continuity or smoothness assumptions are made on $G$. In fact, we will focus attention on the standard priorty function as will be evident from Proposition 1 below, and unless otherwise stated we assume that the elements of the records $R_1, \dots, R_n$ are ordered by the standard priority.
+No continuity or smoothness assumptions are made on $g$. Unless otherwise stated, the sets $X$, $Y$ will be assumed to be indexed in priority-order, i.e., $g(x_1,y_1) \leq \dots g(x_n,y_n)$. The preeminence of the standard priorty function will become evident from Proposition 1 below.
 
-A partition $\mathcal{P}$ of size $t$ of $\mathcal{V}$ is specified by a set of subsets $\mathcal{P} = \{ P_1, \dots, P_t \}$, $P_i \subseteq N$, $i = 1, \dots, t$, such that $P_1 \cup \dots \cup P_t = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. Each subset $S \subseteq \mathcal{V}$ can be identified with a point $p_S = (\sum_{i \in S} x_i, \sum_{i \in S}y_i) \in \mathbf{R}^2$, called the polytope point of $P$, with $p_{\emptyset} = (0,0)$ by convention. In this way $\mathcal{P}$ is associated with a pointset in $\mathbf{R}^2$ through $X$, $Y$.
+A partition $\mathcal{P}$ of size $t$ of $\mathcal{V}$ is specified by a set of subsets $\mathcal{P} = \{ P_1, \dots, P_t \}$, $P_i \subseteq N$, $i = 1, \dots, t$, such that $P_1 \cup \dots \cup P_t = \{1, \dots, n\}$, with the $P_i$'s pairwise disjoint. Each subset $S \subseteq \mathcal{V}$ can be identified with a point $p_S = (\sum_{i \in S} x_i, \sum_{i \in S}y_i) \in \mathbf{R}^2$, called the $\textit{polytope point}$ of $P$, with $p_{\emptyset} = (0,0)$ by convention. In this way $\mathcal{P}$ is associated with a pointset in $\mathbf{R}^2$ via $X$, $Y$.
 
-The elements $x_i$ and $y_i$ can be thought of as contributing to a scalar score for the record $R_i$. Often $x_i$ is a realization or exceedence over expectations and $y_i$ is a baseline expectation or deviation measure. This is the approach taken in online spatial event detection methods in the context of spatial scan statitistics and real-time detection of emerging events. In this setting, detection of clusters corresponding to outbreaks of disease, suspicious activity, areas of increased brain activity from fMRI imaging, etc., is isolated from spatial time series data by maxiizing a likelihood ratio statistic over subsets of the data, in a constrained or unconstrained optimization (see $\cite{article6}$ $\cite{article8}$, $\cite{article9}$, e.g.). In the usual setting the $x_i$ correspond to occurences while the $y_i$ represent baselines or expectations and regions of maximal occurence or density must further be determined as significant or not. The objective function to be maximized is usually called the $\textit{score}$ function, the maximization over all subsets of the spatial data represents an unconstrained combinatorial optimiziation problem. The unconstrained problem is often computationally infeasible (of exponential order), but linear-time exact algorithms have been developed under the name LTSS (Linear Time Subset Scan). We give an alternate geometric derivation of these results as a corollary of the classification of extreme points for an associated polytope in $\mathbf{R}^2$ (Proposition 1). In addition, our main result is applicable to cluster detection problems in the Gaussian case, see below. The notion of a score function is formalized below.
+The elements $x_i$ and $y_i$ can be thought of as contributing to a scalar score for the entity at $i$. Often $x_i$ is a realization or exceedence over expectations and $y_i$ is a baseline expectation or deviation measure. This is the approach taken in online spatial event detection methods in the context of $\textit{spatial scan statitistics}$ and real-time detection of emerging events. In this setting, detection of clusters corresponding to outbreaks of disease, suspicious activity, areas of increased brain activity from fMRI imaging, etc., are isolated from spatial time series data by maxiizing a likelihood ratio statistic over subsets of the data, in a constrained or unconstrained optimization (see $\cite{article6}$ $\cite{article8}$, $\cite{article9}$, e.g.). In the usual setting the $x_i$ correspond to occurences while the $y_i$ represent baselines or expectations and regions of maximal occurence or density must further be determined as significant or not. Baselines can be temporally updated in a Bayesian setting. The objective function to be maximized is usually called the $\textit{score}$ function, the maximization over all subsets of the spatial data represents an unconstrained combinatorial optimiziation problem. The unconstrained problem is often computationally infeasible (of exponential order), but linear-time exact algorithms have been developed under the name LTSS ($\textit{Linear Time Subset Scan}$). We give an alternate geometric derivation of these results as a corollary of the classification of extreme points for an associated polytope in $\mathbf{R}^2$ (Proposition 1). In addition, our main result is applicable to cluster detection problems in a more general setting, see below. The notion of a score function is formalized below.
 
 \begin{definition}
-A score function is a continuous $F(x, y)\colon \mathbb{R} \times \mathbb{R}^{+} \to \mathbb{R}$, strictly increasing in $x$ and strictly decreasing in $y$, with $F\left( 0,0\right) = 0$. If F is of the form $F(x,y) = x^\alpha y^{-\beta}$ for some $\alpha, \beta > 0$, then F is a rational score function. For any one of $\alpha$, $\beta$ noninteger we assume that $F$ takes real values, i.e. that $X \subseteq \mathbf{R}^+$.
+A score function is a continuous $f(x, y)\colon \mathbb{R} \times \mathbb{R}^{+} \to \mathbb{R}$, nondecreasing in $x$ and nonincreasing in $y$, with continuous extension to any wedge $\mathcal{W}\left(\mu_1,\mu_2\right) = \left\lbrace (x,y) : y \geq 0, \mu_1 \leq \frac{x}{y} \leq \mu_2 \right\rbrace$, for $-\infty < \mu_1 \leq \mu_2 < \infty$, with $f(0,0) = 0$. If $f$ is of the form $f(x,y) = x^\alpha y^{-\beta}$ for some $\alpha, \beta > 0$, then $f$ is a rational score function. 
 \end{definition}
 
-Several additional properties have been associated with score functions, namely quasi-convexity, componentwise convexity, or a marginal contribution constraint $\frac{x}{y} \frac{\partial F}{\partial x} + \frac{\partial F}{\partial y} \geq 0$ related to submodularity. We do not assume smoothness beyond continuity, nor (quasi)convexity, unless explicitly stated.
+The regularity condition on $\mathcal{W}$ simply guarantees a continuous extension to the origin on cones in $\mathbf{R}^+$, for rational score functions the constraint corresponds to $\alpha > \beta$. Several additional properties have been associated with score functions, namely quasi-convexity, componentwise convexity, or a marginal contribution constraint $\frac{x}{y} \frac{\partial f}{\partial x} + \frac{\partial F}{\partial y} \geq 0$ related to submodularity. We do not assume smoothness beyond continuity, nor (quasi)convexity, etc., unless explicitly stated.
 
-A score function $F$ gives rise to a function (also denoted by $F$ when the context is clear) $F \colon 2^N \rightarrow \mathbb{R}$ by summation over individual subset elements $F(S) = F(\sum_{i \in S} x_i, \sum_{i \in S} y_i)$, for $S \subseteq N$. Associating $S \subseteq N$ with its $X$, $Y$ attributes as in $X_S = \left\lbrace x_i \colon i \in S\right\rbrace$, $Y_S = \left\lbrace y_i \colon i \in S\right\rbrace$ allows us to write $F(S) = F(X_S, Y_S) = F(\sum_{x \in X_S}x, \sum_{y \in Y_S}y)$, etc.
+A score function $f$ gives rise to a set function $F \colon 2^N \rightarrow \mathbb{R}$ defined by summation over individual subset elements $F(S) = f(\sum_{i \in S} x_i, \sum_{i \in S} y_i)$, for $S \subseteq N$. Associating $S \subseteq N$ with its $X$, $Y$ attributes as in $X_S = \left\lbrace x_i \colon i \in S\right\rbrace$, $Y_S = \left\lbrace y_i \colon i \in S\right\rbrace$ allows us to abuse notation slightly and write $F(S) = f(X_S, Y_S) = f(\sum_{x \in X_S}x, \sum_{y \in Y_S}y)$, etc.
 
 Now fix a partition $\mathcal{P} = \left\lbrace P_1, \dots, P_t\right\rbrace$ of size $t$ of $N$. We are interested in maximal partitions for $F$, i.e., solutions to the program
 \begin{align} \label{eq0}
-\mathcal{P}^{*} = \argmax_{\substack{\mathcal{P} = \left\lbrace P_1 \dots, P_t\right\rbrace}} {\sum\limits_{j=1}^{T}F\left( X_j, Y_j\right)} = \argmax_{\substack{\mathcal{P} = \left\lbrace P_1, \dots, P_t\right\rbrace}} {\sum\limits_{j=1}^{T}F( \sum_{i \in P_j}x_i, \sum_{i \in P_j}y_i)}
+\mathcal{P}^{*} = \argmax_{\substack{\mathcal{P} = \left\lbrace P_1 \dots, P_t\right\rbrace}} {\sum\limits_{j=1}^{T}F\left(S_j\right)} = \argmax_{\substack{\mathcal{P} = \left\lbrace P_1, \dots, P_t\right\rbrace}} {\sum\limits_{j=1}^{T}f( \sum_{i \in P_j}x_i, \sum_{i \in P_j}y_i)}
 \end{align}
-which for a power score function becomes
+which for a rational score function becomes
 \begin{align} \label{eq1}
-\mathcal{P} = \argmax_{\substack{\mathcal{P} = \left\lbrace \pi_1 \dots, \pi_T\right\rbrace}}\sum_{j=1}^{T}\frac{(\sum_{i \in P_j}x_i)^\alpha}{(\sum_{i \in P_j}y_i)^\beta}
+\mathcal{P}^{*} = \argmax_{\substack{\mathcal{P} = \left\lbrace \pi_1 \dots, \pi_T\right\rbrace}}\sum_{j=1}^{T}\frac{(\sum_{i \in P_j}x_i)^\alpha}{(\sum_{i \in P_j}y_i)^\beta}
 \end{align}
 
 \vspace{4pt}
 
-For example, given a set of quadratic polynomials $p_i(x) = \frac{1}{2}h_ix^2 + g_ix + c_i$, with $h_i >0$ for all $i$, the minimum values are $\frac{-g_i^2}{2h_i}$. Associating each polynomial with the record $(-g_i, h_i)$, the standard priority function orders them by the x-coordinate of the vertex, $\frac{-g_i}{h_i}$. The solution to $\ref{eq1}$ for $\alpha = 2$, $\beta = 1$ finds the x-values $\left\lbrace x_1, \dots, x_t\right\rbrace$ that minimizes the sum $\sum_{j=1}^t \sum_{i \in P_j} p_i\left( x_j\right) = \sum_{j=1}^t p_{S_j}$, where $p_{S_j}$ is the quadratic $\sum_{i \in P_j} p_j$, or equivalently, the partition of $\mathcal{V}$ for which subset sums of the polynomials achieves the minimal value.
+For example, given a set of quadratic polynomials $p_i(x) = \frac{1}{2}h_ix^2 + g_ix + c_i$, with $h_i >0$ for all $i$, the minimum values are $\frac{-g_i^2}{2h_i}$. Associating each polynomial with the tuple $(-g_i, h_i)$, the standard priority function orders them by the x-coordinate of the vertex, $\frac{-g_i}{h_i}$. The solution to $\ref{eq1}$ for $\alpha = 2$, $\beta = 1$ finds the x-values $\left\lbrace x_1, \dots, x_t\right\rbrace$ that minimize the sum $\sum_{j=1}^t \sum_{i \in P_j} p_i\left( x_j\right) = \sum_{j=1}^t p_{S_j}$, where $p_{S_j}$ is the quadratic $\sum_{i \in P_j} p_j$, or equivalently, the partition of $\mathcal{V}$ for which subset sums of the polynomials achieves the minimal value.
 
-It is well-known that for $F$ submodular, the maximization program in $\ref{eq1}$ above is NP-hard (while the minimization problem can be solved in polynomial time) $\cite{article7}$, $\cite{article10}$. For maximization of non-monotone submodular objectives, any polynomial time algorithm is only guaranteed to have a lower bound of $\frac{1}{2}$ from optimality, i.e., $F(S) \geq \frac{1}{2}F(S^{*})$, where $S^*$ is the argmax. A complete search of the space of size $T$ partitions is only feasible for small $N$, well under the typical size of most modern training sets. It will be necessary to constrain our attention to a smaller set of partitions.
+It is well known that even for $F$ submodular, the maximization program in $\ref{eq1}$ above is NP-hard (while the submodular minimization problem can be solved in polynomial time) $\cite{article7}$, $\cite{article10}$. For maximization of non-monotone submodular objectives, any polynomial time algorithm is only guaranteed to have a lower bound of $\frac{1}{2}$ from optimality, i.e., $F(S) \geq \frac{1}{2}F(S^{*})$, where $S^*$ is the argmax. For monotone submodular objectives, we can do better, but state-of-the art methods are approximate; no exact algorighm is known. A complete search of the space of size $t$ partitions is only feasible for (very) small $n$, well under the typical size of most modern training sets. 
 
-\begin{definition}
-A subset $S \subseteq N$ is consecutive if it is of the form $\left\lbrace j, j+1, \dots k\right\rbrace$, for $1 \leq j \leq k \leq n$, or it is the empty set. A consecutive subset $P \subseteq \mathcal{V}$ is nonsplitting if both $P$, $\mathcal{V}  \backslash P$ are consecutive. Otherwise, it is splitting. Define
-\begin{align*}
-\mathcal{T} &= \mathcal{T}_n = \{ P \subseteq \mathcal{V} : P \textrm{ is consecutive} \}\\
-\mathcal{S} &= \mathcal{S}_n = \{ P \subseteq \mathcal{V} : P \textrm{ is consecutive, splitting} \} \\
-\mathcal{U} &= \mathcal{U}_n = \{ P \subseteq \mathcal{V} : P \textrm{ is consecutive, non-splitting}\} \\
-\underline{\mathcal{U}} &= \underline{\mathcal{U}}_n = \mathcal{U}_n \setminus \left\lbrace p_{\emptyset}, p_{\mathcal{V}}\right\rbrace
-\end{align*}
-\end{definition}
-
-
-A special case of a consecutive subset occurs when $P$ is a singleton $\left\lbrace j\right\rbrace$; the pair $P$, $\mathcal{V}\setminus P$ will be called a $\textit{singleton splitting}$ or $\textit{non splitting}$ pair, depending on whether $\mathcal{V}\setminus P$ is consecutive. The set of singleton splitting subsets and their complements in $\mathcal{V}$ is denoted by 
-\begin{align*}
-\mathcal{\underline{S}} = \underline{\mathcal{S}_n}  = \{ P \subseteq \mathcal{V} \colon (P, \mathcal{V} \setminus P) \textrm{ form a singleton splitting pair}\}\subseteq \mathcal{S}_n
-\end{align*}
-
-For any partition $\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace$ denote by $\Pi$ the mapping taking $\mathcal{P}$ to the set $\left\lbrace \left\lbrace p_{S_1}\right\rbrace, \dots, \left\lbrace p_{S_t}\right\rbrace \right\rbrace$ in $\mathbf{R}^2$, so that $\Pi\left( \mathcal{S}\right) \subseteq \Pi\left( \mathcal{T}\right)$, $\Pi\left( \mathcal{U}\right) \subseteq \Pi\left( \mathcal{T}\right)$, $\Pi\left( \mathcal{\underline{S}}\right) \subseteq \Pi\left( \mathcal{S}\right) \cup \Pi\left( \mathcal{U}\right)$, etc.
-
-% \begin{align*}
-% \Pi\left( \mathcal{T}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{T}_n\right\rbrace \\
-% \Pi\left( \mathcal{S}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{S}_n\right\rbrace \\
-% \Pi\left( \mathcal{U}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{U}_n\right\rbrace \\
-% \Pi\left( \underline{\mathcal{S}}_n\right) &= \left\lbrace p_S \colon S \in \underline{\mathcal{S}}_n\right\rbrace \\
-% \end{align*}
-
-It is easy to see that $| \mathcal{U}_n | = 2n - 1$, $| \mathcal{S}_n | = \frac{(n-1)(n-2)}{2}$, with $| \mathcal{T}_n | = | \mathcal{U}_n | + | \mathcal{S}_n | = \frac{n(n+1)}{2}$, while $| \underline{\mathcal{S}}_n | = 2n - 2$. A search over consecutive non-splitting subsets can be performed in linear time, while over consecutive splitting subests the search time is quadratic in $n$.
-
-\begin{definition}
-A partition $\mathcal{P} = \left\lbrace P_1, \dots, P_T\right\rbrace$ of $N$ of size $t$ such that each $P_i$ is a consecutive subset is called a consecutive partition. If every subset of a consecutive partition is nonempty, then it is strongly consecutive, otherwise we allow a weakly consecutive partition to contain $s < t$ nonempty subsets.
-\end{definition}
-
-It is known (see $\cite{article1}$, $\cite{article2}$) that if $F$ is convex, or convex in all of its arguments, and $y_i > 0$, for all $i$, that a weakly consecutive partition exists that is maximal in the sense of $\ref{eq1}$ for the standard priority function. The authors allude to the possibility of empty partition subsets (giving rise to a weakly consecutive partition) as a kind of degenerate case that falls out of the regular line of reasoning. Unfortunately, even in the convex case we can only assure that the maximal partition has size $s \leq t$, and degeneracy is related to a common nondegenerate proprty in a polytope associated with the sequences $X$, $Y$ (see Section 2). 
+If $f$ is convex in all of its arguments and $y_i > 0$, for all $i$ (see $\cite{article1}$, $\cite{article2}$) then a consecutive partition of size $s \leq t$ [see below] exists that is maximal in the sense of $\ref{eq1}$ for the standard priority function. Our proof of Theorem 2 below largely follows the same reasoning. The authors allude to the possibility of empty partition subsets as a kind of degenerate case that falls out of the regular line of reasoning. Unfortunately, even in the convex case we can only assure that the maximal partition has size $s \leq t$, and degeneracy is related to a common nondegenerate proprty in a polytope associated with the sequences $X$, $Y$ (see Section 2). 
 Furthermore, the collapsing of size can be dramatic, as shown by the examples below.
 
-On the other hand, set of partitions is greatly reduced by the requirement that $\mathcal{P}$ be strongly consecutive. The set of all partitions of $n$ is a Bell number, exponentially increasing with $n$ for any $t > 1$. The set of all size $t$ partitions which we denote by $\mathcal{P}_{n,t}$ is a Stirling number of the second kind $\stirlingii{n}{t}$. The $n$th Bell number $B_n$ is given by the identity
+On the other hand, set of partitions is greatly reduced by the requirement that $\mathcal{P}$ be consecutive. The set of all partitions of $n$ is a Bell number, exponentially increasing with $n$ for any $t > 1$. The set of all size $t$ partitions which we denote by $\mathcal{P}_{n,t}$ is a Stirling number of the second kind $\stirlingii{n}{t}$. The $n$th Bell number $B_n$ is given by the identity
 \[B_n = \sum_{k=0}^{n} \binom{n}{k} B_k\]
 The Stirling numbers follow the recursion
 \[S_{n+1,k} = \stirlingii{n+1}{k} = k\stirlingii{n}{k} + \stirlingii{n}{k-1}\]
@@ -140,7 +113,7 @@ The set $\mathcal{T}_{n,t}$ of consecutive partiions of $\mathcal{V}$ of size $t
 \vspace{4pt}
 
 \begin{example}
-Let $X = \left\lbrace 8, 2, 9\right\rbrace$, $Y = \left\lbrace  8, 1, 3\right\rbrace$, $G$ the standard priority function and $F$ the power score function with $\gamma = 4$. It is clear that $F$ is componentwise convex and convex. There are 3 partitions of the set $\mathcal{V} = \left\lbrace 1,2,3 \right\rbrace$ and direct evaluation gives
+Let $X = \left\lbrace 8, 2, 9\right\rbrace$, $Y = \left\lbrace  8, 1, 3\right\rbrace$, $g$ the standard priority function and $f$ the rational score function with $\alpha = 4, \beta = 1$. It is clear that $f$ is convex. There are 3 partitions of the set $\mathcal{V} = \left\lbrace 1,2,3 \right\rbrace$ and direct evaluation gives
 \begin{verbatim}
       PARTITION: [[1, 2], [3]]
           SUBSET: [1, 2] SUBSET SCORE: 1111.1111
@@ -156,7 +129,7 @@ Let $X = \left\lbrace 8, 2, 9\right\rbrace$, $Y = \left\lbrace  8, 1, 3\right\rb
           PARTITION SCORE: 7608.8182
       MAX PARTITION SCORE: 7608.8182, MAX_PARTITION: [[1, 3], [2]]
 \end{verbatim}
-In this case no strongly consecutive partition of size 2 exists as the optimal partition is nonconsecutive. A weakly consecutive partition of size $t = 1$ exists consisiting of the trivial partition of $\mathcal{V}$ with maximal score given by
+In this case no maximal consecutive partition of size 2 exists as the optimal partition is nonconsecutive. A maximal consecutive partition of size $t = 1$ exists consisiting of the trivial partition of $\mathcal{V}$ with maximal score given by
 \begin{verbatim}
       PARTITION: [[1, 2, 3]]
           SUBSET: [1, 2, 3] SUBSET SCORE: 10860.0833
@@ -171,7 +144,7 @@ Let
 X & = \left\lbrace 0.992819, 0.04904, 0.622353, 0.464107, 0.608956, 0.984192 \right\rbrace \\
 Y & = \left\lbrace 0.935323, 0.02541, 0.279373, 0.205452, 0.24599, 0.315633 \right\rbrace,
 \end{align*}
-$G$ the standard priority and $\gamma = 4$. $\frac{X}{Y} \approx \left\lbrace 1.0614718, 1.9299488, 2.2276777, 2.2589559, 2.4755315, 3.118153 \right\rbrace$. $F$ is again convex, but the only maximal consecutive partition of weak size $t = 5$ is the trival size-1 partition. We have
+$g$ the standard priority and $\alpha = 4, \beta = 1$. $\frac{X}{Y} \approx \left\lbrace 1.0614718, 1.9299488, 2.2276777, 2.2589559, 2.4755315, 3.118153 \right\rbrace$. $f$ is again convex, but the only maximal consecutive partition of weak size $t = 5$ is the trival size-1 partition. We have
 
 \begin{verbatim}
     Maximal 5-partition
@@ -198,69 +171,87 @@ In fact the trivial partition is the optimal partition of size $t \leq 5$, and t
 
 \end{example}
 
-In fact for any pair $\left( n, t\right)$ a maximally-degenerate collapsing specification in $X$, $Y$ exists for any convex score function that isn't subadditive. A search over the consecutive partitions of size $t$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, which says nothing about the optimizing partition of strict size $t$. There is no way to know whether the size $t$ strongly consecutive maximizing partition is globally optimal, and one must repeat the process for size $t-1, \dots$. 
+In fact for any pair $\left( n, t\right)$ a maximally-degenerate collapsing specification in $X$, $Y$ exists for any convex score function that isn't subadditive. A search over the consecutive partitions of size $t$ at the top level is incomplete; it may be the case that the optimal partition is weakly consecutive, which says nothing about the optimizing partition of strict size $t$. There is no way to know whether the size $t$ strongly consecutive maximizing partition is globally optimal, and one must repeat the process for size $t-1$, etc. We show below that an asecending search from $s=1$ is more efficient as a stopping criterion exists (Proposition 5).
+
+In addition we give general conditions which guarantee the existence of maximal consecutive partitions that can easily be checked for many specifications of $f$. The rational score functions can be competely classified. We distinguish two cases: when the maximal partition is consecutive and size $t$, and when the maximal partition is consecutive and size $s \leq t$. A dynamic programming solution for both cases is proposed with a worst case running time proportional to $\mathcal{O}(nT)$. Applicatoins are given in Section 3.
+
 
 \vspace{4pt}
 
-We will first give general conditions which guarantee the existence of a strongly consecutive maximal partition, which can be easily checked for many specifications of $F$, including rational score functions, which can be completely classified. Furthermore, even in the weakly consecutive case, an interleaving property is shown allowing for a constrained search and a worst-case $O(N^2)$ exact algorithm $\textit{even in the weakly consecutive case}$. Applications are given in Section 3.
-
 \section{Main Results}
-We now state our main results. 
+We now state our main results. In the following the convex hull of a set $S \subseteq \mathbf{R}^m$ is denoted by $\hat{S}$.
 
 \begin{definition}
-For any $\mathcal{P}$ a partition of $\mathcal{V}$, the partition polytope $\mathcal{C} \subseteq \mathbb{R}^2$ of $\mathcal{P}$ is defined by $\mathcal{C} = convhull \left\lbrace p_S : S \in \mathcal{P}\right\rbrace$. The constrained partition polytope of $\mathcal{P}$ is defined by $\underline{\mathcal{C}} = convhull \left\lbrace p_S : S \in \mathcal{P}, S \neq \emptyset , S \neq \mathcal{V}\right\rbrace$
+For sets $X \subseteq \mathbf{R}$, $Y \subseteq \mathbf{R}^+$, the partition polytope is defined by $\hat{\mathcal{C}}$, where $\mathcal{C} = \left\lbrace p_S = (\sum_{i \in S} x_i, \sum_{i \in S}y_i) : S \subseteq \mathcal{V}\right\rbrace$. The constrained partition polytope of $\mathcal{P}$ is defined by $\hat{\underline{\mathcal{C}}}$, where $\underline{\mathcal{C}} = convexhull \left\lbrace p_S : S \subseteq \mathcal{V}, S \neq \emptyset , S \neq \mathcal{V}\right\rbrace$
 \end{definition}
 
-A subset of records ordered by the standard priority in $\mathcal{D}$ is consecutive if it is of the type $\left\lbrace R_{(j)}, R_{(j+1)}, \dots, R_{(k)}\right\rbrace$, for $1 \leq j \leq k \leq n$ with the ordering from $G$. For the following Proposition, the importance of the standard priority function is established. An elementary technical lemma is needed.
+Common approaches to solving equation $\ref{eq1}$ rely on properties of the set function $F$. For $F$ submodular, a class of greedy algorithms can provide probability $1 - \frac{1}{\epsilon}$ approximate solutions $\cite{article11}, \cite{article12}$ based on the multilinear extension $f_m(x_1, \dots, x_n) = \sum_{S \subseteq \mathcal{V}} F(S)\prod_{i \in S}x_i \prod_{i \in \mathcal{V} \setminus S}(1 - x_i)$, for $x \in \left[ 0,1\right]^n$. With oracle access to $F$ the algorithm is polynomial time, and the multiplier $(1 - \frac{1}{\epsilon})$ is optimal unless P = NP. The essence of these approaches is a relaxation by expectation to a continuous problem on the $n$-dimensional unit hypercube. In this way every boundary point of the hypercube is associated by identity to a subset of $\mathcal{V}$. In our setting the ambient extension is already specified as $f$, and the natural extensions to $\mathbf{R}^n$ (multilinear, Lovasz) do not easily allow for a restriction of the admissible set of partitions. Consecutive partitions play a key role.
 
-\begin{lemma}
-For $\frac{x_1}{y_1} \leq \frac{x_2}{y_2} \leq \dots \leq \frac{x_k}{y_k}$, $y_i > 0$, for all $i$,
+\begin{definition}
+A subset $S \subseteq \mathcal{V}$ is consecutive if it is of the form $\left\lbrace j, j+1, \dots k\right\rbrace$, for $1 \leq j \leq k \leq n$, or it is the empty set. A consecutive subset $P \subseteq \mathcal{V}$ is nonsplitting if both $P$, $\mathcal{V}  \backslash P$ are consecutive., otherwise, it is splitting. By convention, $\emptyset$, $\mathcal{V}$ are consecutive nonsplitting. Define
 \begin{align*}
-\frac{x_1}{y_1} \leq \frac{x_1 + \dots + x_k}{y_1 + \dots + y_k} \leq \frac{x_k}{y_k},
+\mathcal{T} &= \mathcal{T}_n = \{ S \subseteq \mathcal{V} : S \textrm{ is consecutive} \}\\
+\mathcal{S} &= \mathcal{S}_n = \{ S \subseteq \mathcal{V} : S \textrm{ is consecutive, splitting} \} \\
+\mathcal{U} &= \mathcal{U}_n = \{ S \subseteq \mathcal{V} : S \textrm{ is consecutive, nonsplitting}\} \\
+\underline{\mathcal{U}} &= \underline{\mathcal{U}}_n = \mathcal{U}_n \setminus \left\lbrace \emptyset, \mathcal{V}\right\rbrace
 \end{align*}
-with equality if and only if $\frac{x_1}{y_1} = \dots = \frac{x_n}{y_n}$.
-\end{lemma}
-\begin{proof}
-For $k=2$,
+\end{definition}
+
+
+A special case occurs when $S$ is the singleton $\left\lbrace j\right\rbrace$; the pair $S$, $\mathcal{V}\setminus S$ is called a $\textit{singleton splitting}$ or $\textit{non splitting}$ pair, depending on whether $\mathcal{V}\setminus S$ is consecutive. The set of singleton splitting subsets and their complements in $\mathcal{V}$ is denoted by 
 \begin{align*}
-\frac{x_1+x_2}{y_1+y_2} - \frac{x_1}{y_1} = \frac{x_1y_2 - x_2y_1}{y_1\left( y_1 + y_2\right)} &\geq 0 \\
-\frac{x_1 + x_2}{y_1 + y_2} - \frac{x_2}{y_2} = \frac{x_1y_2 - x_2y_1}{y_2\left( y_1 + y_2\right)} &\leq 0.
+\mathcal{\underline{S}} = \underline{\mathcal{S}_n}  = \{ P \subseteq \mathcal{V} \colon (P, \mathcal{V} \setminus P) \textrm{ form a singleton splitting pair}\} \not \subseteq \mathcal{S}_n, \mathcal{T}_n
 \end{align*}
-For $k > 2$, two applications of the above case gives
-\[
-\frac{x_1}{y_1} \leq \frac{\sum_1^{k-1} x_i}{\sum_1^{k-1} y_i} \leq \frac{\sum_1^k x_k}{\sum_1^k y_i} \leq \frac{x_k}{y_k}. 
-\]
-If $\frac{x_1}{y_1} = \frac{x_n}{y_n}$, then the ordering in the assumptions implies all ratios are equal. 
-\end{proof}
+
+% \begin{align*}
+% \Pi\left( \mathcal{T}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{T}_n\right\rbrace \\
+% \Pi\left( \mathcal{S}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{S}_n\right\rbrace \\
+% \Pi\left( \mathcal{U}_n\right) &= \left\lbrace p_S \colon S \in \mathcal{U}_n\right\rbrace \\
+% \Pi\left( \underline{\mathcal{S}}_n\right) &= \left\lbrace p_S \colon S \in \underline{\mathcal{S}}_n\right\rbrace \\
+% \end{align*}
+
+It is easy to see that $| \mathcal{U}_n | = 2n$, $| \mathcal{S}_n | = \frac{(n-1)(n-2)}{2}$, with $| \mathcal{T}_n | = | \mathcal{U}_n | + | \mathcal{S}_n | = \frac{n(n+1)}{2} + 1$, while $| \underline{\mathcal{S}}_n | = 2n - 2$. A scan over consecutive non-splitting subsets can be performed in linear time, while over consecutive splitting subests the scan time is quadratic in $n$.
+
+Let $\left\lbrace d_1, d_2, \dots, d_n\right\rbrace = \left\lbrace (x_1,y_1), (x_2,y_2), \dots, (x_n,y_n)\right\rbrace \subseteq \mathcal{D}$ be the ordering induced by $g$, so that $g(x_1,y_1) \leq g(x_2,y_2) \leq \dots \leq g(x_n,y_n)$. A subset $D \subseteq \mathcal{D}$ is $\textit{consecutive}$ if $D = \left\lbrace d_j, d_{j+1}, \dots, d_k\right\rbrace$, for some $1 \leq j \leq k \leq n$. Let $g$ be the standard priority, and define $r_i = \frac{x_i}{y_i}$, for $1 \leq i \leq n$. Since $r_i$ is increasing in $i$, $r_j\sum_j^k y_i \leq \sum_j^k x_i \leq r_k\sum_j^k y_i$, so that $g(x_j,y_j) \leq g(\sum_j^k x_i, \sum_j^k y_i) \leq g(x_k,y_k)$, for $1 \leq j \leq k \leq n$. 
+
+
+\begin{definition}
+A partition $\mathcal{P} = \left\lbrace P_1, \dots, P_t\right\rbrace$ of $N$ of size $t$ such that each $P_i$ is a consecutive subset is called a consecutive partition. 
+\end{definition}
+
+For any partition $\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace$ or set of subsets of $\mathcal{V}$ denote by $\Pi$ the mapping taking $\mathcal{P}$ to the point set $\left\lbrace \left\lbrace p_{S_1}\right\rbrace, \dots, \left\lbrace p_{S_t}\right\rbrace \right\rbrace$ in $\mathbf{R}^2$, so that $\Pi\left( \mathcal{S}\right) \subseteq \Pi\left( \mathcal{T}\right)$, $\Pi\left( \mathcal{U}\right) \subseteq \Pi\left( \mathcal{T}\right)$, $\Pi\left( \mathcal{\underline{S}}\right) \subseteq \Pi\left( \mathcal{S}\right) \cup \Pi\left( \mathcal{U}\right)$, etc.
+
+
+The following establishes the importance of the standard priority function.
 
 \begin{prop} \label{prop0}
-Let $\mathcal{D}$ be a set of records with standard priorty function $G$. Define $\mathcal{E} = \left\lbrace \textit{extreme points of } \mathcal{C}\right\rbrace$, $\underline{\mathcal{E}} = \left\lbrace \textit{extreme points of } \underline{\mathcal{C}}\right\rbrace$. Then
+Let $\mathcal{D}$ be a dataset ordered by the standard priorty function $G$. Let $\mathcal{E}, \underline{\mathcal{E}}$ be the sets of extreme points of $\mathcal{C}$, $\underline{\mathcal{C}}$, respectively. Then
 \begin{enumerate}[(i)]
 	\item $\mathcal{E} = \Pi\left( \mathcal{U}\right)$
 	\item $\Pi\left( \mathcal{\underline{U}}\right) \subseteq \underline{\mathcal{E}} \subseteq \Pi\left( \mathcal{\underline{U}}\right) \cup \Pi\left( \mathcal{\underline{S}}\right)$
 \end{enumerate}
 \end{prop}
 
-In particular $\underline{\mathcal{E}}$ contains most consecutive nonsplitting subsets, may contain consecutive splitting subsets, (but only singletons), and possibly nonconsecutive elements associated with a singleton splitting pair, while $\mathcal{E}$ contains only consecutive nonsplitting elements.
+In particular $\underline{\mathcal{E}}$ contains all consecutive nonsplitting subsets except $\emptyset$, $\mathcal{V}$, may contain consecutive splitting subsets, but only singletons, and possibly nonconsecutive elements associated with a singleton splitting pair, while $\mathcal{E}$ contains only consecutive nonsplitting elements.
 \begin{proof}
-Let $p ^* = (x^*, y^*) \in \mathcal{E}$. Then there is an affine $a\left(x,y\right) = Ax + By + C$ satisfying $a(x^*, y^*) = 0$, $a(x,y) < 0$ for all $(x,y) \in \mathcal{C} \setminus p^*$.  We have
-\begin{align}
+Let $p ^* = (x^*, y^*) \in \mathcal{E}$. Then there is an affine $l\left(x,y\right) = Ax + By + C$ satisfying $l(x^*, y^*) = 0$, $l(x,y) < 0$ for all $(x,y) \in \mathcal{C} \setminus p^*$.  We have
+\begin{align} \label{eq3}
 Ax^* + By^* = \min_{(x,y) \in \mathcal{C}} Ax + By = \min_{S \subseteq \mathcal{V}} \sum_{i \in S} (Ax_i + By_i).
 \end{align}
-The set $S^* = \{ i \in \mathcal{V}: Ax_i + By_i \leq 0 \}$ minimizes the last expression. We will show that $S^*, \mathcal{V}\setminus S^*$ are both consecutive. If $A = 0$ then necessarily $B \neq 0$. If $B > 0$ then $S^* =\left\lbrace i \in \mathcal{V} \colon y_i \leq 0 \right\rbrace = \emptyset$, otherwise $S^* = \left\lbrace i \in \mathcal{V}  \colon y_i \geq 0 \right\rbrace = \mathcal{V}$, in either case both $S^*$, $\mathcal{V}\setminus S^*$ are consecutive. If $ A \neq 0$ then $S^* = \left\lbrace i \in \mathcal{V} \colon \frac{x_i}{y_i} \leq -\frac{B}{A} \right\rbrace$ or $S^* = \left\lbrace i \in \mathcal{V} \colon \frac{x_i}{y_i} \geq -\frac{B}{A} \right\rbrace$, depending on the sign of $A$. In either case, $S^*, \mathcal{V}\setminus S^*$ are both consecutive. So $\mathcal{E} \subseteq \mathcal{U}$.
+The set $S^* = \{ i \in \mathcal{V}: Ax_i + By_i \leq 0 \}$ minimizes the last expression. We will show that $S^*, \mathcal{V}\setminus S^*$ are both consecutive. If $A = 0$ then necessarily $B \neq 0$. If $B > 0$ then $S^* =\left\lbrace i \in \mathcal{V} \colon y_i \leq 0 \right\rbrace = \emptyset$, otherwise $S^* = \left\lbrace i \in \mathcal{V}  \colon y_i \geq 0 \right\rbrace = \mathcal{V}$, in either case both $S^*$, $\mathcal{V}\setminus S^*$ are consecutive. If $ A \neq 0$ then $S^* = \left\lbrace i \in \mathcal{V} \colon \frac{x_i}{y_i} \leq -\frac{B}{A} \right\rbrace$ or $S^* = \left\lbrace i \in \mathcal{V} \colon \frac{x_i}{y_i} \geq -\frac{B}{A} \right\rbrace$, depending on the sign of $A$. In either case, $S^*, \mathcal{V}\setminus S^*$ are both consecutive. So $\mathcal{E} \subseteq \Pi(\mathcal{U})$.
 
-Now let $p \in \Pi\left( \mathcal{U}\right)$. Then $S = \left\lbrace j.j+1, \dots, k \right\rbrace$, for some $1 \leq j \leq k \leq n$, with either $j = 1$ or $k = n$, or both. Call the first an $\textit{ascending}$ consecutive nonsplitting set, the second $\textit{decending}$. For the proof that $p \in \mathcal{E}$ we will construct explict affine transformations that separate p from $\mathcal{C}$. The cases of ascending and descending consecutive $p$ are handled separately.
+Now let $p \in \Pi\left( \mathcal{U}\right)$. Then $S = \left\lbrace j.j+1, \dots, k \right\rbrace$, for some $1 \leq j \leq k \leq n$, with either $j = 1$ or $k = n$, or both. Call the first an $\textit{ascending}$ consecutive nonsplitting set, the second $\textit{decending}$. For the proof that $p \in \mathcal{E}$ we will construct explict affine transformations that separate p from $\mathcal{C}$. The cases of ascending and descending consecutive $p$ are handled separately, excluding the points $p_{\emptyset}$ and $p_{\mathcal{V}}$, which will be handled separately.
 
 For $0 \leq i \leq n+1$ define $C_x^i = \sum_{j=1}^i x_j$, $C_y^i = \sum_{j=1}^i y_j$, $C_x^{-i} = \sum_{j=i}^n x_j$, $C_y^{-i} = \sum_{j=i}^n y_j$, with the convention $C_x^0 = C_y^0 = C_x^{-(n+1)} = C_y^{-(n+1)} = 0$, and $x_0 = y_0 = 0$, so that we can write, for $0  \leq k,l \leq n+1$
 \begin{align*}
-C_x^l - C_x^k = \left\{
+C_x^l - C_x^k &= \left\{
 \begin{array}{ll}
   \hphantom{-}0, & l = k, \\
   \hphantom{-}\sum_{k+1}^l x_i, & l > k, \\
   -\sum_{l+1}^k x_i, & l < k, \\
 \end{array} 
-\right.    
-C_x^{-l} - C_x^{-k} = \left\{
+\right. \\
+C_x^{-l} - C_x^{-k} &= \left\{
 \begin{array}{ll}
   \hphantom{-}0, & l = k, \\
   -\sum_k^{l-1} x_i, & l > k, \\
@@ -270,17 +261,14 @@ C_x^{-l} - C_x^{-k} = \left\{
 \end{align*}
 
 with analagous results for $C_y^l - C_y^k$, $C_y^{-l} - C_y^{-k}$.
-Consider first the ascending case.
-
-
-Here $p = \left( C_x^k, C_y^k \right)$.  Define for $1 \leq k \leq n-1$
+Consider first the ascending case, that is, $p = \left( C_x^k, C_y^k \right)$. First assume $1 \leq k \leq n-1$ and define
 \begin{align*}
 l_k^1\left( x,y\right) &= \left( -y_k, x_k\right) \cdot \left( x,y\right) - \left( -y_kC_x^{k-1} + x_kC_y^{k-1}\right) \\
 l_k^2\left( x,y\right) &= \left( -y_{k+1}, x_{k+1}\right) \cdot \left( x,y\right) - \left( -y_{k+1}C_x^k + x_{k+1}C_y^k\right),
 \end{align*}
-Note that $l_1^1 = \left( -y_1, x_1\right) \cdot \left( x,y\right)$. Furthermore $l_k^1$ is identically zero on the segment from $\left( C_x^{k-1}, C_y^{k-1}\right)$ to $\left( C_x^k, C_y^k\right)$, and $l_k^2$ is identically zero on the segment from $\left( C_x^k, C_y^k\right)$ to $\left( C_x^{k+1}, C_y^{k+1}\right)$. 
+Note that $l_1^1 = \left( -y_1, x_1\right) \cdot \left( x,y\right)$. Then $l_k^1$ is identically zero on the segment joining $\left( C_x^{k-1}, C_y^{k-1}\right)$ with $\left( C_x^k, C_y^k\right)$, and $l_k^2$ is identically zero on the segment joining $\left( C_x^k, C_y^k\right)$ with $\left( C_x^{k+1}, C_y^{k+1}\right)$. 
 
-We will show that $l_k^1 < 0$, $l_k^2 < 0$ on $\mathcal{C}$ outside of the 2 segments above so that $p$ being the intersection of two 1-dimensional facets, is a vertex and extreme point of $\mathcal{C}$. Since $\mathcal{E} \subseteq \Pi\left( \mathcal{U}\right)$, it is sufficient to show that the transformations are negative on points $q \in \mathcal{U}$ outside of the set  $V = \left\lbrace \left( C_x^{k-1}, C_y^{k-1}\right), \left( C_x^k, C_y^k\right), \left( C_x^{k+1}, C_y^{k+1}\right)\right\rbrace$, as negativity on the interior follows. We consider four cases, which cover the sets in question: $q = (C_x^l, C_y^l)$ and $(C_x^{-l}, C_y^{-l})$ for $1 \leq l \leq k-1$ and $k+1 < l \leq n$. In addition, we need to check the behavior of the maps on $(C_x^0, C_y^0) = (0,0)$, for $k \geq 2$, as it is not included in these cases. 
+We will show that $l_k^1 < 0$, $l_k^2 < 0$ on $\mathcal{C}$ outside of the 2 segments above so that $p$ being the intersection of two 1-dimensional facets, is a vertex and extreme point of $\mathcal{C}$. Since $\mathcal{E} \subseteq \Pi\left( \mathcal{U}\right)$, it is sufficient to show that the transformations are negative on points $q \in \mathcal{U}$ outside of the set  $V = \left\lbrace \left( C_x^{k-1}, C_y^{k-1}\right), \left( C_x^k, C_y^k\right), \left( C_x^{k+1}, C_y^{k+1}\right)\right\rbrace$, as negativity on the interior follows. We consider four cases $q = (C_x^l, C_y^l)$ and $(C_x^{-l}, C_y^{-l})$ for $1 \leq l \leq k-1$ and $k+1 < l \leq n$, which cover all extreme point arguments for $l_k^1$, $l_k^2$ above. In addition, we need to check the behavior of the maps on $(C_x^0, C_y^0) = (0,0)$, for $k \geq 2$, as it is not included. 
 
 %
 % Case 1a
@@ -289,14 +277,14 @@ We will show that $l_k^1 < 0$, $l_k^2 < 0$ on $\mathcal{C}$ outside of the 2 seg
 
 \noindent Then
 \begin{align*}
-l_k^1\left( C_x^l, C_y^l\right) &= \left( \frac{\sum_{l+1}^{k-1} x_i}{\sum_{l+1}^{k-1} y_i} - \frac{x_k}{y_k}\right)y_k\left( \sum_{l+1}^{k-1} y_i\right) \\
-&\leq \left( \frac{\sum_{l+1}^{k-1} x_i}{\sum_{l+1}^{k-1} y_i} - \frac{x_{k-1}}{y_{k-1}}\right)y_k\left( \sum_{l+1}^{k-1} y_i\right) \\
+l_k^1\left( C_x^l, C_y^l\right) &= -y_kC_x^l + x_kC_y^l + y_kC_x^{k-1} - x_kC_y^{k-1} \\
+&= \left( \frac{\sum_{l+1}^{k-1} x_i}{\sum_{l+1}^{k-1} y_i} - \frac{x_{k-1}}{y_{k-1}}\right)y_k\left( \sum_{l+1}^{k-1} y_i\right) \\
 &< 0
 \end{align*}
 and 
 \begin{align*}
-l_k^2\left(C_x^l, C_y^l\right) &= \left( \frac{\sum_{l+1}^k x_i}{\sum_{l+1}^k y_i} - \frac{x_{k+1}}{y_{k+1}}\right) y_{k+1}\left(\sum_{l+1}^{k}y_i\right) \\
-&\leq \left( \frac{\sum_{l+1}^k x_i}{\sum_{l+1}^k y_i} - \frac{x_k}{y_k}\right) y_{k+1}\left(\sum_{l+1}^{k}y_i\right)\\
+l_k^2\left(C_x^l, C_y^l\right) &= -y_{k+1}C_x^l + x_{k+1}C_y^l + y_{k+1}C_x^k - x_{k+1}C_y^k \\
+&= \left( \frac{\sum_{l+1}^k x_i}{\sum_{l+1}^k y_i} - \frac{x_k}{y_k}\right) y_{k+1}\left(\sum_{l+1}^{k}y_i\right)\\
 &< 0.
 \end{align*}
 \end{case} 
@@ -357,20 +345,20 @@ l_k^2\left( C_x^{-l}, C_y^{-l}\right) &= -y_{k+1}C_x^{-l} + x_{k+1}C_y^{-l} + y_
 \end{align*}
 \end{case}
 
-\noindent It is easy to check that $l_k^1\left( p_{\emptyset}\right) <0$, $l_k^2\left( p_{\emptyset}\right) < 0$, for $k \geq 2$. Thus the hyperplanes $\left\lbrace \left( x,y\right) \colon l_k^1\left( x,y\right) = 0\right\rbrace$, $\left\lbrace \left( x,y\right) \colon l_k^2\left( x,y\right) = 0\right\rbrace$ define two one-dimensional facets whose intersection $p$ is an extreme point of $\mathcal{C}$.
+\noindent Finally, $l_k^1\left( p_{\emptyset}\right) = (\frac{C_x^{k-1}}{C_y^{k-1}} - \frac{x_k}{y_k})y_kC_y^{k-1}$, $l_k^2\left( p_{\emptyset}\right) = (\frac{C_x^k}{C_y^k} - \frac{x_{k+1}}{y_{k+1}})y_{k+1}C_y^k$, for $k \geq 2$. Thus the hyperplanes $\left\lbrace \left( x,y\right) \colon l_k^1\left( x,y\right) = 0\right\rbrace$, $\left\lbrace \left( x,y\right) \colon l_k^2\left( x,y\right) = 0\right\rbrace$ define two one-dimensional facets whose intersection $p$ is an extreme point of $\mathcal{C}$.
 
-\noindent A similar argument holds for $p = \left( C_x^{-j}, C_y^{-j}\right)$ be descending consecutive. Define the transformations
+\noindent A similar argument holds for $p = \left( C_x^{-j}, C_y^{-j}\right)$ be descending consecutive, with $1 < k \leq n$. Define the transformations
 \begin{align*}
 l_j^1\left( x,y\right) &= \left( y_{j-1}, -x_{j-1}\right) \cdot \left( x,y\right) - \left( y_{j-1}C_x^{-j} - x_{j-1}C_y^{-j}\right) \\
 l_j^2\left( x,y\right) &= \left( y_j, -x_j\right) \cdot \left( x,y\right) - \left( y_jC_x^{-\left(j+1\right)} - x_jC_y^{-\left( j+1\right)}\right)
 \end{align*}
-One can again check that $l_j^1$ is identically zero on the segment from $\left( C_x^{-(j-1)}, C_y^{-(j-1)}\right)$ to $\left( C_x^{-j}, C_y^{-j}\right)$ and that $l_j^2$ is identically zero on the segment from  $\left( C_x^{-j}, C_y^{-j}\right)$ to $\left( C_x^{-(j+1)}, C_y^{-(j+1)}\right)$. It will be shown that $l_j^1$, $l_j^2$ are strictly negative on points in $\mathcal{U}$ outside of $V = \left\lbrace (C_x^{-(k-1)}, C_y^{-(k-1)}), (C_x^{-k}, C_y^{-k}), (C_x^{-(k+1)}, C_y^{-(k+1)})\right\rbrace$. 
+One can again check that $l_j^1$ is identically zero on the segment from $\left( C_x^{-(j-1)}, C_y^{-(j-1)}\right)$ to $\left( C_x^{-j}, C_y^{-j}\right)$ and that $l_j^2$ is identically zero on the segment from  $\left( C_x^{-j}, C_y^{-j}\right)$ to $\left( C_x^{-(j+1)}, C_y^{-(j+1)}\right)$. It will be shown as above that $l_j^1$, $l_j^2$ are strictly negative on points in $\Pi(\mathcal{U})$ outside of $V = \left\lbrace (C_x^{-(k-1)}, C_y^{-(k-1)}), (C_x^{-k}, C_y^{-k}), (C_x^{-(k+1)}, C_y^{-(k+1)})\right\rbrace$. 
 
 %
 % Case 2a
 %
 \setcounter{case}{0}
-\begin{case} $p$ descending, $q = \left( C_x^l, C_y^l\right)$, $1 \leq l < k-1$
+\begin{case} $p = \left( C_x^{-j}, C_y^{-j}\right)$ descending, $q = \left( C_x^l, C_y^l\right)$, $1 \leq l < k-1$
 \noindent Then
 \begin{align*}
 l_j^1\left( C_x^l, C_y^l \right) &= y_{k-1}C_x^l - x_{k-1}C_y^l - y_{k-1}C_x^{-k} + x_{k-1}C_y^{-k} \\
@@ -439,14 +427,14 @@ l_j^2\left(C_x^{-l}, C_y^{-l}\right) &= y_kC_x^{-l} - x_kC_y^{-l} - y_kC_x^{-(k+
 \end{align*}
 \end{case}
 
-\noindent It is easy to check that $l_k^1\left( p_{\emptyset}\right) <0$, $l_k^2\left( p_{\emptyset}\right) < 0$, for $k \geq 2$. Thus the sets $\left\lbrace \left( x,y\right) \colon l_k^1\left( x,y\right) = 0\right\rbrace$, $\left\lbrace \left( x,y\right) \colon l_k^2\left( x,y\right) = 0\right\rbrace$ define two one-dimensional facets whose intersection $p$ is an extreme point of $\mathcal{C}$.
+\noindent Finally, $l_j^1\left( p_{\emptyset}\right) = (\frac{x_{j-1}}{y_{j-1}} - \frac{C_x^{-j}}{C_y^{-j}})y_{j-1}C_y^{-j}$, $l_j^2\left( p_{\emptyset}\right) = (\frac{x_j}{y_j} - \frac{C_x^{-(j+1)}}{C_y^{-(j+1)}})y_jC_y^{-(j+1)}$, are both negative, for $k \geq 2$. Thus the sets $\left\lbrace \left( x,y\right) \colon l_k^1\left( x,y\right) = 0\right\rbrace$, $\left\lbrace \left( x,y\right) \colon l_k^2\left( x,y\right) = 0\right\rbrace$ define two one-dimensional facets whose intersection $p$ is an extreme point of $\mathcal{C}$.
 
-Finally consider the case $j = 1$, $k = n$, for which $p =\left( C_x^n, C_y^n \right) \in \Pi\left( \mathcal{U}\right)$ is descending. The arguments are analogous, we present them here for completeness. The transformations needed in this case are
+Finally consider the cases $p = p_{\mathcal{V}}$ and $p = p_{\emptyset}$, i.e., $j = 1$, $k = n$ and  $j = k = 0$. The first case for which $p =\left( C_x^n, C_y^n \right) \in \Pi\left( \mathcal{U}\right)$ is both ascending and descending. The arguments are analogous, we present them here for completeness. The transformations needed are
 \begin{align*}
 l_n^1\left( x,y\right) &= \left( -y_n, x_n\right) \cdot \left( x,y\right) - \left( -y_nC_x^{n-1} + x_nC_y^{n-1}\right) \\
 l_n^2\left( x,y\right) &= \left( y_1, -x_1\right) \cdot \left( x,y\right) - \left( y_1C_x^{-2} - x_1C_y^{-2}\right),
 \end{align*}
-One can again check that $l_n^1\left( p\right) = -y_nC_x^n + x_nC_y^n + y_nC_x^{n-1} - x_nC_y^{n-1} = 0$, and $l_n^2\left( p\right) = y_1C_x^n - x_1C_y^n - y_1C_x^{-2} + x_1C_y^{-2} = 0$, that $l_n^1$ is identially zero on the segment from $\left( C_x^{n-1}, C_y^{n-1}\right)$ to $\left( C_x^n, C_y^n\right)$ and that $l_n^2$ is identically zero on the segment from $\left( C_x^n, C_y^n\right)$ to $\left( C_x^{-2}, C_y^{-2}\right)$. Furthermore, for any point in $\mathcal{U}$ of the form $\left( C_x^l, C_y^l\right)$ for $1 \leq l < n-1$, or $\left( C_x^{-l}, C_y^{-l}\right)$ for $2 < l \leq n$ we now show that both transformations are negative.
+One can again check that $l_n^1\left( p\right) = -y_nC_x^n + x_nC_y^n + y_nC_x^{n-1} - x_nC_y^{n-1} = 0$, and $l_n^2\left( p\right) = y_1C_x^n - x_1C_y^n - y_1C_x^{-2} + x_1C_y^{-2} = 0$, that $l_n^1$ is identially zero on the segment joining $\left( C_x^{n-1}, C_y^{n-1}\right)$ with $\left( C_x^n, C_y^n\right)$ and that $l_n^2$ is identically zero on the segment joining $\left( C_x^n, C_y^n\right)$ with $\left( C_x^{-2}, C_y^{-2}\right)$. Furthermore, for any point in $q \in \Pi(\mathcal{U})$ of the form $\left( C_x^l, C_y^l\right)$ for $1 \leq l < n-1$, or $\left( C_x^{-l}, C_y^{-l}\right)$ for $2 < l \leq n$ we now show that both transformations are negative.
 
 %
 % Case 3a
@@ -483,10 +471,9 @@ l_n^2\left( C_x^{-l},C_y^{-l}\right) &= y_1C_x^{-l} -x_1C_y^{-l} - y_1C_x^{-2} +
 &< 0
 \end{align*}
 \end{case}
-
 So once again p is the intersection of two one-dimensional facets and is an exterme point of $\mathcal{C}$.
 
-For the remaining "turning point" $p = \left( C_x^0, C_y^0\right) = \left( 0, 0\right)$, define
+For the remaining $p = \left( C_x^0, C_y^0\right) = \left( 0, 0\right)$, define
 \begin{align*}
 l_0^1\left( x,y\right) &= \left( -y_n, x_n\right) \cdot \left( x,y\right)\\
 l_0^2\left( x,y\right) &= \left( -y_1, x_1\right) \cdot \left( x,y\right)
@@ -496,23 +483,23 @@ The calculations are similar. Thus $\Pi \left( \mathcal{U}\right) \subseteq \mat
 
 We now prove that $\Pi\left( \mathcal{\underline{U}}\right) \subseteq \underline{\mathcal{E}} \subseteq \Pi\left( \mathcal{\underline{U}}\right) \cup \Pi\left( \mathcal{\underline{S}}\right)$. For $\underline{p} = \left( \underline{x}, \underline{y} \right) \in \underline{\mathcal{E}}$, we can again find a separating affine function $l\left( x,y\right) = Ax + By + C$, satisfying
 \begin{align} \label{eq6}
-A\underline{x} + B\underline{y} =\min_{\substack{S \subseteq \mathcal{V} \\ S \neq \emptyset \\ S \neq N}} \sum_{i \in S} \left( Ax_i + By_i\right)
+A\underline{x} + B\underline{y} = \min_{(x,y) \in \underline{\mathcal{C}}} Ax + By =\min_{\substack{S \subseteq \mathcal{V} \\ S \neq \emptyset \\ S \neq \mathcal{V}}} \sum_{i \in S} \left( Ax_i + By_i\right)
 \end{align}
-Let $p = \argmin_{S \subseteq \mathcal{V}} \sum_{i \in S} \left( Ax_i + By_i\right)$, which by the previous argument is of the form $p_S$ for some $S = \left\lbrace j, j+1, \dots, k\right\rbrace$. If $\vert S \vert = m$, with $1 < m < n$, then it also minimizes $\ref{eq6}$, is consecutive, non-splitting, with $p \in \Pi\left( \mathcal{\underline{U}}\right)$. Otherwise there are 2 cases.
+Let $p = \argmin_{S \subseteq \mathcal{V}} \sum_{i \in S} \left( Ax_i + By_i\right)$, which by the previous argument is of the form $p_S$ for some $S = \left\lbrace j, j+1, \dots, k\right\rbrace$. If $\vert S \vert = m$, with $1 < m < n$, then it also minimizes the expression in $\ref{eq3}$, is consecutive, non-splitting, with $p \in \Pi\left( \mathcal{\underline{U}}\right)$. Otherwise there are 2 cases.
 
 \setcounter{case}{0}
 \begin{case} $S = \emptyset$. 
-Since the minimizer $S$ can be written $S = \left\lbrace i \in N \colon Ax_i + By_i \leq 0 \right\rbrace$, we must have $Ax + By > 0$ for $\left( x,y\right) \in \mathcal{C}$. So $\ref{eq6}$ is minimized by selecting $\underline{p} = \left\lbrace i\right\rbrace$, for $i^* = \argmin_i \left( Ax_i + By_i\right)$, a singleton. $\underline{p}$ therefore lies in either $\Pi\left( \underline{\mathcal{S}}\right)$ or $\Pi\left( \mathcal{\underline{U}}\right)$, depending on whether $\left\lbrace i\right\rbrace$ is splitting.
+Since the minimizer $S$ can be written $S = \left\lbrace i \in N \colon Ax_i + By_i \leq 0 \right\rbrace$, we must have $Ax + By > 0$ for all $\left( x,y\right) \in \mathcal{C}$. So expression $\ref{eq6}$ is minimized by selecting $p = p_S$, for $S = \left\lbrace i\right\rbrace$, for $i^* = \argmin_i Ax_i + By_i$, a singleton. It follows that $p$ lies in either $\Pi\left( \underline{\mathcal{S}}\right)$ or $\Pi\left( \mathcal{\underline{U}}\right)$, depending on whether $\left\lbrace i\right\rbrace$ is splitting.
 \end{case}
 
-\begin{case} $S = \mathcal{V}$. By similar reasoning, $Ax_i + By_i < 0$ for all $\left( x,y\right) \in \mathcal{C}$. Thus $\ref{eq6}$ is minimized by removing a single element from $\mathcal{V}$; take $S = N\setminus \left\lbrace i^*\right\rbrace$, where $i^* = argmax_{i \in \mathcal{V}} \left( Ax_i + By_i\right)$ and set $p = p_S$ Again $\underline{p}$ lies in either $\Pi\left( \underline{\mathcal{S}}\right)$ or $\Pi\left( \mathcal{\underline{U}}\right)$.
+\begin{case} $S = \mathcal{V}$. By similar reasoning, $Ax_i + By_i < 0$ for all $\left( x,y\right) \in \mathcal{C}$. Thus expression $\ref{eq6}$ is minimized by removing a single element from $\mathcal{V}$; take $S = N\setminus \left\lbrace i^*\right\rbrace$, where $i^* = argmax_{i \in \mathcal{V}} \left( Ax_i + By_i\right)$ and set $p = p_S$. Again $\underline{p}$ lies in either $\Pi\left( \underline{\mathcal{S}}\right)$ or $\Pi\left( \mathcal{\underline{U}}\right)$.
 \end{case}
 
-So $\underline{\mathcal{E}} \subseteq \Pi\left( \mathcal{\underline{U}}\right) \cup \Pi\left( \mathcal{\underline{S}}\right)$. Now let $p = p_S$ be an element of $\Pi\left( \mathcal{\underline{U}}\right)$. From the first part of the proof, to any such $p_S$ we can associate two affine maps $l_k^1, l_k^2$, where $S = \left\lbrace k, k+1, \dots, n\right\rbrace$ or $S = \left\lbrace 1, \dots, k-1, k\right\rbrace$, for $1 \leq k \leq n$, such that $l_k^1\left( p_S\right) = l_k^2\left( p_S\right) = 0$, and $l_k^1, l_k^2 \vert_{\mathcal{C}} < 0$. Hence $l_k^1, l_k^2 \vert_{\mathcal{\underline{C}}} < 0$. Clearly $p_S \in \underline{\mathcal{C}}$, and by definition, $ \Pi\left( \mathcal{\underline{U}}_n\right) \subseteq \underline{\mathcal{E}}$. This completes the proof of part ii) and we have completed the classification of extreme points for $\underline{\mathcal{C}}$ as desired.
+So $\underline{\mathcal{E}} \subseteq \Pi\left( \mathcal{\underline{U}}\right) \cup \Pi\left( \mathcal{\underline{S}}\right)$. Now let $p = p_S$ be an element of $\Pi\left( \mathcal{\underline{U}}\right)$. From the first part of the proof, $p$ is either ascending or descending, and to any such $p_S$ we can associate two affine maps $l_k^1, l_k^2$, where $S = \left\lbrace k, k+1, \dots, n\right\rbrace$ or $S = \left\lbrace 1, \dots, k-1, k\right\rbrace$, for $1 \leq k \leq n$, such that $l_k^1\left( p_S\right) = l_k^2\left( p_S\right) = 0$, and $l_k^1, l_k^2 \vert_{\mathcal{C} \setminus p_S} < 0$. Hence $l_k^1, l_k^2 \vert_{\underline{C} \setminus p_S} < 0$. Clearly $p_S \in \underline{\mathcal{C}}$, and by definition, $ \Pi\left( \mathcal{\underline{U}}_n\right) \subseteq \underline{\mathcal{E}}$. This completes the proof of part ii) and we have completed the classification of extreme points for $\underline{\mathcal{C}}$ as desired.
 \end{proof}
 
 \vspace{6pt} 
-The vertices of $\mathcal{C}$ can be found by a purely geometric construction, the basis of which is a ``sweeping`` argument that lies at the root of a Graham scan $\cite{article3}$ used to find the vertices of a convex hull of a point set in $\mathbb{R}^2$. Since $\frac{x_1}{y_1} \leq \dots \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \frac{x_n}{y_n}$, we have 
+The vertices of $\mathcal{C}$ can also be found by a purely geometric construction, the basis of which is a ``sweeping`` argument that lies at the root of a Graham scan $\cite{article3}$ used to find the vertices of a convex hull of a point set in $\mathbb{R}^2$. Since $\frac{x_1}{y_1} \leq \dots \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \frac{x_n}{y_n}$, we have 
 \begin{align} \label{eq7}
 \frac{y_q}{x_q} \leq \dots \frac{y_1}{x_1} \leq 0 \leq \frac{y_n}{x_n} \leq \dots \leq \frac{y_{q+1}}{x_{q+1}}.
 \end{align} 
@@ -558,6 +545,8 @@ p_x^3 & p_y^3 & 1\\
 \end{algorithmic}
 \end{algorithm}
 
+In this way we can also see that the extreme points of $\mathcal{C}$, $\Pi(\underline{\mathcal{U}})$, occur in the order $(0,0), (C_x^1, C_y^1), \dots, (C_x^n, C_y^n), (C_x^{-2}, C_y^{-2}), \dots, (C_x^{-(n-1)}, C_y^{-(n-1)})$ when traversing the polytope $\underline{\mathcal{C}}$ from the origin in a clockwise direction.
+
 Now introduce a symmetric score function $\overline{F}\colon \mathcal{C} \subseteq \mathbb{R} \times \mathbb{R}^{+} \to \mathbb{R}$ by
 \[   
 \overline{F}\left( x,y\right) = \left\{
@@ -567,7 +556,7 @@ Now introduce a symmetric score function $\overline{F}\colon \mathcal{C} \subset
 \end{array} 
 \right. 
 \]
-where $C_x = \sum_1^n x_i$, $C_y = \sum_1^n y_i$. $\overline{F}$ is continuous on $\mathcal{C}$ for any score function $F$. In addition the convexity/concavity, and componentwise convexity/concavity of $\overline{F}$ on its domain is inherited from the corresponding properties of $F$, although subadditivity, quasiconvexity, submodularity of the associated set function are not. For example the symmetric score function associated to the rational score function $F(x,y) = xy^{-1}$ is not quasiconvex, although $F$ is.
+where $C_x = \sum_1^n x_i$, $C_y = \sum_1^n y_i$. $\overline{F}$ is continuous on $\mathcal{C}$ for any score function $F$. In addition the convexity/concavity, and componentwise convexity/concavity of $\overline{F}$ on its domain is inherited from the corresponding properties of $F$, although subadditivity, quasiconvexity are not, nor submodularity of the associated set function. For example the symmetric score function associated to the rational score function $F(x,y) = xy^{-1}$ is not quasiconvex, although $F$ is.
 
 % From this it follows that 
 % \label{tab:tab0}
@@ -634,22 +623,33 @@ where $C_x = \sum_1^n x_i$, $C_y = \sum_1^n y_i$. $\overline{F}$ is continuous o
 \label{fig:test}
 \end{figure}
 
-From Proposition 1, a convex $F$ will take its maximum on $\underline{mathcal{C}}$ at either a splitting or nonsplitting consecutive partition point. The former case represents a kind of degenerate behavior, associated with the collapsing of weakly consecutive maximal partitions seen in earlier examples. A necessary condition on a relaxed problem can be used to identify this behavior.
+By Proposition 1, a convex $F$ will take its maximum on $\underline{\mathcal{C}}$ at either a splitting or nonsplitting consecutive partition point. It will be shown that the former case represents a kind of degenerate behavior, associated with the collapsing of weakly consecutive maximal partitions seen in earlier examples. A necessary condition on a relaxed problem can be used to identify this behavior.
 
 \begin{prop}
 Let $F$ be a convex score function. If $\argmax_{\left( x,y\right) \in \underline{\mathcal{C}}} \overline{F}\left( x,y\right)$ is splitting, then $p_\mathcal{V} = \argmax_{\left( x,y\right) \in \mathcal{C}} \overline{F}$. If in addition $F$ is positive or bounded below on $\mathcal{C}$ then all of the $x_i$ are of the same sign.
 \end{prop}
 \begin{proof}
-Let $\overline{p} = \argmax_{\left( x,y\right) \in \overline{\mathcal{C}}} \overline{F}\left( x,y\right)$, with $\overline{p}$ consecutive splitting in $\mathcal{V}$. Let $p = \argmax_{\left( x,y,\right) \in \mathcal{C}} \overline{F}\left( x,y\right)$. Convexity of $\overline{F}$ on $\mathcal{C}$ follows from the corresponding property of $F$, so $p \in \mathcal{E}$. Since $\overline{F}\left( p\right) \geq \overline{F}\left( \overline{p}\textsl{•}\right)$, and $\overline{p}$ is not an extreme point of $\mathcal{C}$ by Proposition 1, we have $\overline{F}\left( p\right) > \overline{F}\left( \underline{p}\right)$. So $p$ cannot lie in $\underline{cal{E}}$. The only elements in $\mathcal{E}\setminus \underline{\mathcal{E}}$ are $\left\lbrace p_{\emptyset}, p_{N}\right\rbrace$, so the first part follows. Finally, if $\overline{F}$ is maximaixed at $p_\mathcal{V}$ and there is a $1 \leq q < n$ with $\frac{x_1}{y_1} \leq \dots \leq \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \leq \frac{x_n}{y_n}$, then by strict monotonicity of $F$ in $x$, $y$, we have $F\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) > F\left( p_\mathcal{V}\right)$, hence $\overline{F}\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) > F\left( p_\mathcal{V}\right) = \overline{F}\left( p_\mathcal{V}\right)$, unless $q = 0$ or $q = n$, in which case all of the $x_i$ of the same sign.
+Let $\overline{p} = \argmax_{\left( x,y\right) \in \overline{\mathcal{C}}} \overline{F}\left( x,y\right)$, with $\overline{p}$ consecutive splitting in $\mathcal{V}$. Let $p = \argmax_{\left( x,y,\right) \in \mathcal{C}} \overline{F}\left( x,y\right)$. Convexity of $\overline{F}$ on $\mathcal{C}$ follows from the corresponding property of $F$, so $p \in \mathcal{E}$. Since $\overline{F}\left( p\right) \geq \overline{F}\left( \overline{p}\textsl{•}\right)$, and $\overline{p}$ is not an extreme point of $\mathcal{C}$ by Proposition 1, we have $\overline{F}\left( p\right) > \overline{F}\left( \underline{p}\right)$. So $p$ cannot lie in $\underline{\mathcal{E}}$. The only elements in $\mathcal{E}\setminus \underline{\mathcal{E}}$ are $\left\lbrace p_{\emptyset}, p_{N}\right\rbrace$, so the first part follows. Finally, if $\overline{F}$ is maximaixed at $p_\mathcal{V}$ and there is a $1 \leq q < n$ with $\frac{x_1}{y_1} \leq \dots \leq \frac{x_q}{y_q} \leq 0 \leq \frac{x_{q+1}}{y_{q+1}} \leq \dots \leq \frac{x_n}{y_n}$, then by strict monotonicity of $F$ in $x$, $y$, we have $F\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) > F\left( p_\mathcal{V}\right)$, hence $\overline{F}\left( \sum_{q+1}^n x_i, \sum_{q+1}^n y_i\right) > F\left( p_\mathcal{V}\right) = \overline{F}\left( p_\mathcal{V}\right)$, unless $q = 0$ or $q = n$, in which case all of the $x_i$ of the same sign.
 \end{proof}
 
+\begin{definition}
+The score function $F$ satisfies the Consecutive Partitions Property (CPP) if 
+\[
+\mathcal{P}^* = \argmax_{\substack{\mathcal{P} \\ \vert \mathcal{P}\vert = t}} {\sum\limits_{j=1}^{T}F( \sum_{i \in P_j}x_i, \sum_{i \in P_j}y_i)}
+\]
+is a consecutive partition. $F$ satisfies the Weak Consecutive Partitions Property (WCPP) if 
+\[
+\mathcal{P}^* = \argmax_{\substack{\mathcal{P} \\ \vert \mathcal{P}\vert \leq t}} {\sum\limits_{j=1}^{T}F( \sum_{i \in P_j}x_i, \sum_{i \in P_j}y_i)}.
+\]
+$F$ satisfies CPP$(\mathbf{R}^+)$, WCPP$(\mathbf{R}^+)$ if it satisfies CPP, WCPP, respectively, for $X \subseteq \mathbf{R}^+$.
+\end{definition}
 
 \begin{thm} \label{thm1}
-Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with the standard priority function. If the score function $F$ is convex and subadditive, then there is a strongly consecutive maximal partition for $F$, for any $X \subseteq \mathbf{R}$, $Y \subseteq \mathbf{R}$.
+If the score function $F$ is convex and subadditive on $\mathcal{C}$, it satisfies CPP.
 \end{thm}
 
 \begin{proof}
-The proof proceeds by induction on $t$. Let $t$ = 2. By convexity of $\overline{F}$, the argmax of $\overline{F} |_{\underline{\mathcal{C}}}$ occurs at a point $p_S$, for $S \in \Pi\left( \underline{\mathcal{U}}\right) \cup \Pi\left( \underline{\mathcal{S}}\right)$. Since $F$ is subadditive, the solution to $\argmax_{\mathcal{C}}{\overline{F}}$ cannot occur at $p_{\mathcal{V}}$, hence $p_S \in \Pi\left( \mathcal{U}\right)$ by Proposition 2. So the maximal partition $\left\lbrace S, \mathcal{V} \setminus S\right\rbrace$ is strongly consecutive. Now let $t >= 3$. The arguments here a are motivated by $\cite{article2}$. Define, for any subset $S \subseteq \mathcal{V}$, $M_S = \max S$, $m_S = \min S$, and $d\left(S\right) = M_S - m_S$. Let $\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace$ be a size $t$ partition that maximizes $\ref{eq1}$ which also minimizes $\sum_{j=1}^t d\left(S_j\right)$ among all optimal size $t$ partitions. If not all $S_j$ are consecutive, then we can find $S_i$, $S_j$ and $k \in S_j$ with $m_{S_i} < k < M_{S_i}$. Note that $\min\left( M_{S_i}, M_{S_j}\right) \geq k$,  and $\max\left( m_{S_i}, m_{S_j} \right) \leq k$, so that 
+The proof proceeds by induction on $t$. Let $t$ = 2. By convexity of $\overline{F}$, the argmax of $\overline{F} |_{\underline{\mathcal{C}}}$ occurs at a point $p_S$, for $S \in \Pi\left( \underline{\mathcal{U}}\right) \cup \Pi\left( \underline{\mathcal{S}}\right)$. Since $F$ is subadditive, the solution to $\argmax_{\mathcal{C}}{\overline{F}}$ cannot occur at $p_{\mathcal{V}}$, hence $p_S \in \Pi\left( \mathcal{U}\right)$ by Proposition 2. So the maximal partition $\left\lbrace S, \mathcal{V} \setminus S\right\rbrace$ is strongly consecutive. Now let $t >= 3$. The arguments here are motivated by $\cite{article2}$. Define, for any subset $S \subseteq \mathcal{V}$, $M_S = \max S$, $m_S = \min S$, and $d\left(S\right) = M_S - m_S$. Let $\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace$ be a size $t$ partition that maximizes expression $\ref{eq1}$ which also minimizes $\sum_{j=1}^t d\left(S_j\right)$ among all optimal size $t$ partitions. If not all $S_j$ are consecutive, then we can find $S_i$, $S_j$ and $k \in S_j$ with $m_{S_i} < k < M_{S_i}$. Note that $\min\left( M_{S_i}, M_{S_j}\right) \geq k$,  and $\max\left( m_{S_i}, m_{S_j} \right) \leq k$, so that 
 \[
 \min\left( M_{S_i}, M_{S_j}\right) - \max\left( m_{S_i}, m_{S_j} \right) \geq 0.
 \] 
@@ -664,87 +664,232 @@ a contradiction. So all of the $S_j$ are consecutive, nonempty.
 \end{proof}
 
 \begin{thm} \label{thm2}
-Let the dataset $\mathcal{D} = \{ \mathbf{R}_1, \ldots, \mathbf{R}_n \}$ be ordered with the standard priority function. If the score function $F$ is convex, then there is a weakly consecutive maximal partition for $F$, for any $X \subseteq \mathbf{R}$, $Y \subseteq \mathbf{R}$.
+If the score function $F$ is convex on $\mathcal{C}$, then it satisfies the WCPP.
 \end{thm}
 \begin{proof}
-The proof is analagous to the proof of the previous theorem. At the initial step, we can only guarantee that the argmax $p_S$ of $\overline{F} |_{\underline{\mathcal{C}}}$ satisfies $S \in \Pi\left( \underline{\mathcal{U}}\right) \cup \Pi\left( \underline{\mathcal{S}}\right)$, that is, we cannot exclude it from $\Pi\left( \underline{\mathcal{S}}\right)$. The partition formed is nonetheless weakly consecutive. For the remainder, assume $S_i$, $S_j$ are chosen as above, and one of  $S^{\prime}_i$, $S^{\prime}_j$ to be empty, defining $d(\emptyset) = 0$. The argument still holds.
+The proof proceeds by induction exactly as in the convex, subadditive case, but we allow the partition $S = \left\lbrace S, \emptyset \right\rbrace$ at the initial step, and thereafter for the base assumption in the indicution step. Call this the trivial size 2 partition. In this way we will create a partition of size $t$ consisting of consecutive elements and possibly repetitions of instances of the empty set. 
+
+To this end, let $t = 2$ and consider $p^* = \argmax_{p \in \mathcal{C}} \overline{F}(p)$. By Proposition 1, $p^* \in \Pi(\underline{\mathcal{U}})$, and we have (possibly trivial) size 2 maximal partition of $\mathcal{V}$. 
+
+The inductive step proceeds as before, and assuming $S_i$, $S_j$ nonconsecutive, we produce the consecutive partition as $S_i \cup S_j = S^{\prime}_i \cup S^{\prime}_j$, with possibly one of $S_i^{\prime}$, $S_j^{\prime}$ empty. If, without loss of generality, $S_j^{\prime} = \emptyset$, then $d\left( S^{\prime}_i\right) + d\left( S^{\prime}_j\right) \leq \max\left( M_{S_i}, M_{S_j}\right) - \min\left( m_{S_i}, m_{S_j}\right) - 1$ as before, and we arrive at a contradiction. So we obtain, for any $t$, a consective partition $\mathcal{P}$ of $\mathcal{V}$, possibly containing empty sets, and WCPP holds for $F$.
 \end{proof}
+
+\begin{thm}
+If the score function $F$ is quasiconvex on $\mathcal{C}$, then $\argmax_{S \subseteq \mathcal{V}}F(\sum_{i \in S}x_i, \sum_{i \in S}y_i)$ is a consecutive subset of $\mathcal{V}$.
+\end{thm}
+\begin{proof}
+Since $F$ is quasiconvex, the set $S^* = \argmax_{S \subseteq \mathcal{V}}F(\sum_{i \in S}x_i, \sum_{i \in S}y_i)$ occurs at an extreme point of $\mathcal{C}$, which is consecutive by Proposition 1.
+\end{proof}
+
+To completely classify the rational score functions along these lines, note that the Hessian of $F$ has principal minors
+\begin{align*}
+M_1 &= \alpha(\alpha-1)x^{\alpha-2}y^{-\beta} \\
+M_2 &= \alpha\beta(\alpha-\beta-1)x^{2(\alpha-1)}y^{-2(\beta+1)}
+\end{align*}
+so that for $X \subseteq \mathbf{R}$, $F$ is convex if $\alpha - \beta \geq 1$, and $\alpha \in \mathbf{N}$ is even, while for $X \subseteq \mathbf{R}^+$, $F$ is convex if $\alpha - \beta \geq 1$. It is easy to show that subadditivity holds for $X \subseteq \mathbf{R}$ if $\alpha - \beta \leq 1$, $\alpha$, $\beta \in \mathbf{N}$, while for $X \subseteq \mathbf{R}^+$ only $\alpha - \beta \leq 1$ is required.
 
 \begin{corollary}
-For $\mathcal{D}$ as above, $F(x,y) = x^{\alpha}y^{-\beta}$ a rational score function. Then for $X \subseteq \mathbf{R}$, a strongly consecutive maximal partition for $F$ exists if $\alpha - \beta = 1$ and $\alpha$ is even, while a weakly consecutive maximal partition exists if $\alpha - \beta = 1$. For $X \subseteq \mathbf{R}^+$, both strongly and weakly consecutive maximal partitions exist if $\alpha - \beta = 1$.
+For Let $\mathcal{D}$ be a dataset and $F(x,y)$ a rational score function. Then $F$ satisfies CPP iff $\alpha - \beta = 1$ and $\alpha$ is even, and it satsifies WCPP iff $\alpha - \beta \geq 1$ and $\alpha$ is even. $F$ satisfies CCP$(\mathbf{R}^+)$ iff $\alpha - \beta = 1$, and WCCP$(\mathbf{R}^+)$ iff $\alpha - \beta \geq 1$
 \end{corollary}
 \begin{proof}
-
-Show that $F$ is convex iff $\alpha - \beta \geq 1$, with the additional requirement that $\alpha$ is even for general $X$, and $F$ is subadditive iff $\alpha - \beta \leq 1$...
-\end{proof}
-
-It is difficult to establish equivalence for the results in $\ref{thm1}$, $\ref{thm2}$, as the extension of the function $F \colon 2^\mathcal{V} \rightarrow \mathbf{R}$ to one on $\underline{\mathcal{C}}$ or $\mathcal{C}$ is not well-defined. The notion of submodularity does not seem to be related - the score function $F(x,y) = \log((1+x)(1+y))$ is submodular, for $X \subseteq \mathbf{R}^+$, but the real valued function defined on the polytope is subadditive and concave. Thus a maximum may occur on the interior of $\underline{\mathcal{C}}$. The Lovasz extension of $F$ is defined on the unit hypercube in $\mathbf{R}^n$, but the natural projections to $\mathbf{R}^2$ that extend $F$ don't preserve convexity. If we restrict attention to rational score functions, then there is an equivalence. For example,  choose $\alpha = 2 + \epsilon$, $\beta = 1$, for some $\epsilon > 0$. Set
+Sufficiency follows from Theorems 1,2. For necessity, choose $\alpha = 2m + \epsilon$, $\beta = 2m -1$, for some $m \in \mathbf{N}$, $\epsilon > 0$. Set
 \[
 X = \left[ 1-\delta, \delta, 1 + \delta\right], Y = \left[ 1, \delta, 1\right]
 \] 
-for some $\delta > 0$. There are 3 partitions of $\left\lbrace 1, 2, 3\right\rbrace$, namely $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$. Only the first 2 are ordered. The scores can be computed
+for some $\delta > 0$. Label the partitions of $\left\lbrace 1, 2, 3\right\rbrace$ $\mathcal{P}_1 = \left\lbrace \left\lbrace 1 \right\rbrace, \left\lbrace 2, 3\right\rbrace \right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left\lbrace 1, 2 \right\rbrace, \left\lbrace 3\right\rbrace \right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left\lbrace 1, 3 \right\rbrace, \left\lbrace 2 \right\rbrace \right\rbrace$. Only the first 2 are ordered. The sums can be computed
 \begin{align*}
-\text{Score}\left(\mathcal{P}_1\right) & = \left( 1-\delta \right)^\alpha + \frac{\left( 1+2\delta\right)^\alpha}{1+\delta} \\
-\text{Score}\left(\mathcal{P}_2\right) & = \frac{1}{1+\delta} + \left( 1+\delta\right)^\alpha \\
-\text{Score}\left(\mathcal{P}_3\right) & = 2^{1+\epsilon}
+\sum_{S_i \in \mathcal{P}_1}F(S_i) & = \left( 1-\delta \right)^{2m+\epsilon} + \frac{\left( 1+2\delta\right)^{2m+\epsilon}}{(1+\delta)^{2m-1}} \\
+\sum_{S_i \in \mathcal{P}_2}F(S_i)  & = \frac{1}{(1+\delta)^{2m-1}} + \left( 1+\delta\right)^[2m+\epsilon] \\
+\sum_{S_i \in \mathcal{P}_3}F(S_i)  & = 2^{1+\epsilon} + \delta^{1+\epsilon}
 \end{align*}
-We can choose $\delta$ small so that the last score dominates.
+We can choose $\delta$ small so that the last partition sum dominates.
 For $\alpha = 2 - \epsilon$, $\beta = 1$, $\epsilon > 0$, and the sequences
 \[
 X = \left[ 1, \frac{1}{\delta}, 1\right], Y = \left[ \frac{1}{1+\delta}, \frac{1}{\delta}, \frac{1}{1-\delta}\right]
 \] 
 we have
 \begin{align*}
-\text{Score}\left(\mathcal{P}_1\right) & = \frac{1^\alpha}{\frac{1}{1+\delta}} + \frac{\left(1 + \frac{1}{\delta}\right)^\alpha}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) }  = \frac{\left(1 + \frac{1}{\delta}\right)^\alpha}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right) } + \left( 1 + \delta \right)\\
-\text{Score}\left(\mathcal{P}_2\right) & = \frac{1^\alpha}{\frac{1}{1-\delta}} + \frac{\left( 1 + \frac{1}{\delta}\right)^\alpha}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)}  = \frac{\left( 1 + \frac{1}{\delta}\right)^\alpha}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)} + \left( 1 - \delta \right)\\
-\text{Score}\left(\mathcal{P}_3\right) & = \frac{\left( 1 + 1\right)^\alpha}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)}  + \frac{\left( \frac{1}{\delta}\right)^\alpha}{\frac{1}{\delta}} = \frac{\left( \frac{1}{\delta}\right)^\alpha}{\frac{1}{\delta}} + 2^{\alpha - 1}\left( 1 - \delta^2\right) 
+\sum_{S_i \in \mathcal{P}_1}F(S_i) & = \frac{1}{(\frac{1}{1+\delta})^{2m-1}} + \frac{\left(1 + \frac{1}{\delta}\right)^{2m+\epsilon}}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right)^{2m-1} }  = \frac{\left(1 + \frac{1}{\delta}\right)^{2m+\epsilon}}{\left( \frac{1}{\delta} + \frac{1}{1 - \delta}\right)^{2m-1} } + \left( 1 + \delta \right)^{2m-1}\\
+\sum_{S_i \in \mathcal{P}_2}F(S_i) & = \frac{1}{(\frac{1}{1-\delta})^{2m-1}} + \frac{\left( 1 + \frac{1}{\delta}\right)^{2m+\epsilon}}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)^{2m-1}}  = \frac{\left( 1 + \frac{1}{\delta}\right)^{2m+\epsilon}}{\left( \frac{1}{1+\delta} + \frac{1}{\delta}\right)^{2m-1}} + \left( 1 - \delta \right)^{2m-1}\\
+\sum_{S_i \in \mathcal{P}_3}F(S_i) & = \frac{2^{2m+\epsilon}}{\left(\frac{1}{1+\delta} + \frac{1}{1-\delta}\right)^{2m-1}}  + \frac{\left( \frac{1}{\delta}\right)^{2m+\epsilon}}{\left(\frac{1}{\delta}\right)^{2m-1}} = \frac{\left( \frac{1}{\delta}\right)^{2m+\epsilon}}{\left(\frac{1}{\delta}\right)^{2m-1}} + 2^{1+\epsilon}\left( 1 - \delta^2\right)^{2m-1} 
 \end{align*}
-and letting $\delta \rightarrow 0$ gives the result, as the first summands in each score can be made arbitrarily close to each other.
+and letting $\delta \rightarrow 0$ gives the result, as the first summands in each line can be made arbitrarily close to each other.
 
-To extend these examples to larger $\vert \mathcal{D} \vert = n > 3$, $s \geq t$, simply add $n-3$ identical records of the form $R_i = \left( 0, y\right)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $s \geq t$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left[\left[0, 2\right], \left[ 1\right]\right]$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $s - t$ of the indices $4, \dots, n$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record in any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left[ \left[ 0\right], \left[ 1\right], \left[ 2, \dots\right]\right]$. But the score of any such partition must be less than
+To extend these examples to larger $\vert \mathcal{D} \vert = n > 3$, $s \geq t$, simply add $n-3$ identical tuples of the form $(0, y)$, for any $y > 0$. Index the new elements by $N+1, \dots, M$. Since $s \geq t$, an unordered candidate partition is formed by adjoining to $\mathcal{P}^{\prime} = \left\lbrace \left\lbrace1, 3\right\rbrace, \left\lbrace 2\right\rbrace \right\rbrace$ an arbitrary partition $\mathcal{P}^{\prime\prime}$ of size $s - t$ of the indices $4, \dots, n$, the new partition is $\mathcal{P} = \mathcal{P}^{\prime} \cup \mathcal{P}^{\prime\prime}$. We have $\text{Score}\left(\mathcal{P}\right) = \text{Score}\left(\mathcal{P}^{\prime}\right)$. It is clear that inserting any record from any subset of $\mathcal{P}^{\prime\prime}$ into any subset from a partition in $\mathcal{P}^{\prime}$ only decreases the total score, while inserting a record from $\mathcal{P}^{\prime}$ into $\mathcal{P}^{\prime\prime}$ also represents a decrease from one of the above partitions scores for $\mathcal{P}_1$, $\mathcal{P}_2$, if the element of index 1 is switched, nonetheless the new partition won't be ordered. Of the elements 0, 2, the only one that can be switched while retaining an ordered partition is 2, in which case the new partition is of the form $\left\lbrace \left\lbrace 1\right\rbrace, \left\lbrace 2\right\rbrace, \left\lbrace 3, \dots\right\rbrace \right\rbrace$. But the score of any such partition must be less than
 \[
 \left( 1-\delta\right)^\alpha + \frac{\delta^\alpha}{\delta} + \left( 1+\delta\right)^\alpha
 \]
-which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ above. The argument for $\alpha < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\alpha > 0$ and $\left( n, t\right)$. Therefore $\alpha = 2$. This argument can be easily generalized to the cases $\alpha - \beta > 1$ and $\alpha - \beta < 1$. 
+which is dominated by the unordered partition $\mathcal{P}_3 = \left\lbrace \left\lbrace 1, 3 \right\rbrace, \left\lbrace 1 \right\rbrace \right\rbrace$ above. The argument for $\alpha < 2$ is similar. In this way we can generate optimal, unordered partitions for any $\alpha > 0$ and $\left( n, t\right)$. Therefore $\alpha = 2$. This argument can be easily generalized to the cases $\alpha - \beta > 1$ and $\alpha - \beta < 1$. 
 
-In addition for $\alpha = 2$, $\beta = 1$ and priority function $G\left( x,y\right) = \frac{x^{\tau}}{y}$, $\tau = 1$ is the only priority power that guarantees the existence of a strongly consecutive maximal partition. To see this let
+\end{proof}
+
+\subsection{Equivalence results for $X \subseteq \mathbf{R}^+$}
+Formulations of equivalence results for the Theorems above are not immediately obvious as there are many extensions of the set function $F\colon 2^{\mathcal{V}} \to \mathbf{R}$ to the polytope $\mathcal{C}$. $\mathcal{C}$ is defined in terms of the give sequences $X$, $Y$ on a subset of $\mathcal{C}$ through the association $S \in 2^{\mathcal{V}}$ with $p_S \in \mathbf{R}^2$. Nonetheless, we may look for the existence of a suitable (convex, possibly subadditive) extension $f\colon \mathcal{C} \to \mathbf{R}$ in the context of a relaxation of the optimization in $\ref{eq1}$. Although our optimization is over partitions rather than subsets of $\mathcal{V}$, it is clear from the previous section that optimization over subsets is the basis of an iterative algorithmic approach (see below). We therefore start there. The standard approach for minimization of a submodular $F$ relies on the Lovasz extension $f(x) = \int_0^1 F(S^{\theta}d\theta$, where $S^{\theta} = \left\lbrace i \colon x_i \geq \theta \right\rbrace$ and the integral is in the sense of Choquet. The convexity of $f$ is equivalent to submodularity of $F$, and the discrete minimization can be recast as one over the base polytope, solvable in polynomial time by an ellipsoid method or equivalently a greedy algorithm. The situation worse for maximization problems, for which only approximations exists. For nondecreasing, submodular $F$ the multilinear extension $f_m(x_1, \dots, x_n) = \sum_{S \subseteq \mathcal{V}} F(S)\prod_{i \in S}x_i \prod_{i \in \mathcal{V} \setminus S}(1 - x_i)$, for $x \in \left[ 0,1\right]^n$ provides a relaxation objective for which an approximate solution with multiplier $(1 - \frac{1}{\epsilon})$ can be obtained using a continuous greedy algorithm, at the cost of solving a regular ODE and approximating (by Monte Carlo, etc.) the multilinear extension at each step.
+
+Submodularity of $F$ does not help in our case. Take $X$, $Y \subseteq \mathbf{R}^+$ and consider $F(S) = \log{(1 + \sum_{i \in S} x_i)(1 + \sum_{i \in S}y_i)}$, the restricution of $f(x,y) = \log{((1+x)(1+y))}$ Then $F$ is submodular, subadditive, $F(0) = 0$, but concave in the upper half-plane. In fact, it is easy to see that $F$ does not satisfy WCPP$(\mathbf{R}^+)$ so that there is no convex extension to $\mathcal{C}$. $f$ is not decreasing in $y$ and is not a proper score function, for that we may use $F(S) = \sqrt{\sum_{i \in S}x_i}$, which is submodular, subadditive, and whose natural extension to the ambient polytope is nondecreasing in $x$, nonincreasing in $y$, $f(0) = 0$, yet doesn't satisfy WCPP$(\mathbf{R}^+)$. In addition the natural extensions above (multilinear, Lovasz) with strong regularity properties (convexity, subadditivity, nondecreasing on lines, etc.) for submodular $F$ are defined on the unit hypercube in $\mathbf{R}^{\vert \mathcal{V}\vert}$ whose boundary consists of all elements $S \in 2^{\mathcal{V}}$; the consecutive boundary points are not easily distinguishable.
+
+None of the rational score functions are submodular $\footnote[1]{For $X = \left\lbrace 0,7,8,9\right\rbrace$, $Y = \left\lbrace 4,7,1,1\right\rbrace$, and $A=\left\lbrace 1,3 \right\rbrace$. $B = \left\lbrace 0,2,3 \right\rbrace$, we have $F(A)+F(B) \approx 80.1667$ while $F(A\cup B)+F(A\cap B) \approx 125.3077$}$, but a weaker condition is satisfied by some, that they are submodular on a restricted subset of $2^{\mathcal{V}}$.
+
+\begin{definition}
+The set function $F\colon 2^{\mathcal{V}} \to \mathbf{R}$ is consecutive submodular if $F(S_1) + F(S_2) \geq F(S_1 \cup S_2) + F(S_1 \cap S_2)$ for all consecutive subsets $S_1$, $S_2 \in 2^{\mathcal{V}}$.
+\end{definition}
+
+For the class of rational score functions, consecutive submodularity is equivalent to the CPP property:
 \[
-X = \left[ x-\delta, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
-\] 
-for $x, \delta > 0$, and consider the three partitions $\mathcal{P}_i$, $i=1, 2, 3$ as above. We have
-\begin{align*}
-& \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_2\right) \\
-& \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_1\right) = \text{Score}\left(\mathcal{P}_3\right) - \text{Score}\left(\mathcal{P}_2\right) = \frac{-\delta^2\left( 2x + \delta\right)}{x\left( x + \delta\right)}
-\end{align*}
-The power priority $G(x,y) = \frac{x^\tau}{y}$ places the priorty on the records:
-\begin{align} \label{eq8}
-\left( G(x_1, y_1), G(x_2, y_2), G(x_3, y_3)\right) = \left( \frac{\left( x - \delta \right)^{\tau}}{x}, \delta^{\tau-1},  \frac{\left( x + \delta \right)^{\tau}}{x}\right).
+f \text{ rational satisfies CPP} \Leftrightarrow \alpha - \beta = 1, \alpha \text{ even} \Leftrightarrow f \text{ consecutive submodular}
+\]
+To see this for $\alpha = 2$, $\beta = 1$, for example, first note that the cases $A \subseteq B$ and $A\cap B = \emptyset$ are trivial or follow from subadditivity of $f$. So assume $A = \left\lbrace i, \dots, k\right\rbrace$, $B = \left\lbrace j, \dots, l\right\rbrace$, with $i \leq j \leq k \leq l$. Set 
+\begin{align} \label{eq10}
+x_{A\setminus B} &= \sum_i^jx_i \quad x_{A\cap B} = \sum_j^kx_i \quad x_{B\setminus A}=\sum_k^lx_i \\
+y_{A\setminus B} &= \sum_i^jy_i \quad y_{A\cap B} = \sum_j^ky_i \quad x_{B\setminus A}=\sum_k^ly_i
 \end{align}
-For $\tau > 1$, choosing $x$ large relative to delta gives $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$. So the partitions $\mathcal{P}_1 = \left\lbrace \left[ 0 \right], \left[ 1, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 0, 2 \right], \left[ 1 \right]\right\rbrace$ become $\mathcal{P}_1 = \left\lbrace \left[ 1 \right], \left[ 0, 2\right]\right\rbrace$, $\mathcal{P}_2 = \left\lbrace \left[ 0, 1 \right], \left[ 2\right]\right\rbrace$, and $\mathcal{P}_3 = \left\lbrace \left[ 1, 2 \right], \left[ 0 \right]\right\rbrace$, maintaining the partition scores above. The maximum score is shared by $\mathcal{P}_1$, $\mathcal{P}_2$, the first being unordered. In order to force $\text{Score}\left(\mathcal{P}_1\right) > \text{Score}\left(\mathcal{P}_2\right)$, we perturb the original $X$, $Y$ by
+Then
 \[
-X\left(\epsilon\right) = \left[ x-\delta+\epsilon, \delta, x + \delta\right], Y = \left[ x, \delta, x\right]
+Q_{A\setminus B} \leq Q_{A\cap B} \leq Q_{B\setminus A}
 \]
-and denoting by $\text{Score}\left(\epsilon \right)\left(\mathcal{P}_i \right)$ the score of the partition $\mathcal{P}_i$ on the records $\left\lbrace \left(x\left(\epsilon\right)_1, y_1\right),\left(x\left(\epsilon\right)_2, y_2\right),\left(x\left(\epsilon\right)_3, y_3\right) \right\rbrace$, it follows that
-\begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \epsilon - \delta\right)^2}{x} - \frac{\left( x - \delta\right)^2}{x} = \frac{2\epsilon\left( x - \delta\right) + \epsilon^2}{x} \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + \epsilon\right)^2}{x + \delta}  - \frac{x^2}{x+\delta}= \frac{2\epsilon x + \epsilon^2}{x+\delta}
-\end{align*}
-Choosing, e.g. $x = 1$, $\delta = .25$ gives 
-\begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{3}{2}\epsilon + \epsilon^2 \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= 2\epsilon + \epsilon^2
-\end{align*}
-By choosing $\epsilon > 0$ small enough, we can ensure that the first term, corresponding to the score of the partition $\left[ \left[ 1\right], \left[ 0, 2\right]\right]$ dominates, while the priority order $G(x_2, y_2) < G(x_1, y_1) < G(x_3, y_3)$ is maintained. The maximal partition in this case is therefore unordered.
-For $ 0 \leq \tau < 1$ and the priority function $G(X,Y) = \frac{x^{\tau}}{y}$, choose $x$ large relative to $\delta$ forces the priority ordering $G(x_0, y_0) \leq G(x_2, y_2) \leq G(x_1, y_1)$. So the  highest and second highest records exchange priority ordering, and the partition $\mathcal{P}_1$ stays the same, while $\mathcal{P}_1$ now corresponds to $\left\lbrace \left[ 0, 2\right], \left[ 1\right]\right\rbrace$, $\mathcal{P}_2$ to $\left\lbrace \left[ 0, 1\right], \left[ 2\right]\right\rbrace$, only the last being ordered. Perturbing the original sequences by
+where $Q_{A\setminus B} = \frac{x_{A\setminus B}}{y_{A\setminus B}}$,  $Q_{A\cap B} = \frac {x_{A\cap B}}{y_{A\cap B}}$ and $Q_{B\setminus A} = \frac{x_{B\setminus A}}{y_{B\setminus A}}$.
+To show that 
 \[
-X\left(\epsilon\right) = \left[ x-\delta, \delta, x + \delta + \epsilon\right], Y = \left[ x, \delta, x\right]
+I \vcentcolon= \frac{x_{A\setminus B}+x_{A\cap B}}{y_{A\setminus B}+y_{A\cap B}} + \frac{x_{A\cap B}+x_{B\setminus A}}{y_{A\cap B}+y_{B\setminus A}} - \frac{x_{A\setminus B}+x_{A\cap B}+x_{B\setminus A}}{y_{A\setminus B}+y_{A\cap B}+y_{B\setminus A}} - \frac{x_{A\cap B}}{y_{A\cap B}} \geq 0
 \]
-yields
+write 
+\[
+\frac{\partial I}{\partial x_3} = \frac{2y_{A\setminus B}y_{A\cap B}(Q_{A\cap B}-Q_{A\setminus B})y_{A\cap B}+(Q_{B\setminus A}-Q_{A\setminus B})y_{B\setminus A})}{(y_{A\cap B}+y_{B\setminus A})(y_{A\setminus B}+y_{A\cap B}+y_{B\setminus A})}
+\]
+Since this is everywhere nonnegative, we can take $Q_{B\setminus A} = Q_{A\cap B}$ in expression $\ref{eq10}$, which becomes
+\[
+\frac{(Q_{A\setminus B} - Q_{A\cap B})^2y_{A\setminus B}^2y_{B\setminus A}}{(y_{A\cap B}+y_{B\setminus A})(y_{A\setminus B}+y_{A\cap B}+y_{B\setminus A})} \geq 0,
+\]
+evidently true. The proof for $\alpha = \left\lbrace 4, 6, \dots \right\rbrace$ is similar (see the Appendix). As we have seen, the notion of consecutive submodularity alone is not enough to guarantee even WCPP. That it can come from restrictions of concave functions, as in the case of $f(x,y) = \log{((1+x)(1+y))}$ is easy to see; let $f$ be concave and 2-homogeneous. Then $f$ is also subadditive, as $f(x+y) = f(2(\frac{1}{2}x + \frac{1}{2}y)) \leq f(x)+f(y)$. Now assume $S_1 = \left\lbrace j, \dots, l\right\rbrace$, $S_2 = \left\lbrace k, \dots, m\right\rbrace$, with $j \leq k \leq l \leq m$. Writing $F(\sum_j^k)$ for $F(\sum_j^kx_i, \sum_j^ky_i)$, e.g., we have
 \begin{align*}
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_1 \right) - \text{Score}\left(\mathcal{P}_2 \right) &= \frac{\left( x + 2\delta + \epsilon\right)^2}{x + \delta}  - \frac{\left( x + 2\delta\right)^2}{x + \delta} = \frac{2\epsilon\left( x + 2\delta\right) + \epsilon^2}{x + \delta} \\
-\text{Score}\left(\epsilon \right)\left(\mathcal{P}_2 \right) - \text{Score}\left(\mathcal{P}_1 \right) &= \frac{\left( x + \delta + \epsilon\right)^2}{x} - \frac{\left( x + \delta\right)}{x} = \frac{2\epsilon\left( x + \delta \right) + \epsilon^2}{x} \\
+F(S_1)+F(S_2) &= F(\sum_j^l)+F(\sum_k^m) = F(\sum_j^k+\sum_k^l)+F(\sum_k^l+\sum_l^m) \\
+&\geq \frac{1}{2}F(2\sum_j^k)+F(2\sum_k^l)+\frac{1}{2}F(2\sum_l^m) \\
+&=F(\sum_j^k)+2F(\sum_k^l)+F(\sum_l^m) \\
+&\geq F(\sum_j^m)+F(\sum_k^l) = F(S_1\cup S_2)+F(S_1\cap S_2).
+\end{align*} 
+
+The cases $S_1 \cap S_2 = \emptyset$, $S_1 \cup S_2 = S_1$ are trivial or handled by subadditivity. The rational score functions are 2-homogeneous whenever $\alpha - \beta = 1$ (but not concave). 
+
+It is clear from the examples $F(S) = \sqrt{(\sum_{i \in S}x_i)^2 + (\sum_{i \in S}y_i)^2}$, $F(S) = \log{((1+\sum_{i \in S}x_i)(1+\sum_{i \in S}y_i))}$ that consecutive submodularity is not sufficient to guarantee even that WCPP holds. While both are consecutive submodular, the first has a natural convex, subadditive extension to the ambient polytope while the second cannot. But that may not be clear for an arbitrary set function not obtained as a restriction of a continuous function. We seek properties of $F$, likely coupled with consecutive submodularirity, that guarantee CPP. CPP itself will be obtain as a result of Theorem 1, that is, for a given $F$ we seek an extension to the ambient polytope which is convex, subadditive. The extension will not be used as the objective in any relaxation problem, but rather to indicate the desirability of optimizing $F$ directly - by restricting attention to consecutive partitions. So the extension is not of practical use, although in many cases it can be readily calculated (see examples below). 
+To this end, assume $X, Y \subseteq \mathbf{R}^+$, and assume that the set function $F\colon 2^{\mathcal{V}} \to \mathbf{R}$ is defined by $F(S) = f(\sum_{i \in S}x_i,\sum_{i \in S}y_i)$ for some $f$, not necessarily the restriction of any real-valued function on $\mathbf{R}^2$. We will call the triple $(F, X, Y)$ a $\textit{planar representation}$; it essentially defines a real-valued mapping on a subset of points of the partition polytope of $(X, Y)$ for $F$. We will generally consider the set of all planar representations for $F$. The additional property on $F$ relevant to CPP$(\mathbf{R}^+)$ beyond consecutive submodularity is also defined with respect to the consecutive subsets of $\mathcal{V}$.
+
+\begin{definition}
+Order the elements in $\mathcal{U}$ by $S_1, \dots, S_{2n-1}$, and the corresponding polytope points $p_{S_1}, \dots, p_{S_{2n-1}}$ by 
+\begin{align*}
+& S_1 = C^1, \dots, S_n = C^n, S_{n+1} = C^{-2}, \dots, S_{2n-1} = S^{-n}
 \end{align*}
-We choose $\epsilon > 0$ small enough so that the first term dominates, corresponding to the unordered partition. Therefore $\tau = 1$.
+and let $p_{S_j} = (p_{j,x}, p_{j,y})$, for all $j = 1, \dots, 2n-1$. 
+The representation $(F, X, Y)$ is boundary expanding if 
+\begin{align*}
+0 \leq \frac{F(S_1)}{p_{1,y}} \leq \dots \leq \frac{F(S_{2n-1})}{p_{2n-1,y}} 
+\end{align*}
+
+\end{definition}
+\begin{prop}
+If the score function $f$ is convex, subadditive then $(F,X,Y)$ is consecutive submodular and boundary expanding, for any $X, Y \subseteq \mathbf{R}^+$.
+\end{prop}
+\begin{proof}
+Let $(x_1,y_1)$, $(x_2,y_2) \in \mathbf{R}^+ \times \mathbf{R}^+$ with $\frac{x_1}{y_1} \leq \frac{x_2}{y_2}$. It then follows that $\frac{x_1}{y_2} \leq \frac{x_1 + x_2}{y_1 + y_2} \leq \frac{x_2}{y_2}$, so for $\alpha = \frac{y_1}{y_1 + y_2}$ we have $\alpha(x_1 + x_2, y_1 + y_2) = (\tilde{x}, \tilde{y})$ satisfies $\tilde{x} \geq x_1$, $\tilde{y} \leq y_1$. Then
+\begin{align*}
+\alpha f(x_1 + x_2, y_1 + y_2) &\geq f(\tilde{x}, \tilde{y}) \\
+&\geq f(x_1,y_1)
+\end{align*}
+as $f$ is nondecreasing in $x$ and nonincreasing in $y$, so that $\frac{f(x_1 + x_2,y_1 + y_2)}{y_1 + y_2} \geq \frac{f(x_1, y_1)}{y_1}$. Applying this to the sequence
+\[
+0 \leq \frac{C_x^1}{C_y^1} \leq \dots \leq \frac{C_x^n}{C_y^n}
+\]
+gives
+\begin{equation}\label{eqn10}
+0 \leq \frac{F(S_1)}{C_y^1} \leq \dots \leq \frac{F(S_n)}{C_y^n},
+\end{equation}
+
+so that $F$ is boundary expanding for the ascending consecutive subsets in $\mathcal{U}$. If $f$ is convex, subadditive, with $f(0) = 0$, $f(1) \leq 1$, and 
+\[
+f(nx) \leq nf(x) \Rightarrow f((n+1)x) \leq f(nx) + f(s) \leq (n+1)f(x),
+\]
+so that $f(nx) \leq nf(x)$ for all $n \in \mathbf{N}$ by induction. Now let $\lambda \in \mathbf{R}$ and set $l = \lfloor \lambda \rfloor$, $\rho = \lambda - l$. Then $\lambda = \rho(l+1) + (1-\rho)l$ so by convexity, $f(\lambda x) \leq \rho f((l+1)x) + (1-\rho)f(lx)$.
+Finally, let $\lambda \in \left[1, \infty\right)$. Then
+\begin{align*}
+f(\lambda x) &\leq \rho f((l+1)x) + (1-\rho)f(lx) \\
+&\leq \rho(l+1)f(x) + (1 - \rho)lf(x) \\
+&= \lambda f(x),
+\end{align*}
+so that $f$ is $\left[1,\infty\right)$-subhomogeneous. With $(x_1,y_1)$, $(x_2,y_2)$ as before, setting $\alpha = \frac{y_1+y_2}{y_2}$, and $\alpha(x_1 + x_2,y_1 + y_2) = (\tilde{x}, \tilde{y})$, it follows that $\tilde{x} \geq x_1+ x_2$, and $\tilde{y} \leq y_1 + y_2$.  As before,
+\begin{align*}
+\alpha f(x_2, y_2) &\geq f(\tilde{x}, \tilde{y}) \\
+&\geq f(x_1 + x_2,y_1 + y_2),
+\end{align*} 
+from which it follows that $\frac{f(x_2,y_2)}{y_2} \geq \frac{f(x_1 + x_2, y_1 + y_2)}{y_1 + y_2}$. Applying this to the sequence
+\[
+0 \leq \frac{C_x^n}{C_y^n} \leq \frac{C_x^{-2}}{C_y^{-2}} \leq \dots \leq \frac{C_x^{-n}}{C_y^{-n}}
+\]
+gives
+\[
+0 \leq \frac{F(S_n)}{C_y^n} \leq \frac{F(S_{n+1})}{C_y^{-2}} \leq \dots \leq \frac{F(S_{2n-1})}{C_y^{-n}},
+\]
+which combined with $\ref{eq10}$ shows that $F$ is boundary expanding. To show that $F$ is consecutive submodular, let $S_1 = \left\lbrace j, \dots, l\right\rbrace$, $S_2 = \left\lbrace k, \dots, m\right\rbrace$ be consecutive subsets. If $S_1 \cap S_2 = \emptyset$ then the inequality $F(S_1) + F(S_2) \geq F(S_1 \cap S_2) + F(S_1 \cup S_2)$ holds by subadditivity of $f$, while it trivally holds for $S_1 \subseteq S_2$ or $S_2 \subseteq S_1$. So assume $ j \leq k \leq l \leq m$, and define the function $g\colon \mathbf{R}^+ \to \mathbf{R}$ by 
+\begin{align*}
+g(\alpha) = &f((C_x^{j,k-1},C_y^{j,k-1}) + \alpha(C_x^{k,l}, C_y^{k,l})) + f((C_x^{l+1,k},C_y^{l+1,k}) + \alpha(C_x^{k,l}, C_y^{k,l})) \\
+&- f((C_x^{j,k-1},C_y^{j,k-1}) + (C_x^{l+1,k},C_y^{l+1,k}) + \alpha(C_x^{k,l}, C_y^{k,l}))  - f(\alpha(C_x^{k,l}, C_y^{k,l}))\\
+= &f((\sum_j^{k-1}x_i, \sum_j^{k-1}y_i) + \alpha(\sum_k^lx_i, \sum_k^lx_i)) + f((\sum_{l+1}^m x_i, \sum_{l+1}^m y_i) + \alpha(\sum_k^lx_i, \sum_k^lx_i)) \\
+&- f((\sum_j^{k-1}x_i, \sum_j^{k-1}y_i) + (\sum_{l+1}^m x_i, \sum_{l+1}^m y_i) + \alpha(\sum_k^lx_i, \sum_k^lx_i)) - f(\alpha(\sum_k^lx_i, \sum_k^lx_i))
+\end{align*}
+At $\alpha = 0$, this function represents the alternating sum of $f$ evaluated at the vertices of a parallelogram with vertex at $(0,0)$ and spanned by $v = (C_x^{j,k-1},C_y^{j,k-1})$, $w = (C_x^{l+1,m},C_y^{l+1,m})$. By subadditivity, $g(0) \geq 0$. Since $f$ is continuous, $\lim_{\alpha \rightarrow \infty}g(\alpha) = 0$. Convexity of $g$ then implies that $F(S_1) + F(S_2) \geq F(S_1 \cap S_2) + F(S_1 \cup S_2)$ as desired.
+\end{proof}
+
+Since $F$ above satisfies CPP$(\mathbf{R}^+)$ by Theorem 1, a converse to the above result would be desirable - obtaining an extension for $(F,X,Y)$ which would guarantee that the CPP$(\mathbf{R}^+)$ holds. To this end, define $F:\mathcal{C} \to \mathbf{R}$ by
+\[
+f^-(x) = \min{\left\lbrace \sum_{U}\lambda_U F(U) \colon U \in \mathcal{U} \text{, } x = \sum_{U \in \mathcal{U}}\lambda_U \cdot p_U \text{, } \lambda_U \geq 0 \text{, for all } U \in \mathcal{U}\right\rbrace}
+\]
+By Proposition 1, $f^-$ is well-defined on $\mathcal{C}$. We have
+\begin{align*}
+f^-(x) &= \min{\left\lbrace \sum_{U}\lambda_U F(U) \colon U \in \mathcal{U} \text{, } x = \sum_{U \in \mathcal{U}} \lambda_U \cdot p_U \text{, } \lambda_U \geq 0 \text{, for all } U \in \mathcal{U}\right\rbrace}\\
+&= \min_{\substack{\lambda_U \geq 0 \\ U \in \mathcal{U}}}{\left\lbrace \sum_{U}\lambda_U F(U) \colon  x = \sum_{U \in \mathcal{U}} \lambda_U \cdot p_U\right\rbrace} \\
+&= \min_{\substack{\lambda_U \geq 0 \\ U \in \mathcal{U}}}\max_{s \in \mathbf{R}^2}{\left\lbrace \sum_{U in \mathcal{U}}\lambda_U F(U)  + \sum_{k=1}^2 s_k\left( x_k - \sum_{U \in \mathcal{U}} \lambda_U \cdot p_U\right)\right\rbrace} \\
+&= \min_{\substack{\lambda_U \geq 0 \\ U \in \mathcal{U}}}\max_{s \in \mathbf{R}^2}{\left\lbrace s^{\prime} \cdot x - \sum_{U \in \mathcal{U}}\lambda_U\left( s^{\prime} \cdot p_U - F(U)\right)\right\rbrace} \\
+&= \max_{s \in \mathbf{R}^2}\min_{\substack{\lambda_U \geq 0 \\ U \in \mathcal{U}}}{\left\lbrace s^{\prime} \cdot x - \sum_{U \in \mathcal{U}}\lambda_U\left( s^{\prime} \cdot p_U - F(U)\right)\right\rbrace} \\
+&= \max_{s \in \mathcal{B}(F)}{x^{\prime} \cdot s},
+\end{align*}
+where $\mathcal{B}(F) = \left\lbrace s \in \mathbf{R}^2 \colon s^{\prime} \cdot p_U - F(U) \leq 0 \text{, for all } U \in \mathcal{U}\right\rbrace$. Call $\mathcal{B}$ the $\textit{ dual polytope of }F$. 
+
+\begin{prop}
+The function $f^-$ is convex and subadditive. For all $S \subseteq \mathcal{V}$, $f^-(p_S) \geq F(S)$, with $f^-(p_U) = F(U)$ for $U \in \mathcal{U}$.
+\end{prop}
+\begin{proof}
+\end{proof}
+
+
+
+\subsection{Properties of Maximizing Partitions}
+For any partition $\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace$ containing no empty sets, let $\mathcal{F}(\mathcal{P}) = \sum\limits_{j=1}^{t}F( \sum_{i \in S_j}x_i, \sum_{i \in S_j}y_i)$, and define
+\[
+\pi_t = \argmax_{\substack{\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace}} {\mathcal{F}(\mathcal{P})}, \quad \eta_t = \argmax_{\substack{\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace \\ \mathcal{P} \text{ consecutive}}} {\mathcal{F}(\mathcal{P})}, \quad \theta_t = \max_{\substack{\mathcal{P} = \left\lbrace S_1, \dots, S_t\right\rbrace}} {\mathcal{F}(\mathcal{P})}
+\]
+We list some useful properties of the maximizers above.
+\begin{prop}
+If $f$ is subadditive, then $\theta_t$ is increasing and $\eta_n$ satsifies an interleaving property: let $\alpha_{t,0} < \alpha_{t,1} < \dots < \alpha_{t,t}$ be the boundary points of $\eta_t$. Then
+\[
+\alpha_{t+1,i} \leq \alpha_{t,i} \leq \alpha_{t+1,i+1}
+\]
+for all $t \geq 1$, $i = 0, \dots, t$.
+\end{prop}
+\begin{proof}
+Forthcoming.
+\end{proof}
+\begin{prop}
+If $f$ is convex, then $\theta_t$ is quasiconvex in $t$, i.e., $\theta_t \geq \min{(\theta_{t-1}, \theta_{t+1})}$, for $t \geq 2$.
+\end{prop}
+Forthcoming.
+\begin{proof}
+Forthcoming
+\end{proof}
+These properties will also help make for more efficient schemes for calculating maximizers.
+
+\subsection{$X \subseteq \mathbf{R}^+$ Case}
+
+For the case in which $X \subseteq \mathbf{R}^+$ we can obtain a better classification. This case is common, for example, when associating $X$ with a number of occurrences with baselines $Y$, as in the common $LTSS$ framework.
+
+[MAIN EXTENSION THEOREM]
 
 \section{Applications}
 
@@ -1302,6 +1447,10 @@ In this case it is seems necessary to remove the maximal element from $X_1$ to g
 	\bibitem{article9} J. Glaz, J. Naus, and S. Wallenstein, {\em Scan Statistics}, Springer Series in Statistics, Springer, New York,NY, USA, 2001.
 	
 	\bibitem{article10} Gruia Calinescu, Chandra Chekuri, Martin Pál, and Jan Vondrák. {\em Maximizing a submodular set function subject to a matroid constraint}, In Integer programming and combinatorial optimization, pages 182–196. Springer, 2007
+	
+	\bibitem{article11} Yuval Filmus and Justin Ward. {\em A tight combinatorial algorithm for submodular maximization subject to a matroid constraint} In FOCS, pages 659–668, 2012.
+	
+	\bibitem{article12} Jan Vondrák. {\em Optimal approximation for the submodular welfare problem in the value oracle model} In STOC, pages 67–74, 2008.	
 
 \end{thebibliography}
 
