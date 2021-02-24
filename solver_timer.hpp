@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "timer.hpp"
+#include "DP.hpp"
 #include "graph.hpp"
 
 #endif

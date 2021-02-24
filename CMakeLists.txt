@@ -65,7 +65,7 @@ target_link_libraries(graph_to_dot graph)
 # C++ executable solver_timer
 add_library(timer OBJECT timer.cpp)
 add_executable(solver_timer solver_timer.cpp)
-target_link_libraries(solver_timer graph timer)
+target_link_libraries(solver_timer DP graph timer)
 
 # C++ executable multiprecisision
 add_executable(multiprecision multiprecision.cpp)

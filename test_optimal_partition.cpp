@@ -167,14 +167,14 @@ PartitionTest::optimize_(int b, int e) {
 	pbSum += b_[*eit];
       }
       // XXX
-      // rSum += Score::power_(paSum, pbSum, gamma_);      
+      rSum += Score::power_(paSum, pbSum, gamma_);      
       // rSum += Score::log_(paSum, pbSum);
       // rSum += Score::log_prod_(paSum, pbSum);
       // rSum += Score::double_log_(paSum, pbSum);
       // rSum += Score::exp_(paSum, pbSum);
       // rSum += Score::power_sum_(paSum, pbSum, gamma_);
       // rSum += Score::power_prod_(paSum, pbSum, gamma_);
-      rSum += Score::score_summand_(paSum, pbSum, gamma_);
+      // rSum += Score::score_summand_(paSum, pbSum, gamma_);
     }
     // print_pair(std::make_pair(rSum, *it));
     if (rSum > rMax) {

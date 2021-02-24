@@ -4,13 +4,14 @@
 
 auto main(int argc, char **argv) -> int {
 
-  int n, T, stride;
+  int n, T, stride, partsStride;
 
-  if (argc < 4)
-    throw std::invalid_argument("Must call with 3 input arguments.");
+  if (argc < 5)
+    throw std::invalid_argument("Must call with 4 input arguments.");
 
   std::istringstream nss(argv[1]), Tss(argv[2]), stridess(argv[3]);
-  nss >> n; Tss >> T; stridess >> stride;
+  std::istringstream partsStridess(argv[4]);
+  nss >> n; Tss >> T; stridess >> stride; partsStridess >> partsStride;
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
@@ -27,7 +28,8 @@ auto main(int argc, char **argv) -> int {
     }
 
   for (int sampleSize=5; sampleSize<=n; sampleSize+=stride) {
-    for (int numParts=2; numParts<=T; ++numParts) {
+    // for (int numParts=2; numParts<=T; numParts+=partsStride) {
+    for (int numParts=T;numParts<=T;++numParts) {
 
       if (sampleSize > numParts) {
 
@@ -39,10 +41,11 @@ auto main(int argc, char **argv) -> int {
 	  el = distb(gen);
 	
 	precise_timer timer;
-	auto pg = PartitionGraph(sampleSize, numParts, a, b);
+	// auto pg = PartitionGraph(sampleSize, numParts, a, b);
+	auto dp = DPSolver(sampleSize, numParts, a, b);
 	auto et = timer.elapsed_time<unsigned int, std::chrono::microseconds>();
 	std::cout << "(n,T) = (" << sampleSize << ", " << numParts << "): " 
-		  << et
+	 	  << et
 		  << std::endl;
 	times[sampleSize][numParts] = et;
       }
@@ -51,9 +54,10 @@ auto main(int argc, char **argv) -> int {
   }
   
   // dump
+  auto delim = ",";
   for( const auto &v : times) {
     for( const auto &el : v)
-      std::cout << el << " ";
+      std::cout << el << delim;
     std::cout << std::endl;
   }
   

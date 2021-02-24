@@ -44,23 +44,9 @@ public:
   static double power_prod_(double a, double b, double gamma) {
     return std::pow(a,gamma)*std::pow(b,gamma);
   }
+  // placeholder for testing
   static double score_summand_(double a, double b, double gamma) {
-    double eta = -2.0;
-    // return std::pow(a,gamma)*std::pow(b,eta);
-    // return std::pow(a,gamma)*std::pow(b,-2.0);
-    // return std::pow(a,3.0)*std::pow(b,-2.0);
-    // return std::pow(a/b,a)*std::exp(b-a);
-    // return std::pow(a,1.0);
-    // return std::pow(a,4.5455)*std::pow(b,-3.5455) + std::pow(a,6.15)*std::pow(b,-5.15);
-    // Poisson EBS
-    // return a > b ? a*std::log(a/b) + b - a : 0.;
-    // Gaussian EBS
-    // return a > b ? std::pow(a-b,2.)/(2*b) : 0.;
-    // return std::exp(a) - std::exp(b) - (a-b)*std::exp(b);
-    // return std::pow(a,gamma)*std::pow(b,-3.0);
     return (std::pow(a,6.0))*(std::pow(b,-5.0));
-    // return std::pow(a,gamma)*std::pow(b,-1.0) + 1.2;
-    // return std::log((1+a)*(1+b));
     return a;
   }
 };

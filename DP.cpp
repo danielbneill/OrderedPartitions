@@ -63,13 +63,6 @@ DPSolver::create() {
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
 
-  /*
-    std::copy(a_.begin(), a_.end(), std::ostream_iterator<float>(std::cout, " "));
-    std::cout << std::endl;
-    std::copy(b_.begin(), b_.end(), std::ostream_iterator<float>(std::cout, " "));
-    std::cout << std::endl;
-  */
-
   // Initialize matrix
   maxScore_ = std::vector<std::vector<float>>(n_, std::vector<float>(T_+1, std::numeric_limits<float>::min()));
   nextStart_ = std::vector<std::vector<int>>(n_, std::vector<int>(T_+1, -1));
@@ -87,11 +80,8 @@ DPSolver::create() {
   std::vector<std::vector<float>> partialSums;
   partialSums = std::vector<std::vector<float>>(n_, std::vector<float>(n_, 0.));
   for (int i=0; i<n_; ++i) {
-    // std::cout << "PRECOMPUTE ROW: " << i << std::endl;
     for (int j=i; j<n_; ++j) {
       partialSums[i][j] = compute_score(i, j);
-      // float score = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
-      //	std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
     }
   }
 
@@ -100,7 +90,6 @@ DPSolver::create() {
   float maxScore;
   int maxNextStart = -1;
   for(int j=2; j<=T_; ++j) {
-    // std::cout << "COMPLETED ALL SIZE " << j << " PARTITIONS\n";
     for (int i=0; i<n_; ++i) {
       maxScore = std::numeric_limits<float>::min();
       for (int k=i+1; k<=(n_-(j-1)); ++k) {
@@ -117,13 +106,6 @@ DPSolver::create() {
 	break;
     }
   }
-
-  /*
-    print_maxScore_();
-    std::cout << "-----\n";
-    print_nextStart_();
-  */
-
 }
 
 void

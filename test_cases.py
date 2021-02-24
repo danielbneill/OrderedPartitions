@@ -444,7 +444,7 @@ if (False):
         if not count%10000:
             print('count: {}'.format(count))
 
-if (False):
+if (True):
     # The yellow region represents the True portion
     
     import numpy as np
@@ -504,27 +504,28 @@ if (False):
         import sys
         
         count = 0
-        alpha = 2.0
-        beta = 1.0
+        alpha = 4.0
+        beta = 3.0
         
         seed = 151
-        q = 2.0
+        q = 1.0
         epsilon = .002
-        QUADRANT_ONE = True
+        QUADRANT_ONE = False
         
         SEED = 49
 
         # def F(a,b,alpha,beta):
         #     return (a**alpha)/(b**beta)
 
+        # Rational
         # def F(a,b,alpha,beta):
         #     return (a**alpha)/(b**beta)
 
         # def F(a,b,alpha,beta):
         #     return a**2 + b**2
 
-        def F(a,b,alpha,beta):
-            return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
+        # def F(a,b,alpha,beta):
+        #     return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
 
         # def F(a,b,alpha,beta):
         #     return -np.log((1+a)*(1+b))
@@ -539,14 +540,32 @@ if (False):
         #         return 0
 
         # Poisson
+        def F(a,b,alpha,beta):
+            asum = a
+            bsum = b
+            if asum > bsum:
+                return asum*np.log(asum/bsum) + bsum - asum
+            else:
+                return 0.
+
+        # Gaussian
         # def F(a,b,alpha,beta):
         #     asum = a
         #     bsum = b
         #     if asum > bsum:
-        #         return asum*np.log(asum/bsum) + bsum - asum
+        #         return np.power(asum-bsum,2.)/2./bsum
         #     else:
         #         return 0.
 
+        # Exponential
+        # def F(a,b,alpha,beta):
+        #     asum = a
+        #     bsum = b
+        #     if asum > bsum:
+        #         return bsum*np.log(bsum/asum) + asum - bsum
+        #     else:
+        #         return 0.
+        
         # def F(a,b,alpha,beta):
         #     if a > b:
         #         return (a-b)**2/2/b
@@ -578,14 +597,41 @@ if (False):
         #     return np.exp(-q*b)*np.power(q,a)/np.exp(-b)
 
         # def F(a,b,alpha,beta):
+        #    q = 2.0
+        #    return np.exp(-q*b)*np.power(q,a)/np.exp(-b)
+
+        # def F(a,b,alpha,beta):
+        #     q = 2.0
+        #     return a**2 + b**2
+
+        # def F(a,b,alpha,beta):
+        #     return np.sqrt(a**2 + b**2)
+
+        # def F(a,b,alpha,beta):
+        #     return np.power(a+b,2.)
+
+        # def F(a,b,alpha,beta):
         #     return np.log(F_(a,b,alpha,beta))
 
         # def F(a,b,alpha,beta):
-        #     return np.log((1+a)*(1+b))
+        #     return 1.5*a
 
         # def F(a,b,alpha,beta):
-        #     return np.max([((1-epsilon)*np.exp(-q*a)*(np.power(q*a,b))), epsilon*np.exp(-b)*(np.power(a,a))])/ \
-        #            np.max([((1-epsilon)*np.exp(-q*a)*(np.power(a,b))), epsilon*np.exp(-b)*(np.power(a,a))])
+        #     return np.log(.5*a**2 - .8*a + 1)
+        
+        # def F(a,b,alpha,beta):
+        #     return np.sqrt(np.exp(a))
+
+        # def F(a,b,alpha,beta):
+        #     q = 4.0
+        #     return np.power(a+b, 1/q)
+
+        # def F(a,b,alpha,beta):
+        #     q = 2.0
+        #     epsilon = .002
+        #     return (np.max([((1-epsilon)*np.exp(-q*a)*(np.power(q*a,b))), epsilon*np.exp(-b)*(np.power(a,a))])/ \
+        #            np.max([((1-epsilon)*np.exp(-q*a)*(np.power(a,b))), epsilon*np.exp(-b)*(np.power(a,a))]))
+
 
         # def F(a,b,alpha,beta):
         #     return np.log(np.power(q,a)*np.exp(b*(1-q)))
@@ -615,6 +661,17 @@ if (False):
                                                                        F(xmid,ymid,alpha,beta),
                                                                        eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
                                                                        ))
+
+            if (False):
+                if rhs>lhs and not np.isclose(lhs,rhs):
+                    print('CONCAVITY VIOLATED')
+                    print('eta: {} p1: ({},{}), p2: ({},{}), mid: ({},{})'.format(eta, x1,y1,x2,y2,xmid,ymid))
+                    print('F(p1): {} F(p2): {} lhs: {} rhs: {}'.format(F(x1,y1,alpha,beta),
+                                                                       F(x2,y2,alpha,beta),
+                                                                       F(xmid,ymid,alpha,beta),
+                                                                       eta*F(x1,y1,alpha,beta)+(1-eta)*F(x2,y2,alpha,beta)
+                                                                       ))
+
             if (True):
                 xsum = x1+x2
                 ysum = y1+y2
@@ -630,6 +687,32 @@ if (False):
                                                                                      ))
 
             if (True):
+                x1_tmp,x2_tmp,y1_tmp,y2_tmp=x1,x2,y1,y2
+                x1=max([x1_tmp,x2_tmp]);x2=min([x1_tmp,x2_tmp])
+                y1=min([y1_tmp,y2_tmp]);y2=max([y1_tmp,y2_tmp])
+                lhs1=F(x1,y1,alpha,beta)
+                lhs2=F(x2,y2,alpha,beta)
+                rhs1=F(np.min([x1,x2]),np.min([y1,y2]),alpha,beta)
+                rhs2=F(np.max([x1,x2]),np.max([y1,y2]),alpha,beta)
+                if (lhs1+lhs2)<(rhs1+rhs2) and not np.isclose(lhs1+lhs2,rhs1+rhs2):
+                    print('REAL SUBMODULARITY VIOLATED')
+                    import pdb
+                    pdb.set_trace()
+
+            if (False):
+                mu1=rng.uniform(low=0.,high=10.)
+                x1_tmp,x2_tmp,y1_tmp,y2_tmp=x1,x2,y1,y2
+                x1=min([x1_tmp,x2_tmp]);x2=min([y1_tmp,y2_tmp])
+                y1=max([x1_tmp,x2_tmp]);y2=max([y1_tmp,y2_tmp])
+                # in x
+                lhs1=F(x1+mu1,y2,alpha,beta)
+                lhs2=-F(x1,y2,alpha,beta)
+                rhs1=F(y1+mu1,y2,alpha,beta)
+                rhs2=-F(y1,y2,alpha,beta)
+                if (lhs1+lhs2)>(rhs1+rhs2) and not np.isclose(lhs1+lhs2,rhs1+rhs2):
+                    print('INCREASING DIFFERENCES VIOLATED')
+                
+            if (False):
                 mu = rng.uniform(low=0., high=1.)
                 eta = rng.uniform(low=0., high=1.)
                 lhs= F(x1,y1,alpha,beta)
@@ -639,11 +722,23 @@ if (False):
                     print('EXPANDINGNESS VIOLATED')
 
             if (True):
-                mu = rng.uniform(low=0., high=3.)
+                mu = rng.uniform(low=1., high=100.)
                 lhs = F(mu*x1,mu*y1,alpha,beta)
                 rhs = mu*F(x1,y1,alpha,beta)
                 if lhs>rhs and not np.isclose(lhs,rhs):
-                    print('SUBHOMOGENEITY VIOLATED')
+                    print('(1, \infty)-SUBHOMOGENEITY VIOLATED')
+                    print('p1: ({},{}), mu: {}, psum: ({},{})'.format(x1,y1,mu,xsum,ysum))
+                    print('F(p1+mu): {}, F(p1): {} F(mu): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
+                                                                                     F(x1,y1,alpha,beta),
+                                                                                     F(mu,mu,alpha,beta),
+                                                                                     rhs
+                                                                                     ))
+            if (True):
+                mu = rng.uniform(low=0., high=3.)
+                lhs = F(mu*x1,mu*y1,alpha,beta)
+                rhs = mu*F(x1,y1,alpha,beta)
+                if not np.isclose(lhs,rhs):
+                    print('HOMOGENEITY VIOLATED')
                     print('p1: ({},{}), mu: {}, psum: ({},{})'.format(x1,y1,mu,xsum,ysum))
                     print('F(p1+mu): {}, F(p1): {} F(mu): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
                                                                                      F(x1,y1,alpha,beta),
@@ -653,10 +748,10 @@ if (False):
 
             if (True):
                 mu = rng.uniform(low=0., high=3.)
-                lhs = F(mu*x1,mu*y1,alpha,beta)
-                rhs = mu*F(x1,y1,alpha,beta)
-                if not np.isclose(lhs,rhs):
-                    print('HOMOGENEITY VIOLATED')
+                rhs = F(mu*x1,mu*y1,alpha,beta)
+                lhs = mu*F(x1,y1,alpha,beta)
+                if lhs>rhs and not np.isclose(lhs,rhs):
+                    print('SUPERHOMOGENEITY VIOLATED')
                     print('p1: ({},{}), mu: {}, psum: ({},{})'.format(x1,y1,mu,xsum,ysum))
                     print('F(p1+mu): {}, F(p1): {} F(mu): {} F(p1)+F(p2): {}'.format(F(xsum,ysum,alpha,beta),
                                                                                      F(x1,y1,alpha,beta),
@@ -672,25 +767,50 @@ if (False):
                     print('F(p1): {}, F(p1+delta): {}'.format(F(x1,y1,alpha,beta),
                                                               F(x1+x2,y1+y2,alpha,beta),
                                                               ))
-                    
 
+            if (False):
+                h = rng.uniform(low=0.,high=1.)
+                lhs = F(x1+h,y1,alpha,beta)/(x1+h)
+                rhs = F(x1,y1,alpha,beta)/x1
+                if (lhs>rhs):
+                    print('f(x+h,y)/x+h <= f(x,y)/x VIOLATED')
+                    import pdb; pdb.set_trace()
+
+            if (False):
+                h = rng.uniform(low=0.,high=1.)
+                lhs = F(x1,y1+h,alpha,beta)/(y1+h)
+                rhs = F(x1,y1,alpha,beta)/y1
+                if (lhs>rhs):
+                    print('f(x,y+h)/y+h <= f(x,y)/y VIOLATED')
+                    import pdb; pdb.set_trace()
+
+
+            if (False):
+                h = rng.uniform(low=0.,high=1.)
+                lhs = F(x1,y1,alpha,beta)/x1
+                rhs = F(x1+h,y1,alpha,beta)/(x1+h)
+                if (lhs<rhs):
+                    print('DECREASING RECIPROCALS VIOLATED')
+                    import pdb; pdb.set_trace()
+                    
             count+=1
             if not count%100000:
                 print('count: {}'.format(count))
                 
 
-if (True):
+if (False):
     import numpy as np
 
     count = 0
     gamma = 2.0
-    alpha = 2.0
-    beta =  1.0
+    alpha = 4.0
+    beta =  3.0
     q = 2.0
-    seed = 1522
+    seed = 1542
     FIRST_QUADRANT = True
     
-    # def F_noy(a,b,gamma):
+    # def F(a,b,gamma):
+    #     gamma = 2.0
     #     return np.sum(a)**gamma
     
     # def F(a,b,gamma):
@@ -704,20 +824,31 @@ if (True):
 
     # def F(a,b,gamma):
     #     return np.sum(a)**alpha
+
+    # def F(a,b,gamma):
+    #     return np.sqrt(np.sum(a))
     
     # Rational
     # def F(a,b,gamma):
     #    return (np.sum(a)**alpha)/(np.sum(b)**beta)
 
-    # def F(a,b,gamma):
-    #     return np.sum(a)**2 + np.sum(b)**2
+    def F(a,b,gamma):
+        return np.sum(a)**2 + np.sum(b)**2
 
     # def F(a,b,gamma):
     #     return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
 
-    def F(a,b,gamma):
-        return (np.sum(a)**alpha)/(np.sum(b)**beta)
+    # def F(a,b,gamma):
+    #     return (np.sum(a)**alpha)/(np.sum(b)**beta)
 
+    # def F(a,b,gamma):
+    #     q = 2.0
+    #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b))
+
+    # def F(a,b,gamma):
+    #     q = 2.0
+    #     return np.sum(a)**2 + np.sum(b)**2
+    
     # def F(a,b,gamma):
     #     return np.exp(-q*np.sum(b))*np.power(q,np.sum(a))/np.exp(-np.sum(b))
 
@@ -739,7 +870,7 @@ if (True):
     #         return F(asum,bsum,gamma) + F(Cx-asum,Cy-bsum,gamma)
 
     # def F(a,b,gamma):
-    #     return np.log(((1+np.sum(a))**1)*((1+np.sum(b))**1))
+    #     return -np.log(((1+np.sum(a))**1)*((1+np.sum(b))**1))
 
     # def F(a,b,gamma):
     #     q = 2.0
@@ -755,6 +886,9 @@ if (True):
     #     return 1.*np.log((1+np.sum(a))*(1+np.sum(b)))
 
     # def F(a,b,gamma):
+    #     return np.arctan(np.sum(a) + np.sum(b))
+
+    # def F(a,b,gamma):
     #     return 1.*np.log(1+np.sum(a))
 
     # def F_sym(a,b,Cx,Cy,gamma):
@@ -763,15 +897,31 @@ if (True):
     #     else:
     #         return np.log(1. + np.sum(a)) + np.log(1. + (Cx-np.sum(a)))
 
+    # def F(a,b,gamma):
+    #     return np.sqrt(np.exp(np.sum(a)) + np.exp(np.sum(b)))
+
+    # def F(a,b,gamma):
+    #     return np.sum(a) + np.sum(b)
+
+    # def F(a,b,gamma):
+    #     q = 3.0
+    #     return np.power(np.sum(a)+np.sum(b), 1/q)
+
+    # def F(a,b,gamma):
+    #     return 1.5*np.sum(a)**2 - .4*np.sum(b)
+
+    # def F(a,b,gamma):
+    #     return np.sqrt(np.sum(a)**2.0 + np.sum(b)**2.0)
+
     rng = np.random.RandomState(seed)
     while True:
 
-        NUM_POINTS = 100
+        NUM_POINTS = 6
 
-        lower_limit_a = rng.uniform(low=-100., high=100.)
+        lower_limit_a = rng.uniform(low=-1., high=1.)
         lower_limit_b = 0.
-        upper_limit_a = rng.uniform(low=0., high=100.)
-        upper_limit_b = rng.uniform(low=0., high=100.)        
+        upper_limit_a = rng.uniform(low=0., high=1.)
+        upper_limit_b = rng.uniform(low=0., high=1.)        
         if FIRST_QUADRANT:
             lower_limit_a = 0.
         a0 = rng.uniform(low=lower_limit_a, high=upper_limit_a, size=NUM_POINTS)
@@ -907,7 +1057,7 @@ if (True):
         # CONSECUTIVE SUBMODULARITY [MAIN CONCEPT]
         # ========================================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
-        if (False):
+        if (True):
             j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))            
             lset, rset = set(range(j,l)), set(range(k,m))
             l_r_int = lset.intersection(rset)
@@ -927,18 +1077,30 @@ if (True):
 
         # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
         # ===============================================
-        if (True):
+        if (False):
             j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))                        
             lset, rset = set(range(j,l)), set(range(k,m))
             p1, p2 = list(range(j,k)), list(range(l,m))
             l_r_int = lset.intersection(rset)
             l_r_union = lset.union(rset)
             lset, rset, l_r_int, l_r_union = list(lset), list(rset), list(l_r_int), list(l_r_union)
+            # Case 0
+            delta = 1.
+            lhs1 = F(np.concatenate([a0[j:k],delta*a0[k:l]]),np.concatenate([b0[j:k],delta*b0[k:l]]),gamma)
+            lhs2 = F(np.concatenate([a0[l:m],delta*a0[k:l]]),np.concatenate([b0[l:m],delta*b0[k:l]]),gamma)
+            rhs1 = F(np.concatenate([a0[j:k],a0[l:m],delta*a0[k:l]]),np.concatenate([b0[j:k],b0[l:m],delta*b0[k:l]]),gamma)
+            rhs2 = F(delta*a0[k:l],delta*b0[k:l],gamma)
+            # Case 0.5
+            # delta = 1.
+            # rhs1 = F(np.concatenate([a0[j:k],delta*a0[k:l]]),np.concatenate([b0[j:k],delta*b0[k:l]]),gamma)
+            # rhs2 = -F(delta*a0[k:l],delta*b0[k:l],gamma)
+            # lhs1 = F(a0[j:k],b0[j:k],gamma)
+            # lhs2 = 0.
             # Case 1
-            lhs1 = F(a0[lset], b0[lset], gamma)
-            lhs2 = F(a0[rset], b0[rset], gamma)
-            rhs1 = F(a0[l_r_union], b0[l_r_union],gamma)
-            rhs2 = F(a0[l_r_int],b0[l_r_int],gamma)
+            # lhs1 = F(a0[lset], b0[lset], gamma)
+            # lhs2 = F(a0[rset], b0[rset], gamma)
+            # rhs1 = F(a0[l_r_union], b0[l_r_union],gamma)
+            # rhs2 = F(a0[l_r_int],b0[l_r_int],gamma)
             # Case 2
             # rhs1 = F(a0[p1], b0[p1], gamma)
             # rhs2 = F(a0[p2], b0[p2], gamma)
@@ -953,10 +1115,34 @@ if (True):
             # rhs1 = F(a0[l_r_int],b0[l_r_int],gamma)
             # rhs2 = F(a0[l_r_union],b0[l_r_union],gamma)
             # Case 5
-            lhs1 = F(a0[lset],b0[lset],gamma)
-            lhs2 = 0.
-            rhs1 = (np.sum(b0[range(k,l)])/np.sum(b0[range(j,m)]))*F(a0[range(k,l)],b0[range(k,l)],gamma)
-            rhs2 = 0.
+            # lhs1 = F(a0[lset],b0[lset],gamma)
+            # lhs2 = 0.
+            # rhs1 = (np.sum(b0[range(k,l)])/np.sum(b0[range(j,m)]))*F(a0[range(k,l)],b0[range(k,l)],gamma)
+            # rhs2 = 0.
+            # Case 6
+            # lhs1 = F(a0[lset],b0[lset],gamma)/np.sum(b0[l_r_int])
+            # lhs2 = 0.
+            # rhs1 = F(a0[l_r_int],b0[l_r_int],gamma)/np.sum(b0[lset])
+            # rhs2 = 0.
+            # Case 7
+            # if np.sum(a0[range(k,m)])>np.sum(a0[range(j,l)]) and np.sum(b0[range(k,m)])<np.sum(b0[range(j,l)]):
+            #     lhs1 = F(a0[range(k,m)],b0[range(j,l)],gamma)
+            #     lhs2 = F(a0[range(j,l)],b0[range(k,m)],gamma)
+            #     rhs1 = F(a0[range(k,l)],b0[range(k,l)],gamma)
+            #     rhs2 = F(a0[range(j,m)],b0[range(j,m)],gamma)
+            #     if (lhs1+lhs2)<(rhs1+rhs2) and not np.isclose(lhs1+lhs2,rhs1+rhs2):
+            #         print('BACKUP CASE')
+            #         lhs10=lhs1;lhs20=lhs2;rhs10=rhs1;rhs20=rhs2
+            #         lhs1 = F(a0[range(j,l)],b0[range(j,l)],gamma)
+            #         lhs2 = F(a0[range(k,m)],b0[range(k,m)],gamma)
+            #         rhs1 = F(a0[range(k,l)],b0[range(j,m)],gamma)
+            #         rhs2 = F(a0[range(j,m)],b0[range(k,l)],gamma)
+            # else:
+            #     lhs1 = 0.
+            #     lhs2 = 0.
+            #     rhs1 = 0.
+            #     rhs2 = 0.
+            
             print('lset: {}'.format(lset))
             print('rset: {}'.format(rset))
             print('l_r_int: {}'.format(l_r_int))
@@ -964,29 +1150,110 @@ if (True):
             print(lhs1+lhs2,rhs1+rhs2)
             print(j,k,l,m)
             print('========')
-            def g(delta):
+            def g1(delta):
+                return F(np.concatenate([a0[j:k],delta*a0[k:l]]),np.concatenate([b0[j:k],delta*b0[k:l]]),gamma)
+            def g2(delta):
+                return F(np.concatenate([a0[l:m],delta*a0[k:l]]),np.concatenate([b0[l:m],delta*b0[k:l]]),gamma)
+            def g3(delta):
+                return F(np.concatenate([a0[j:k],a0[l:m],delta*a0[k:l]]),np.concatenate([b0[j:k],b0[l:m],delta*b0[k:l]]),gamma)
+            def g4(delta):
+                return F(delta*a0[k:l],delta*b0[k:l],gamma)            
+            def h(delta):
                 z = l_r_int
-                return F(np.concatenate([a0[lset],delta*a0[z]]),np.concatenate([b0[lset],delta*b0[z]]),gamma) + \
-                       F(np.concatenate([a0[rset],delta*a0[z]]),np.concatenate([b0[rset],delta*b0[z]]),gamma) - \
-                       F(np.concatenate([a0[l_r_int],delta*a0[z]]),np.concatenate([b0[l_r_int],delta*b0[z]]),gamma) - \
-                       F(np.concatenate([a0[l_r_union],delta*a0[z]]),np.concatenate([b0[l_r_union],delta*b0[z]]),gamma)
-            # import matplotlib.pyplot as plot
-            xaxis = np.arange(0,1.,.01)
+                w = l_r_union
+                return F(delta*a0[w],delta*b0[w],gamma)-F(delta*a0[z],delta*b0[z],gamma)
+            def g(delta):
+                return g1(delta)+g2(delta)-g3(delta)-g4(delta)
+            xaxis = np.arange(0,1000.,1)
             yaxis = [g(x) for x in xaxis]
-            assert np.all(np.array(yaxis)>0)
-            TRIALS = 100
-            for _ in range(TRIALS):
-                theta = rng.uniform(low=0.,high=1.)
-                delta1, delta2 = np.sort(rng.uniform(low=0.,high=1.,size=2))
-                lhs = g(theta*delta1+(1-theta)*delta2)
-                rhs = theta*g(delta1)+(1-theta)*g(delta2)
-                if (not lhs <= rhs) and (not np.isclose(lhs,rhs)):
-                    import matplotlib.pyplot as plot
-                    plot.plot(xaxis,yaxis)
-                    plot.pause(1e-3)
-                    import pdb
-                    pdb.set_trace()
-                    plot.close()
+            # y1axis = [g1(x)-g4(x) for x in xaxis] # convex
+            # y2axis = [g3(x)-g2(x) for x in xaxis] # convex?
+            y1axis = [g1(x)+g2(x) for x in xaxis]
+            y2axis = [g3(x)+g4(x) for x in xaxis]
+            # y1axis = [g(x) for x in xaxis]
+            # y2axis = [g(x) for x in xaxis]
+            # if np.any(np.array(yaxis)<0):
+            #     print('g NOT POSITIVE')
+            #     import pdb
+            #     pdb.set_trace()
+            # if np.any(np.diff(yaxis)>0):
+            #     print('g NOT NONINCREASING')
+            #     import pdb
+            #     pdb.set_trace()
+            # if np.any(np.array(y1axis)<0):
+            #     print('y1axis NOT POSITIVE')
+            #     import pdb
+            #     pdb.set_trace()
+            if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
+                print('y1axis NOT CONVEX')
+                import pdb
+                pdb.set_trace()
+            if np.any(np.diff(yaxis)>0):
+                print('g NOT DECREASING')
+                import pdb
+                pdb.set_trace()
+            if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
+                print('y1axis NOT CONVEX')
+                import pdb
+                pdb.set_trace()
+            if np.any((np.diff(np.diff(y2axis))<0.) & (~np.isclose(np.diff(np.diff(y2axis)),0.))):
+                print('y2axis NOT CONVEX')
+                import pdb
+                pdb.set_trace()
+            if np.any((np.array(y1axis)-np.array(y2axis)) < 0.):
+                print('y1axis does not dominate')
+                import pdb
+                pdb.set_trace()
+            # if np.any((np.diff(np.diff(yaxis))<0.) & (~np.isclose(np.diff(np.diff(yaxis)),0.))):
+            #     print('yaxis NOT CONVEX')
+            #     import pdb
+            #     pdb.set_trace()
+            # if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):                
+            #     print('y1axis NOT CONVEX')
+            #     import pdb
+            #     pdb.set_trace()
+            # if np.any((np.diff(np.diff(y2axis))<0.) & (~np.isclose(np.diff(np.diff(y2axis)),0.))):
+            #     print('y2axis NOT CONVEX')
+            #     import pdb
+            #     pdb.set_trace()
+            # import matplotlib.pyplot as plot
+            # plot.plot(xaxis,y1axis)
+            # plot.plot(xaxis,y2axis)
+            # plot.plot(xaxis,np.array(y1axis)-np.array(y2axis))
+            # plot.pause(1e-3)
+            # import pdb
+            # pdb.set_trace()
+            # plot.close()
+            # # yyaxis = [h(x) for x in xaxis]
+            # import matplotlib.pyplot as plot            
+            # plot.plot(xaxis,y1axis)
+            # plot.pause(1e-3)
+            # import pdb
+            # pdb.set_trace()
+            # plot.plot(xaxis,y2axis)
+            # plot.pause(1e-3)
+            # plot.plot(xaxis,yaxis)
+            # plot.pause(1e-3)
+            # plot.close()
+            # pdb.set_trace()
+            # try:
+            #     assert np.all(np.array(yaxis)>0)
+            # except AssertionError as e:
+            #     import pdb
+            #     pdb.set_trace()
+            # TRIALS = 100
+            # for _ in range(TRIALS):
+            #     theta = rng.uniform(low=0.,high=1.)
+            #     delta1, delta2 = np.sort(rng.uniform(low=0.,high=1.,size=2))
+            #     lhs = g(theta*delta1+(1-theta)*delta2)
+            #     rhs = theta*g(delta1)+(1-theta)*g(delta2)
+            #     if (not lhs <= rhs) and (not np.isclose(lhs,rhs)):
+            #         import matplotlib.pyplot as plot
+            #         plot.plot(xaxis,yaxis)
+            #         plot.pause(1e-3)
+            #         import pdb
+            #         pdb.set_trace()
+            #         plot.close()
 
         # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
         # ===============================================
@@ -1108,7 +1375,6 @@ if (True):
         # rhs1 = F_sym(xmid,ymid,Cx,Cy,gamma)
         # rhs2 = 0.
 
-        
         # Quasiconvexity - note this is not a property of the set function,
         # but of the function defined on R x R+
         # j,k = rng.choice(range(2, int(NUM_POINTS)), 2, replace=False)
