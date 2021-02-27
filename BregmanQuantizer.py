@@ -1,3 +1,4 @@
+import heapq
 import numpy as np
 import theano
 import theano.tensor as T
@@ -45,6 +46,7 @@ class BregmanDivergenceQuantizer(object):
         ## Inputs ##
         ############
         self.X = theano.shared(value=X.flatten(), name='X', borrow=True)
+        self.X_vec = theano.shared(value=X.reshape(-1,1), name='X_vec', borrow=True)
         initial_X = self.X.get_value()
         self.N, self.num_features = X.shape
         self.L = self.N * self.num_features
@@ -71,6 +73,8 @@ class BregmanDivergenceQuantizer(object):
                                          value=np.zeros((self.num_classifiers + 1,
                                                          self.L,
                                                          1)).astype(theano.config.floatX))
+        # current number of distinct leaf_values
+        self.num_partitions = 1 
 
         # optimal partition at each step, not part of any gradient, not a tensor
         self.partitions = list()
@@ -111,7 +115,28 @@ class BregmanDivergenceQuantizer(object):
         self.curr_classifier += 1
         
 
-        self.fit_step()
+        self.fit()
+
+    def fit(self, num_steps=None):
+        num_steps = num_steps or self.num_classifiers
+
+        # Initial leaf_values for initial loss calculation
+        leaf_values = self.leaf_values.get_value()[0,:]
+
+        print('STEP {}: LOSS: {:4.6f}'.format(0,
+                                              theano.function([],
+                                                              self.loss(
+                                                                  self.predict()))()))
+        # Iterative boosting
+        for i in range(1,num_steps):
+            self.fit_step()
+            leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+            print('STEP {}: LOSS: {:4.6f}'.format(i,
+                                                  theano.function([],
+                                                                  self.loss(
+                                                                      self.predict()))()))
+            # Summary statistics mid-training
+        print('Training finished')
         
     def fit_step(self):
         g, h, c = self.generate_coefficients(constantTerm=False)
@@ -140,8 +165,9 @@ class BregmanDivergenceQuantizer(object):
     def generate_coefficients(self, constantTerm=False):
 
         x = T.dvector('x')
-        leaf_values = theano.function([], T.flatten(self.leaf_values[-1+self.curr_classifier,:]))()        
-        loss = self.loss(T.shape_padaxis(x, 1), len(np.unique(leaf_values)), leaf_values)
+        leaf_values = theano.function([], T.flatten(self.leaf_values[-1+self.curr_classifier,:]))()
+        self.num_partitions = len(np.unique(leaf_values))
+        loss = self.loss(T.shape_padaxis(x, 1))
 
         grads = T.grad(loss, x)
         hess = T.hessian(loss, x)
@@ -175,6 +201,12 @@ class BregmanDivergenceQuantizer(object):
         # smells
         return self.distiller(X0.reshape(-1,1), y0, **impliedSolverKwargs)
 
+    def predict(self):
+        X_q = theano.shared(name='X_Q', value=np.zeros((self.L, 1)))
+        for classifier_ind in range(self.curr_classifier):
+            X_q += self.implied_trees[classifier_ind].predict(self.X_vec)
+        return X_q
+
     def find_best_optimal_split(self, g, h, num_partitions):
         ''' Method: results contains the optimal partitions for all partition sizes in
             [1, num_partitions]. We take each, from the optimal_split_tree from an
@@ -185,23 +217,20 @@ class BregmanDivergenceQuantizer(object):
 
         results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
 
-        import pdb
-        pdb.set_trace()
-
-        npart = T.scalar('npart')
-        lv = T.dmatrix('lv')
         x = T.dmatrix('x')
-        loss = theano.function([x,npart,lv], self.loss(x, npart, lv))
+        loss = theano.function([x], self.loss(x))
 
         # loss = self.loss(T.shape_padaxis(x, 1), len(np.unique(leaf_values)), leaf_values)
         
-        leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+        # leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+        leaf_values = theano.function([], T.flatten(self.leaf_values[-1+self.curr_classifier,:]))()
+        
         loss_heap = []
 
         results = (results,)
 
         for rind, result in enumerate(results):
-            leaf_values = np.zeros((self.N, 1))
+            leaf_values = np.zeros((self.L, 1))
             subsets = result[0]
             for subset in subsets:
                 s = list(subset)
@@ -212,10 +241,7 @@ class BregmanDivergenceQuantizer(object):
                 impliedSolverKwargs = dict(max_depth=None)
                 leaf_values[s] = self.learning_rate * min_val
             optimal_split_tree = self.imply_tree(leaf_values, **impliedSolverKwargs)
-            loss_new = loss(theano.function([], self.predict())() +
-                            theano.function([], optimal_split_tree.predict(self.X))(),
-                            len(subsets),
-                            leaf_values)
+            loss_new = loss(theano.function([], optimal_split_tree.predict(self.X_vec))())
             heapq.heappush(loss_heap, (loss_new.item(0), rind, leaf_values))
 
         best_loss, best_rind, best_leaf_values = heapq.heappop(loss_heap)
@@ -237,7 +263,7 @@ class BregmanDivergenceQuantizer(object):
 
         self.partitions.append(results[best_rind][0])
 
-        implied_values = theano.function([], optimal_split_tree.predict(self.X))()
+        implied_values = theano.function([], optimal_split_tree.predict(self.X_vec))()
 
         print('leaf_values:    {!r}'.format([(round(val,4), np.sum(best_leaf_values==val))
                                             for val in np.unique(best_leaf_values)]))
@@ -247,17 +273,20 @@ class BregmanDivergenceQuantizer(object):
         return best_leaf_values
 
 
-    def loss(self, X_q, num_partitions, leaf_values):
-        return self.loss_without_regularization(X_q) + self.regularization_loss(num_partitions, leaf_values)
+    def loss(self, X_q):
+        return self.loss_without_regularization(X_q) + self.regularization_loss(X_q)
 
     def loss_without_regularization(self, X_q):
         ''' Dependent on loss function '''
         return self.mse_loss_without_regularization(X_q)
 
-    def regularization_loss(self, num_partitions, leaf_values):
+    def regularization_loss(self, X_q):
         ''' Independent of loss function '''
-        size_reg = self.gamma * num_partitions
-        coeff_reg = 0.5 * self.eta * T.sum(T.extra_ops.Unique(False,False,False)(leaf_values)**2)
+        size_reg = self.gamma * self.num_partitions
+        # XXX
+        # Problem taking grad of Unique
+        # coeff_reg = 0.5 * self.eta * T.sum(T.extra_ops.Unique(False,False,False)(X_q)**2)
+        coeff_reg = 0.0
         return size_reg + coeff_reg
     
     def mse_loss_without_regularization(self, X_q):
