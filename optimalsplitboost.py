@@ -15,9 +15,9 @@ rng = np.random.RandomState(SEED)
 class OptimalSplitGradientBoostingClassifier(object):
     def __init__(self,
                  X,
-                 y,
-                 min_partition_size,
-                 max_partition_size,
+                 y=None,
+                 min_partition_size=10,
+                 max_partition_size=25,
                  gamma=0.1,
                  eta=0.1,
                  num_classifiers=100,

@@ -1,10 +1,10 @@
-import numpy as np
-from sklearn.datasets import make_classification, load_breast_cancer
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_classification, load_breast_cancer
 
+import numpy as np
 import classifier
 import utils
-from optimalsplitboost import OptimalSplitGradientBoostingClassifier
+from BregmanQuantizer import BregmanDivergenceQuantizer
 
 USE_SIMULATED_DATA = True # True
 USE_01_LOSS = False # False
@@ -47,20 +47,14 @@ if __name__ == '__main__':
     distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
     # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
-    clf = OptimalSplitGradientBoostingClassifier(X_train,
-                                                 y_train,
-                                                 min_partition_size=min_partitions,
-                                                 max_partition_size=max_partitions,
-                                                 gamma=0.025, # .025
-                                                 eta=0.5, # .5
-                                                 num_classifiers=num_classifiers,
-                                                 use_constant_term=False,
-                                                 solver_type='linear_hessian',
-                                                 learning_rate=0.50, # 0.5
-                                                 distiller=distiller,
-                                                 )
-
-    clf.fit(num_steps)
-
-    utils.oos_summary(clf, X_test, y_test)
-
+    clstr = BregmanDivergenceQuantizer(X_train,
+                                       min_partitions,
+                                       max_partitions,
+                                       gamma=0.25,
+                                       eta=0.5,
+                                       num_classifiers=num_classifiers,
+                                       use_constant_term=False,
+                                       solver_type='linear_hessian',
+                                       learning_rate=0.50,
+                                       distiller=distiller
+                                       )
