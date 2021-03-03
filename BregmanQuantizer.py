@@ -161,7 +161,7 @@ class BregmanDivergenceQuantizer(object):
                 impliedSolverKwargs = dict(max_depth=None)
                 leaf_values[s] = self.learning_rate * min_val
 
-        print('leaf_values:    {!r}'.format([(round(val,4), np.sum(leaf_values==val))
+        print('leaf_values:    {!r}'.format([(round(val,8), np.sum(leaf_values==val))
                                             for val in np.unique(leaf_values)]))
         return leaf_values
 

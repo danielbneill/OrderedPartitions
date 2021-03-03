@@ -8,14 +8,14 @@ from optimalsplitboost import OptimalSplitGradientBoostingClassifier
 
 USE_SIMULATED_DATA = True # True
 USE_01_LOSS = False # False
-TEST_SIZE = 0.10 # .10
+TEST_SIZE = 0.20 # .10
 
 ##########################
 ## Generate Random Data ##
 ##########################
 if (USE_SIMULATED_DATA):
     SEED = 254 # 254
-    NUM_SAMPLES = 100 # 1000
+    NUM_SAMPLES = 1000 # 1000
     NUM_FEATURES = 10 # 20
     rng = np.random.RandomState(SEED)
     
@@ -37,10 +37,10 @@ if USE_01_LOSS:
 ## Generate Empirical Data ##
 #############################
 if __name__ == '__main__':
-    num_steps = 50 # 50
+    num_steps = 75 # 50
     num_classifiers = num_steps
     min_partitions = 1 # 1
-    max_partitions = 11 # 21
+    max_partitions = 5 # 21
 
 
     import sklearn.tree
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                                  num_classifiers=num_classifiers,
                                                  use_constant_term=False,
                                                  solver_type='linear_hessian',
-                                                 learning_rate=0.50, # 0.5
+                                                 learning_rate=0.250, # 0.5
                                                  distiller=distiller,
                                                  )
 

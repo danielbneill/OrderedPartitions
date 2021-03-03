@@ -197,7 +197,6 @@ class OptimalSplitGradientBoostingClassifier(object):
                 # impliedSolverKwargs = dict(max_depth=int(np.log2(num_partitions)))
                 impliedSolverKwargs = dict(max_depth=None)
                 leaf_values[s] = self.learning_rate * min_val
-            import pdb;pdb.set_trace()
             optimal_split_tree = self.imply_tree(leaf_values, **impliedSolverKwargs)
             loss_new = loss(theano.function([], self.predict())() +
                             theano.function([], optimal_split_tree.predict(self.X))(),

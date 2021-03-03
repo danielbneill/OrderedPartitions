@@ -17,8 +17,8 @@ TEST_SIZE = 0.5
 ##########################
 if (USE_SIMULATED_DATA):
     SEED = 254 # 254
-    NUM_SAMPLES = 100 # 1000
-    NUM_FEATURES = 20 # 20
+    NUM_SAMPLES = 500 # 1000
+    NUM_FEATURES = 10 # 20
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES, n_features=NUM_FEATURES)
@@ -40,7 +40,7 @@ if USE_01_LOSS:
 #############################
 if __name__ == '__main__':
     min_partitions = 1 # 1
-    max_partitions = 11 # 21
+    max_partitions = 100 # 21
 
 
     import sklearn.tree
