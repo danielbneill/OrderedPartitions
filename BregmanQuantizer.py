@@ -5,7 +5,6 @@ import theano.tensor as T
 import sklearn.base
 import sklearn.tree
 import multiprocessing
-import proto
 
 import solverSWIG_PG
 import solverSWIG_DP

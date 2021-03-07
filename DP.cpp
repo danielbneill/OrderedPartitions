@@ -8,11 +8,24 @@
 
 #include "DP.hpp"
 
+/*
 float
 DPSolver::compute_score(int i, int j) {
   float score = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
     std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
   return score;
+}
+*/
+
+float
+DPSolver::compute_score(int i, int j) {
+  float asum = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
+  float bsum = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
+  if (asum > bsum) {
+    return asum*std::log(asum/bsum) + bsum - asum;
+  } else {
+    return 0.;
+  }
 }
 
 void
@@ -94,7 +107,7 @@ DPSolver::create() {
       maxScore = std::numeric_limits<float>::min();
       for (int k=i+1; k<=(n_-(j-1)); ++k) {
 	score = partialSums[i][k] + maxScore_[k][j-1];
-	if (score > maxScore) {
+	if (score >= maxScore) {
 	  maxScore = score;
 	  maxNextStart = k;
 	}

@@ -50,6 +50,7 @@ link_directories(${Boost_LIBRARY_DIR})
 # C++ executable gtest_all
 add_library(graph OBJECT graph.cpp)
 add_library(DP OBJECT DP.cpp)
+add_library(LTSS OBJECT LTSS.cpp)
 add_executable(gtest_all gtest_all.cpp)
 target_link_libraries(gtest_all graph DP ${GTEST_LIBRARIES} pthread)
 
@@ -74,6 +75,10 @@ target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
 # C++ DPSolver
 add_executable(DP_solver_test DP_solver_test.cpp)
 target_link_libraries(DP_solver_test DP graph pthread)
+
+# C++ LTSSSolver
+add_executable(LTSS_solver_test LTSS_solver_test.cpp)
+target_link_libraries(LTSS_solver_test LTSS)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)

@@ -120,6 +120,8 @@ def double_power_fn(a11,a12,a21,a22,b1,b2,p):
 
     A = np.array([[a11_,a12_],[a21_,a22_]])
     b = np.array([b1_, b2_])
+    # XXX
+    # r = np.dot(b.T, np.dot(np.linalg.inv(A), b))
     r = np.dot(b.T, np.dot(np.linalg.inv(A), b))
 
     return r
@@ -210,11 +212,50 @@ def _priority(a11,a12,a21,a22,b1,b2):
     # b = np.array([b1,b2])
     # return np.linalg.norm(np.dot(A, b))
     return a11/a12
-    
+
+def _verify_extreme(r_max_raw, D):
+    from itertools import combinations
+    combins = combinations(range(DIMENSION), 2)
+    for combin in combins:
+        try:
+            a = D[list(combin)][0,:]
+            b = D[list(combin)][1,:]
+        except Exception as e:
+            import pdb; pdb.set_trace()
+        sortind = list(np.argsort(a/b))
+        all_consec = True
+        for p in r_max_raw[1]:
+            ind = [sortind.index(i) for i in p]
+            print('{} {}'.format(combin, ind))
+            if not np.all(np.diff(sorted(ind)) == 1):
+                all_consec = False
+        if all_consec:
+            return True, combin
+    combins = combinations(range(DIMENSION), 2)        
+    for combin in combins:
+        try:
+            b = D[list(combin)][0,:]
+            a = D[list(combin)][1,:]
+        except Exception as e:
+            import pdb; pdb.set_trace()
+        sortind = list(np.argsort(a/b))
+        all_consec = True
+        for p in r_max_raw[1]:
+            ind = [sortind.index(i) for i in p]
+            print('{} {}'.format(combin, ind))
+            if not np.all(np.diff(sorted(ind)) == 1):
+                all_consec = False
+        if all_consec:
+            return True, combin
+    import pdb;pdb.set_trace()
+    return False, None
+                
+
 # Maximal ordered partition demonstration
 if __name__ == '__main__':
     NUM_POINTS =        int(sys.argv[1]) or 3          # N
     PARTITION_SIZE =    int(sys.argv[2]) or 2          # T
+    DIMENSION = 6                                      # For the time being
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
     SCORE_FN = double_power_fn
@@ -249,12 +290,22 @@ if __name__ == '__main__':
         b1 = b1[sortind]
         b2 = b2[sortind]
 
+        D = np.array([a11])
+        D = np.concatenate([D,[a12]],axis=0)
+        D = np.concatenate([D,[a21]],axis=0)
+        D = np.concatenate([D,[a22]],axis=0)
+        D = np.concatenate([D,[b1]],axis=0)
+        D = np.concatenate([D,[b2]],axis=0)
+
         r_max_raw = optimize(a11, a12, a21, a21, b1, b2, PARTITION_SIZE, NUM_WORKERS)
 
+        print(_verify_extreme(r_max_raw, D))
+        
         try:
             assert False
             # assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
             # assert np.max([o[0] for o in con_optim_all]) >= np.max([o[0] for o in optim_all])
+            _verify_extreme(r_max_raw)
         except AssertionError as e:
             continue
             # optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
