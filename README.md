@@ -12,6 +12,7 @@ Utilities for subset scanning/optimization over partitions of records. There are
 
 To make
 $cmake -H. -Bbuild
+
 $cmake --build build -- -j4
 
 ## 
