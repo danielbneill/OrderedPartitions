@@ -18,6 +18,7 @@ $cmake --build build -- -j4
 
 binaries:
 ~/build/bin/
+
     multiprecision
     test_partitions
     DP_solver_test
