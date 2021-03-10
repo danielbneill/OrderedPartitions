@@ -11,9 +11,22 @@ Utilities for subset scanning/optimization over partitions of records. There are
     - Boost, for BGL for graph solver
 
 To make
+
 $cmake -H. -Bbuild
+
 $cmake --build build -- -j4
 
+binaries:
+~/build/bin/
+
+    multiprecision
+    test_partitions
+    DP_solver_test
+    LTSS_solver_test
+    solver_timer
+    graph_to_dot
+    gtest_all
+    
 ## 
 
 # binaries created in ./build/bin
