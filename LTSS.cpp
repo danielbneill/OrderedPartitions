@@ -9,14 +9,15 @@
 #include "LTSS.hpp"
 
 
+/* 
 float
 LTSSSolver::compute_score(int i, int j) {
   float score = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
     std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
   return score;
 }
+*/
 
-/*
 float
 LTSSSolver::compute_score(int i, int j) {
   float asum = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
@@ -27,7 +28,6 @@ LTSSSolver::compute_score(int i, int j) {
     return 0.;
   }
 }
-*/
 
 void
 LTSSSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
@@ -87,7 +87,7 @@ LTSSSolver::optimize() {
   }
   
   for (int i=p.first; i<p.second; ++i) {
-    subset_.push_back(i);
+    subset_.push_back(priority_sortind_[i]);
   }
   optimal_score_ = maxScore;
 }

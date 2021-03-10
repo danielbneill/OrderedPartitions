@@ -15,8 +15,8 @@ auto main() -> int {
   constexpr int N = 50;
   constexpr int NUM_TRIALS = 10;
 
-  float lower_limit_a = -10., upper_limit_a = 10.;
-  float lower_limit_b = 0., upper_limit_b = 10.;
+  float lower_limit_a = 0., upper_limit_a = 100.;
+  float lower_limit_b = 0., upper_limit_b = 100.;
 
   std::random_device rnd_device;
   std::mt19937 mersenne_engine {rnd_device()};

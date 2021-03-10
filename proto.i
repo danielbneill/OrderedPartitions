@@ -17,7 +17,8 @@ namespace std {
 %template(IArray) vector<int>;
 %template(FArray) vector<float>;
 %template(IArrayArray) vector<vector<int>>;
-%template(IArrayFPair) pair<vector<vector<int>>, float>;
+%template(IArrayFPair) pair<vector<int>, float>;
+%template(IArrayArrayFPair) pair<vector<vector<int>>, float>;
 %template(SWCont) vector<pair<vector<vector<int>>, float>>;
 }
 
