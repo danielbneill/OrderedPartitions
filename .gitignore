@@ -6,5 +6,6 @@ __pycache__
 *.so
 *.dat
 *.dot
+*.pdf
 *~
 .ipnyb_checkpoints/

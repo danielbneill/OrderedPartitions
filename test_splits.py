@@ -9,7 +9,7 @@ from itertools import chain, islice, combinations
 import matplotlib.pyplot as plot
 from scipy.spatial import ConvexHull, Delaunay
 
-SEED = 3531
+SEED = 1834
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -485,12 +485,12 @@ if __name__ == '__main__':
 
     NUM_WORKERS = min(NUM_POINTS, multiprocessing.cpu_count() - 1)
 
-    # SCORE_FN = power_score_fn
+    SCORE_FN = power_score_fn
     # SCORE_FN = log_score_fn
     # SCORE_FN = double_power_score_fn
     # SCORE_FN = sum_of_powers_of_x_fn
     # SCORE_FN = sum_of_powers_fn
-    SCORE_FN = neg_x_times_y
+    # SCORE_FN = neg_x_times_y
     # SCORE_FN = neg_sum_of_powers_fn
     # SCORE_FN = power_of_sums_fn
     # SCORE_FN = sqrt_of_sum_of_powers_fn
@@ -619,17 +619,23 @@ if __name__ == '__main__':
             # yaxis = [o[0] for o in optim_all]
             yaxis = [o[0] for o in con_optim_all]
             xaxis = list(range(1,1+len(yaxis)))
-            plot.plot(xaxis, yaxis)
-            plot.pause(1e-3)
+            # plot.plot(xaxis, yaxis)
+            # plot.pause(1e-3)
             # import pdb
             # pdb.set_trace()
-            plot.close()
+            # plot.close()
 
         try:
-            assert False
-            # assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
+            # assert False
+            assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
             # assert np.max([o[0] for o in con_optim_all]) >= np.max([o[0] for o in optim_all])
         except AssertionError as e:
+
+            vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=False)
+            if len(set(vert_const_sym).difference(set(vert_ext_sym))) == 0:
+                print( set(vert_const_sym).difference(set(vert_ext_sym)) )
+                import pdb
+                pdb.set_trace()
             
             # optim_all = [optimize(a0, b0, i, POWER, NUM_WORKERS, PRIORITY_POWER) for i in range(1, 1+len(a0))]
 

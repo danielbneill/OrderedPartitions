@@ -41,7 +41,7 @@ def plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas):
                    bottom='off') # turn off bottom ticks    
     plt.scatter(xx,yy, edgecolor='b', facecolor='none', alpha=0.5 )
     plt.xlabel("x"); plt.ylabel("y")
-    plt.title('Simulated Dataset, Intensities:{}'.format(lambdas))
+    plt.title('Simulated Dataset, Intensities:{}'.format(lambdas[::-1]))
     plt.grid('on')
     plt.savefig('PoissonDist.pdf')
     plt.close()
@@ -199,7 +199,8 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     plt.close()
     # plt.close()
 
-    fig = plt.figure(figsize=(8, 8))
+    fig,ax = plt.subplots(**dict(figsize=(8,8)))
+    # fig = plt.figure(figsize=(8, 8))
     plt.title('Simulated Dataset Single Best')
     
     for coord in dd:
