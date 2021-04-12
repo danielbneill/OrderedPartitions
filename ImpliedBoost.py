@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.datasets import make_classification, load_breast_cancer
 from sklearn.model_selection import train_test_split
+import sklearn.tree
 
 import classifier
 import utils
@@ -15,8 +16,8 @@ TEST_SIZE = 0.20 # .10
 ##########################
 if (USE_SIMULATED_DATA):
     SEED = 254 # 254
-    NUM_SAMPLES = 1000 # 1000
-    NUM_FEATURES = 10 # 20
+    NUM_SAMPLES = 10000 # 1000
+    NUM_FEATURES = 500 # 20
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES, n_features=NUM_FEATURES)
@@ -37,27 +38,28 @@ if USE_01_LOSS:
 ## Generate Empirical Data ##
 #############################
 if __name__ == '__main__':
-    num_steps = 75 # 50
-    num_classifiers = num_steps
-    min_partitions = 1 # 1
-    max_partitions = 5 # 21
 
-
-    import sklearn.tree
+    num_steps = 100
+    
     distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
     # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
-    clf = OptimalSplitGradientBoostingClassifier(X_train,
-                                                 y_train,
-                                                 min_partition_size=min_partitions,
-                                                 max_partition_size=max_partitions,
-                                                 gamma=0.025, # .025
-                                                 eta=0.5, # .5
-                                                 num_classifiers=num_classifiers,
-                                                 use_constant_term=False,
-                                                 solver_type='linear_hessian',
-                                                 learning_rate=0.250, # 0.5
-                                                 distiller=distiller,
+    clfKwargs = { 'min_partition_size': 1,
+                  'max_partition_size': 50,
+                  'row_sample_ratio':   0.75,
+                  'col_sample_ratio':   0.75,
+                  'gamma':              0.0025,
+                  'eta':                0.05,
+                  'num_classifiers':    num_steps,
+                  'use_constant_term':  False,
+                  'solver_type':        'linear_hessian',
+                  'learning_rate':      0.25,
+                  'distiller':          distiller
+                  }
+                  
+    clf = OptimalSplitGradientBoostingClassifier( X_train,
+                                                  y_train,
+                                                  **clfKwargs
                                                  )
 
     clf.fit(num_steps)

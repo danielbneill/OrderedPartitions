@@ -18,6 +18,8 @@ class OptimalSplitGradientBoostingClassifier(object):
                  y=None,
                  min_partition_size=10,
                  max_partition_size=25,
+                 row_sample_ratio=1.,
+                 col_sample_ratio=1.,
                  gamma=0.1,
                  eta=0.1,
                  num_classifiers=100,
@@ -30,12 +32,17 @@ class OptimalSplitGradientBoostingClassifier(object):
         ## Inputs ##
         ############
         self.X = theano.shared(value=X, name='X', borrow=True)
+        self.X_all = theano.shared(value=X, name='X_all', borrow=True)
         self.y = theano.shared(value=y, name='y', borrow=True)
+        self.y_all = theano.shared(value=y, name='y_all', borrow=True)
         initial_X = self.X.get_value()
         self.N, self.num_features = initial_X.shape
+        self.N_all, self.num_features_all = self.N, self.num_features
         
         self.min_partition_size = min_partition_size
         self.max_partition_size = max_partition_size
+        self.row_sample_ratio = row_sample_ratio
+        self.col_sample_ratio = col_sample_ratio
         self.gamma = gamma
         self.eta = eta
         self.num_classifiers = num_classifiers
@@ -191,7 +198,11 @@ class OptimalSplitGradientBoostingClassifier(object):
             subsets = result[0]
             for subset in subsets:
                 s = list(subset)
+
+                # XXX
+                # Do we need regularization terms here?
                 min_val = -1 * np.sum(g[s])/np.sum(h[s])
+                
                 # XXX
                 # impliedSolverKwargs = dict(max_depth=max([int(len(s)/2), 2]))
                 # impliedSolverKwargs = dict(max_depth=int(np.log2(num_partitions)))
@@ -231,16 +242,70 @@ class OptimalSplitGradientBoostingClassifier(object):
                                             for val in np.unique(implied_values)]))
 
         return best_leaf_values
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def _subsample_rows(self):
+
+        mask = sorted(rng.choice(self.N, size=int(self.N * self.row_sample_ratio), replace=False))
+
+        self.X = theano.shared(value=self.X_all.get_value()[mask,:], name='X', borrow=True)
+        self.y = theano.shared(value=self.y_all.get_value()[mask], name='y', borrow=True)
+        self.N = int(self.N * self.row_sample_ratio)
+
+        try:
+            yield mask
+        finally:
+            pass
+
+    @contextmanager
+    def _subsample_columns(self):
+        ''' Must be called after _subsample_rows, if that is called. We handle subsampling
+            of columns differently than subsampling of rows as the number of features is
+            built in to the classifier.
+        '''
+
+        mask = sorted(rng.choice(self.num_features,
+                                 size=int(self.num_features * self.col_sample_ratio), replace=False))
+
+        X0 = self.X.get_value()
+        X0[:,sorted(set(range(self.num_features)) - set(mask))] = 0
+        self.X = theano.shared(value=X0, name='X', borrow=True)
+
+        try:
+            yield mask
+        finally:
+            pass
         
     def fit_step(self):
-        g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term)
 
-        # SWIG optimizer, task-based C++ distribution
-        num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+        self.X_all = self.X
+        self.y_all = self.y
+        self.N_all = self.N
 
-        # Find best optimal split
-        best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
-
+        row_mask,col_mask = None,None
+        
+        # with self._subsample_rows() as row_mask:
+        with self._subsample_columns() as col_mask:
+            g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term,
+                                                 row_mask=row_mask)
+        
+            # SWIG optimizer, task-based C++ distribution
+            num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+        
+            # Find best optimal split
+            best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
+        
+        self.X = self.X_all
+        self.y = self.y_all
+        self.N = self.N_all
+        
+        best_leaf_values_all = np.zeros((self.N, 1))
+        if row_mask:
+            best_leaf_values_all[row_mask,:] = best_leaf_values
+        best_leaf_values = best_leaf_values_all
+        
         # Set leaf_value, return leaf values used to generate
         self.set_next_leaf_value(best_leaf_values)
 
@@ -256,10 +321,12 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         self.curr_classifier += 1
 
-    def generate_coefficients(self, constantTerm=False):
+    def generate_coefficients(self, row_mask=None, constantTerm=False):
 
         x = T.dvector('x')
         leaf_values = self.leaf_values.get_value()[-1+self.curr_classifier,:]
+        if row_mask:
+            leaf_values = leaf_values[row_mask,:]
         loss = self.loss(T.shape_padaxis(x, 1), len(np.unique(leaf_values)), leaf_values)
 
         grads = T.grad(loss, x)
@@ -267,7 +334,6 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         G = theano.function([x], grads)
         H = theano.function([x], hess)
-
         y_hat0 = theano.function([], self.predict())().squeeze()
         g = G(y_hat0)
         h = np.diag(H(y_hat0))
@@ -286,18 +352,23 @@ class OptimalSplitGradientBoostingClassifier(object):
     def loss_without_regularization(self, y_hat):
         ''' Dependent on loss function '''
         return self.mse_loss_without_regularization(y_hat)
+        # return self.exp_loss_without_regularization(y_hat)
 
     def regularization_loss(self, num_partitions, leaf_values):
         ''' Independent of loss function '''
         size_reg = self.gamma * num_partitions
         coeff_reg = 0.5 * self.eta * T.sum(T.extra_ops.Unique(False,False,False)(leaf_values)**2)
         return size_reg + coeff_reg
-    
+
     def mse_loss_without_regularization(self, y_hat):
         return self._mse(y_hat)
 
     def exp_loss_without_regularization(self, y_hat):
-        return T.sum(T.exp(-y_hat * T.shape_padaxis(self.y, 1)))
+        return T.sum(T.exp(-1(2*y_hat.T-1)*(2*self.y-1)))
+
+    def exp_loss_without_regularization(self, y_hat):
+        # return T.sum(T.exp(-y_hat * T.shape_padaxis(self.y, 1)))
+        return T.sum(T.exp(-(2*y_hat.T-1)*(2*self.y-1)).T)
 
     def cosh_loss_without_regularization(self, y_hat):
         return T.sum(T.log(T.cosh(y_hat - T.shape_padaxis(self.y, 1))))

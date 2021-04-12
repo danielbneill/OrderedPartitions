@@ -8,25 +8,25 @@
 
 #include "DP.hpp"
 
-/*
 float
 DPSolver::compute_score(int i, int j) {
   float score = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
     std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
   return score;
 }
-*/
 
-float
-DPSolver::compute_score(int i, int j) {
-  float asum = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
-  float bsum = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
-  if (asum > bsum) {
-    return asum*std::log(asum/bsum) + bsum - asum;
-  } else {
-    return 0.;
-  }
-}
+/* 
+   float
+   DPSolver::compute_score(int i, int j) {
+   float asum = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
+   float bsum = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
+   if (asum > bsum) {
+   return asum*std::log(asum/bsum) + bsum - asum;
+   } else {
+   return 0.;
+   }
+   }
+*/
 
 void
 DPSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {

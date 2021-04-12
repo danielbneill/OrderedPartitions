@@ -444,7 +444,7 @@ if (False):
         if not count%10000:
             print('count: {}'.format(count))
 
-if (True):
+if (False):
     # The yellow region represents the True portion
     
     import numpy as np
@@ -798,7 +798,7 @@ if (True):
                 print('count: {}'.format(count))
                 
 
-if (False):
+if (True):
     import numpy as np
 
     count = 0
@@ -807,7 +807,7 @@ if (False):
     beta =  3.0
     q = 2.0
     seed = 1542
-    FIRST_QUADRANT = True
+    FIRST_QUADRANT = False
     
     # def F(a,b,gamma):
     #     gamma = 2.0
@@ -829,11 +829,11 @@ if (False):
     #     return np.sqrt(np.sum(a))
     
     # Rational
-    # def F(a,b,gamma):
-    #    return (np.sum(a)**alpha)/(np.sum(b)**beta)
-
     def F(a,b,gamma):
-        return np.sum(a)**2 + np.sum(b)**2
+       return (np.sum(a)**alpha)/(np.sum(b)**beta)
+
+    # def F(a,b,gamma):
+    #     return np.sum(a)**2 + np.sum(b)**2
 
     # def F(a,b,gamma):
     #     return (np.sum(a)-np.sum(b))**2 + np.sum(a)**2 + np.sum(b)**2
@@ -1067,6 +1067,8 @@ if (False):
             lhs2 = F(a0[rset], b0[rset], gamma)
             rhs1 = F(a0[l_r_union], b0[l_r_union], gamma)
             rhs2 = F(a0[l_r_int], b0[l_r_int], gamma)
+            print('a0: {}'.format(a0))
+            print('b0: {}'.format(b0))
             print('lset: {}'.format(lset))
             print('rset: {}'.format(rset))
             print('l_r_int: {}'.format(l_r_int))
