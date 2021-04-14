@@ -8,6 +8,7 @@ import theano.tensor as T
 import classifier
 import solverSWIG_PG
 import solverSWIG_DP
+import solverSWIG_DP_Multi
 
 SEED = 515
 rng = np.random.RandomState(SEED)
@@ -181,7 +182,7 @@ class OptimalSplitGradientBoostingClassifier(object):
             loss wins.
         '''
 
-        results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
+        results = solverSWIG_DP_Multi.OptimizerSWIG(num_partitions, g, h)()
 
         npart = T.scalar('npart')
         lv = T.dmatrix('lv')
@@ -351,8 +352,8 @@ class OptimalSplitGradientBoostingClassifier(object):
 
     def loss_without_regularization(self, y_hat):
         ''' Dependent on loss function '''
-        return self.mse_loss_without_regularization(y_hat)
-        # return self.exp_loss_without_regularization(y_hat)
+        # return self.mse_loss_without_regularization(y_hat)
+        return self.exp_loss_without_regularization(y_hat)
 
     def regularization_loss(self, num_partitions, leaf_values):
         ''' Independent of loss function '''

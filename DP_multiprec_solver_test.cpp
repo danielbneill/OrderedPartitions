@@ -60,10 +60,10 @@ auto main() -> int {
       0.22745816, 0.218429  , 0.21809504, 0.22771114, 0.218429  ,
       0.21809504, 0.22771114, 0.22745816, 0.21809504, 0.22745816};
     
-  auto dp_multi = DPSolver_multi(40, 5, a, b);
+  auto dp_multi = DPSolver_multi(10, 4, a10, b10);
   auto dp_multi_opt = dp_multi.get_optimal_subsets_extern();
 
-  auto dp = DPSolver(40, 5, a_flt32, b_flt32);
+  auto dp = DPSolver(10, 4, a10_flt32, b10_flt32);
   auto dp_opt = dp.get_optimal_subsets_extern();
   
   // auto pg = PartitionGraph(40, 5, a, b);

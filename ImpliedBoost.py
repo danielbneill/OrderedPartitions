@@ -18,8 +18,8 @@ TEST_SIZE = 0.20 # .10
 ##########################
 if (USE_SIMULATED_DATA):
     SEED = 254 # 254
-    NUM_SAMPLES = 1000 # 1000, 10000
-    NUM_FEATURES = 100 # 20, 500
+    NUM_SAMPLES = 250 # 1000, 10000
+    NUM_FEATURES = 5 # 20, 500
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES, n_features=NUM_FEATURES)
@@ -41,23 +41,23 @@ if USE_01_LOSS:
 #############################
 if __name__ == '__main__':
 
-    num_steps = 50
+    num_steps = 110
     
-    distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
+    # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
     # print('USING LDA')
     # distiller = classifier.classifierFactory(sklearn.discriminant_analysis.LinearDiscriminantAnalysis)
-    # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
+    distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
     clfKwargs = { 'min_partition_size': 1,
-                  'max_partition_size': 10, # 50
-                  'row_sample_ratio':   0.75,
+                  'max_partition_size': 2, # 50
+                  'row_sample_ratio':   0.5,
                   'col_sample_ratio':   1.00,
-                  'gamma':              0.0025,
-                  'eta':                0.05,
+                  'gamma':              0.0, # 0.0025
+                  'eta':                0.0, # 0.05
                   'num_classifiers':    num_steps,
                   'use_constant_term':  False,
                   'solver_type':        'linear_hessian',
-                  'learning_rate':      0.65,
+                  'learning_rate':      0.25, # 0.75
                   'distiller':          distiller
                   }
                   
