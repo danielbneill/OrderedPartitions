@@ -6,19 +6,21 @@
 #include <utility>
 #include <cmath>
 
-#include "DP.hpp"
+#include "DP_multiprec.hpp"
 
-float
-DPSolver::compute_score(int i, int j) {
-  float score = a_sums_[i][j] / b_sums_[i][j];
+cpp_dec_float_100
+DPSolver_multi::compute_score(int i, int j) {
+  cpp_dec_float_100 score = a_sums_[i][j] / b_sums_[i][j];
   return score;
 }
 
 void
-DPSolver::compute_partial_sums() {
-  float a_cum;
-  a_sums_ = std::vector<std::vector<float>>(n_, std::vector<float>(n_+1, std::numeric_limits<float>::min()));
-  b_sums_ = std::vector<std::vector<float>>(n_, std::vector<float>(n_+1, std::numeric_limits<float>::min()));
+DPSolver_multi::compute_partial_sums() {
+  cpp_dec_float_100 a_cum;
+  a_sums_ = std::vector<std::vector<cpp_dec_float_100>>(n_, std::vector<cpp_dec_float_100>(n_+1, 
+											   static_cast<cpp_dec_float_100>(std::numeric_limits<float>::min())));
+  b_sums_ = std::vector<std::vector<cpp_dec_float_100>>(n_, std::vector<cpp_dec_float_100>(n_+1, 
+											   static_cast<cpp_dec_float_100>(std::numeric_limits<float>::min())));
 
   for (int i=0; i<n_; ++i) {
     a_sums_[i][i] = 0.;
@@ -26,19 +28,17 @@ DPSolver::compute_partial_sums() {
   }
 
   for (int i=0; i<n_; ++i) {
-    a_cum = -a_[i-1];
+    a_cum = (i == 0)? static_cast<cpp_dec_float_100>(0.) : -a_[i-1];
     for (int j=i+1; j<=n_; ++j) {
-      a_cum += a_[j-2];
+      a_cum += (j >= 2)? a_[j-2] : static_cast<cpp_dec_float_100>(0.);
       a_sums_[i][j] = a_sums_[i][j-1] + (2*a_cum + a_[j-1])*a_[j-1];
       b_sums_[i][j] = b_sums_[i][j-1] + b_[j-1];
     }
-  }  
-  
-    
+  }      
 }
 
 void
-DPSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
+DPSolver_multi::sort_by_priority(std::vector<cpp_dec_float_100>& a, std::vector<cpp_dec_float_100>& b) {
   std::vector<int> ind(a.size());
   std::iota(ind.begin(), ind.end(), 0);
 
@@ -50,7 +50,7 @@ DPSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
   priority_sortind_ = ind;
 
   // Inefficient reordering
-  std::vector<float> a_s, b_s;
+  std::vector<cpp_dec_float_100> a_s, b_s;
   for (auto i : ind) {
     a_s.push_back(a[i]);
     b_s.push_back(b[i]);
@@ -62,16 +62,16 @@ DPSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 }
 
 void
-DPSolver::print_maxScore_() {
+DPSolver_multi::print_maxScore_() {
 
   for (int i=0; i<n_; ++i) {
-    std::copy(maxScore_[i].begin(), maxScore_[i].end(), std::ostream_iterator<float>(std::cout, " "));
+    std::copy(maxScore_[i].begin(), maxScore_[i].end(), std::ostream_iterator<cpp_dec_float_100>(std::cout, " "));
     std::cout << std::endl;
   }
 }
 
 void
-DPSolver::print_nextStart_() {
+DPSolver_multi::print_nextStart_() {
   for (int i=0; i<n_; ++i) {
     std::copy(nextStart_[i].begin(), nextStart_[i].end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
@@ -79,14 +79,15 @@ DPSolver::print_nextStart_() {
 }
 
 void
-DPSolver::create() {
+DPSolver_multi::create() {
   optimal_score_ = 0.;
   
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
 
   // Initialize matrix
-  maxScore_ = std::vector<std::vector<float>>(n_, std::vector<float>(T_+1, std::numeric_limits<float>::min()));
+  maxScore_ = std::vector<std::vector<cpp_dec_float_100>>(n_, std::vector<cpp_dec_float_100>(T_+1, 
+											     static_cast<cpp_dec_float_100>(std::numeric_limits<float>::min())));
   nextStart_ = std::vector<std::vector<int>>(n_, std::vector<int>(T_+1, -1));
   subsets_ = std::vector<std::vector<int>>(T_, std::vector<int>());
 
@@ -102,8 +103,8 @@ DPSolver::create() {
   }
 
   // Precompute partial sums
-  std::vector<std::vector<float>> partialSums;
-  partialSums = std::vector<std::vector<float>>(n_, std::vector<float>(n_, 0.));
+  std::vector<std::vector<cpp_dec_float_100>> partialSums;
+  partialSums = std::vector<std::vector<cpp_dec_float_100>>(n_, std::vector<cpp_dec_float_100>(n_, 0.));
   for (int i=0; i<n_; ++i) {
     for (int j=i; j<n_; ++j) {
       partialSums[i][j] = compute_score(i, j);
@@ -111,12 +112,12 @@ DPSolver::create() {
   }
 
   // Fill in column-by-column from the left
-  float score;
-  float maxScore;
+  cpp_dec_float_100 score;
+  cpp_dec_float_100 maxScore;
   int maxNextStart = -1;
   for(int j=2; j<=T_; ++j) {
     for (int i=0; i<n_; ++i) {
-      maxScore = std::numeric_limits<float>::min();
+      maxScore = static_cast<cpp_dec_float_100>(std::numeric_limits<float>::min());
       for (int k=i+1; k<=(n_-(j-1)); ++k) {
 	score = partialSums[i][k] + maxScore_[k][j-1];
 	if (score > maxScore) {
@@ -134,10 +135,10 @@ DPSolver::create() {
 }
 
 void
-DPSolver::optimize() {
+DPSolver_multi::optimize() {
   // Pick out associated maxScores element
   int currentInd = 0, nextInd = 0;
-  float score_num = 0., score_den = 0.;
+  cpp_dec_float_100 score_num = 0., score_den = 0.;
   for (int t=T_; t>0; --t) {
     nextInd = nextStart_[currentInd][t];
     for (int i=currentInd; i<nextInd; ++i) {
@@ -151,11 +152,11 @@ DPSolver::optimize() {
 }
 
 ivecvec
-DPSolver::get_optimal_subsets_extern() const {
+DPSolver_multi::get_optimal_subsets_extern() const {
   return subsets_;
 }
 
-float
-DPSolver::get_optimal_score_extern() const {
+cpp_dec_float_100
+DPSolver_multi::get_optimal_score_extern() const {
   return optimal_score_;
 }

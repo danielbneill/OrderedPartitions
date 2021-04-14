@@ -286,23 +286,23 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         row_mask,col_mask = None,None
         
-        # with self._subsample_rows() as row_mask:
-        with self._subsample_columns() as col_mask:
+        with self._subsample_rows() as row_mask:
+            # with self._subsample_columns() as col_mask:
             g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term,
-                                                 row_mask=row_mask)
+                                                     row_mask=row_mask)
         
             # SWIG optimizer, task-based C++ distribution
             num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
-        
+            
             # Find best optimal split
             best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
-        
+                
         self.X = self.X_all
         self.y = self.y_all
         self.N = self.N_all
         
         best_leaf_values_all = np.zeros((self.N, 1))
-        if row_mask:
+        if row_mask or col_mask:
             best_leaf_values_all[row_mask,:] = best_leaf_values
         best_leaf_values = best_leaf_values_all
         

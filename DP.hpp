@@ -30,13 +30,16 @@ public:
 
   ivecvec get_optimal_subsets_extern() const;
   float get_optimal_score_extern() const;
-
+  void print_maxScore_();
+  void print_nextStart_();
     
 private:
   int n_;
   int T_;
   fvec a_;
   fvec b_;
+  fvecvec a_sums_;
+  fvecvec b_sums_;
   fvecvec maxScore_;
   ivecvec nextStart_;
   ivec priority_sortind_;
@@ -49,8 +52,7 @@ private:
 
   void sort_by_priority(fvec&, fvec&);
   float compute_score(int, int);
-  void print_maxScore_();
-  void print_nextStart_();
+  void compute_partial_sums();
 
 };
 

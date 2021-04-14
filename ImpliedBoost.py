@@ -2,6 +2,8 @@ import numpy as np
 from sklearn.datasets import make_classification, load_breast_cancer
 from sklearn.model_selection import train_test_split
 import sklearn.tree
+import sklearn.svm
+import sklearn.discriminant_analysis
 
 import classifier
 import utils
@@ -16,8 +18,8 @@ TEST_SIZE = 0.20 # .10
 ##########################
 if (USE_SIMULATED_DATA):
     SEED = 254 # 254
-    NUM_SAMPLES = 10000 # 1000
-    NUM_FEATURES = 500 # 20
+    NUM_SAMPLES = 1000 # 1000, 10000
+    NUM_FEATURES = 100 # 20, 500
     rng = np.random.RandomState(SEED)
     
     X,y = make_classification(random_state=SEED, n_samples=NUM_SAMPLES, n_features=NUM_FEATURES)
@@ -39,21 +41,23 @@ if USE_01_LOSS:
 #############################
 if __name__ == '__main__':
 
-    num_steps = 100
+    num_steps = 50
     
     distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
+    # print('USING LDA')
+    # distiller = classifier.classifierFactory(sklearn.discriminant_analysis.LinearDiscriminantAnalysis)
     # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
     clfKwargs = { 'min_partition_size': 1,
-                  'max_partition_size': 50,
+                  'max_partition_size': 10, # 50
                   'row_sample_ratio':   0.75,
-                  'col_sample_ratio':   0.75,
+                  'col_sample_ratio':   1.00,
                   'gamma':              0.0025,
                   'eta':                0.05,
                   'num_classifiers':    num_steps,
                   'use_constant_term':  False,
                   'solver_type':        'linear_hessian',
-                  'learning_rate':      0.25,
+                  'learning_rate':      0.65,
                   'distiller':          distiller
                   }
                   
