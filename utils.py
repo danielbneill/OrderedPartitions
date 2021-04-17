@@ -146,15 +146,15 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
 ## Summaries ##
 ###############
 
-def oos_summary(clf, X_test, y_test):
+def oos_summary(clf, X_test, y_test, learning_rate=1. ):
     # Vanilla regression model
     X0 = clf.X.get_value()
     y0 = clf.y.get_value()
     reg = LinearRegression(fit_intercept=True).fit(X0, y0)
     logreg = LogisticRegression().fit(X0, y0)
     clf_cb = CatBoostClassifier(iterations=100,
-                                depth=2,
-                                learning_rate=1,
+                                depth=None,
+                                learning_rate=learning_rate,
                                 loss_function='CrossEntropy',
                                 verbose=False)
     

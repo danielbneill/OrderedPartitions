@@ -36,7 +36,7 @@ DPSolver_multi::compute_partial_sums() {
     }
   }      
 }
-
+3
 void
 DPSolver_multi::sort_by_priority(std::vector<cpp_dec_float_100>& a, std::vector<cpp_dec_float_100>& b) {
   std::vector<int> ind(a.size());

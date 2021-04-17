@@ -6,8 +6,6 @@ import theano
 import theano.tensor as T
 
 import classifier
-import solverSWIG_PG
-import solverSWIG_DP
 import solverSWIG_DP_Multi
 
 SEED = 515
@@ -284,7 +282,7 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.X_all = self.X
         self.y_all = self.y
         self.N_all = self.N
-
+n
         row_mask,col_mask = None,None
         
         with self._subsample_rows() as row_mask:

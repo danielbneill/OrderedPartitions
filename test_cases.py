@@ -510,7 +510,7 @@ if (False):
         seed = 151
         q = 1.0
         epsilon = .002
-        QUADRANT_ONE = False
+        QUADRANT_ONE = True
         
         SEED = 49
 
@@ -518,8 +518,10 @@ if (False):
         #     return (a**alpha)/(b**beta)
 
         # Rational
-        # def F(a,b,alpha,beta):
-        #     return (a**alpha)/(b**beta)
+        def F(a,b,alpha,beta):
+            alpha = 4.5
+            beta = 1.7
+            return (a**alpha)/(b**beta)
 
         # def F(a,b,alpha,beta):
         #     return a**2 + b**2
@@ -540,13 +542,13 @@ if (False):
         #         return 0
 
         # Poisson
-        def F(a,b,alpha,beta):
-            asum = a
-            bsum = b
-            if asum > bsum:
-                return asum*np.log(asum/bsum) + bsum - asum
-            else:
-                return 0.
+        # def F(a,b,alpha,beta):
+        #     asum = a
+        #     bsum = b
+        #     if asum > bsum:
+        #         return asum*np.log(asum/bsum) + bsum - asum
+        #     else:
+        #         return 0.
 
         # Gaussian
         # def F(a,b,alpha,beta):
@@ -696,8 +698,8 @@ if (False):
                 rhs2=F(np.max([x1,x2]),np.max([y1,y2]),alpha,beta)
                 if (lhs1+lhs2)<(rhs1+rhs2) and not np.isclose(lhs1+lhs2,rhs1+rhs2):
                     print('REAL SUBMODULARITY VIOLATED')
-                    import pdb
-                    pdb.set_trace()
+                    # import pdb
+                    # pdb.set_trace()
 
             if (False):
                 mu1=rng.uniform(low=0.,high=10.)
@@ -830,7 +832,7 @@ if (True):
     
     # Rational
     def F(a,b,gamma):
-       return (np.sum(a)**alpha)/(np.sum(b)**beta)
+        return (np.sum(a)**alpha)/(np.sum(b)**beta)
 
     # def F(a,b,gamma):
     #     return np.sum(a)**2 + np.sum(b)**2
@@ -1058,7 +1060,8 @@ if (True):
         # ========================================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
         if (True):
-            j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))            
+            # j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
+            j,k,l,m = rng.choice(int(NUM_POINTS+1), 4, replace=False)
             lset, rset = set(range(j,l)), set(range(k,m))
             l_r_int = lset.intersection(rset)
             l_r_union = lset.union(rset)
