@@ -4,12 +4,15 @@ import sklearn.base
 import sklearn.tree
 import theano
 import theano.tensor as T
+import logging
 
 import classifier
 import solverSWIG_DP_Multi
 
 SEED = 515
 rng = np.random.RandomState(SEED)
+
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 class OptimalSplitGradientBoostingClassifier(object):
     def __init__(self,
@@ -136,7 +139,8 @@ class OptimalSplitGradientBoostingClassifier(object):
 
     def predict_old(self):
         def iter_step(classifier_ind):
-            y_step = self.weak_learner_predict(classifier_ind)
+            # y_step = self.weak_learner_predict(classifier_ind)
+            y_setp = self.implied_trees[classifier_ind].predict(self.X)
             return y_step
 
         # scan is short-circuited by length of T.arange(self.curr_classifier)
@@ -182,6 +186,8 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         results = solverSWIG_DP_Multi.OptimizerSWIG(num_partitions, g, h)()
 
+        logging.info('found optimal partition')
+
         npart = T.scalar('npart')
         lv = T.dmatrix('lv')
         x = T.dmatrix('x')
@@ -216,6 +222,8 @@ class OptimalSplitGradientBoostingClassifier(object):
 
         best_loss, best_rind, best_leaf_values = heapq.heappop(loss_heap)
 
+        logging.info('found optimal leaf values')
+
         # XXX
         # solverKwargs = dict(max_depth=int(len(np.unique(best_leaf_values ))))
         solverKwargs = dict(max_depth=int(np.log2(num_partitions)))
@@ -234,6 +242,8 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.partitions.append(results[best_rind][0])
 
         implied_values = theano.function([], optimal_split_tree.predict(self.X))()
+
+        logging.info('found implied values for comparison')
 
         print('leaf_values:    {!r}'.format([(round(val,4), np.sum(best_leaf_values==val))
                                             for val in np.unique(best_leaf_values)]))
@@ -282,17 +292,22 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.X_all = self.X
         self.y_all = self.y
         self.N_all = self.N
-n
+
         row_mask,col_mask = None,None
         
         with self._subsample_rows() as row_mask:
+
+            logging.info('set row_mask')
+            
             # with self._subsample_columns() as col_mask:
             g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term,
-                                                     row_mask=row_mask)
-        
+                                                 row_mask=row_mask)
+
+            logging.info('generated coefficients')
+            
             # SWIG optimizer, task-based C++ distribution
             num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
-            
+        
             # Find best optimal split
             best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
                 
