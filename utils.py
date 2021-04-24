@@ -163,11 +163,11 @@ def oos_summary(clf, X_test, y_test, learning_rate=1. ):
     x = T.dmatrix('x')
     _loss = theano.function([x], clf.loss_without_regularization(x))
     
-    y_hat_clf = theano.function([], clf.predict())()
+    y_hat_clf = np.asarray(theano.function([], clf.predict())())
     y_hat_ols = reg.predict(X0).reshape(-1,1)
     y_hat_lr = logreg.predict(X0).reshape(-1,1)
     y_hat_cb = clf_cb.predict(X0).reshape(-1,1)
-    
+
     y_hat_clf = (y_hat_clf > .5).astype(int)
     y_hat_ols = (y_hat_ols > .5).astype(int)
     

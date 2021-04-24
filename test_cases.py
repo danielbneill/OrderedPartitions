@@ -805,11 +805,11 @@ if (True):
 
     count = 0
     gamma = 2.0
-    alpha = 4.0
-    beta =  3.0
+    alpha = 2.0
+    beta =  1.0
     q = 2.0
     seed = 1542
-    FIRST_QUADRANT = False
+    FIRST_QUADRANT = True
     
     # def F(a,b,gamma):
     #     gamma = 2.0
@@ -1059,7 +1059,7 @@ if (True):
         # CONSECUTIVE SUBMODULARITY [MAIN CONCEPT]
         # ========================================
         # Another version of weak submodularity : (lhs1+lhs2) >= (rhs1+rhs2) => weakly submodular
-        if (True):
+        if (False):
             # j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))
             j,k,l,m = rng.choice(int(NUM_POINTS+1), 4, replace=False)
             lset, rset = set(range(j,l)), set(range(k,m))
@@ -1082,7 +1082,7 @@ if (True):
 
         # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
         # ===============================================
-        if (False):
+        if (True):
             j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))                        
             lset, rset = set(range(j,l)), set(range(k,m))
             p1, p2 = list(range(j,k)), list(range(l,m))
@@ -1155,6 +1155,12 @@ if (True):
             print(lhs1+lhs2,rhs1+rhs2)
             print(j,k,l,m)
             print('========')
+
+            def s1():
+                return F(a0[j:l],b0[j:l],gamma) - F(a0[k:l],b0[k:l],gamma)
+            def s2():
+                return F(a0[k:m],b0[k:m],gamma) - F(a0[k:l],b0[k:l],gamma)
+            
             def g1(delta):
                 return F(np.concatenate([a0[j:k],delta*a0[k:l]]),np.concatenate([b0[j:k],delta*b0[k:l]]),gamma)
             def g2(delta):
@@ -1189,26 +1195,29 @@ if (True):
             #     print('y1axis NOT POSITIVE')
             #     import pdb
             #     pdb.set_trace()
-            if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
-                print('y1axis NOT CONVEX')
-                import pdb
-                pdb.set_trace()
-            if np.any(np.diff(yaxis)>0):
-                print('g NOT DECREASING')
-                import pdb
-                pdb.set_trace()
-            if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
-                print('y1axis NOT CONVEX')
-                import pdb
-                pdb.set_trace()
-            if np.any((np.diff(np.diff(y2axis))<0.) & (~np.isclose(np.diff(np.diff(y2axis)),0.))):
-                print('y2axis NOT CONVEX')
-                import pdb
-                pdb.set_trace()
-            if np.any((np.array(y1axis)-np.array(y2axis)) < 0.):
-                print('y1axis does not dominate')
-                import pdb
-                pdb.set_trace()
+
+            print('S TEST: {} {}'.format(s1(), s2()))
+            if (False):
+                if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
+                    print('y1axis NOT CONVEX')
+                    import pdb
+                    pdb.set_trace()
+                if np.any(np.diff(yaxis)>0):
+                    print('g NOT DECREASING')
+                    import pdb
+                    pdb.set_trace()
+                if np.any((np.diff(np.diff(y1axis))<0.) & (~np.isclose(np.diff(np.diff(y1axis)),0.))):
+                    print('y1axis NOT CONVEX')
+                    import pdb
+                    pdb.set_trace()
+                if np.any((np.diff(np.diff(y2axis))<0.) & (~np.isclose(np.diff(np.diff(y2axis)),0.))):
+                    print('y2axis NOT CONVEX')
+                    import pdb
+                    pdb.set_trace()
+                if np.any((np.array(y1axis)-np.array(y2axis)) < 0.):
+                    print('y1axis does not dominate')
+                    import pdb
+                    pdb.set_trace()
             # if np.any((np.diff(np.diff(yaxis))<0.) & (~np.isclose(np.diff(np.diff(yaxis)),0.))):
             #     print('yaxis NOT CONVEX')
             #     import pdb
