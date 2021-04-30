@@ -150,8 +150,10 @@ class OptimalSplitGradientBoostingClassifier(object):
         return y_hat
 
     def predict(self):
+        # col_mask filtering handled differently; masked columns
+        # are 0-filled to supress
         # XXX
-        # Should include self.col_mask filtering
+        # Above method doesn't work with tree classifier, e.g.
         y_hat = np.zeros((self.N, 1))
         for classifier_ind in range(self.curr_classifier):
             y_hat += self.curr_predictions[classifier_ind][self.row_mask,:]
@@ -294,10 +296,11 @@ class OptimalSplitGradientBoostingClassifier(object):
         '''
 
         mask = sorted(rng.choice(self.num_features,
-                                 size=int(self.num_features * self.col_sample_ratio), replace=False))
+                                 size=int(self.num_features * (1. - self.col_sample_ratio)), replace=False))
 
         X0 = self.X.get_value()
-        X0[:,sorted(set(range(self.num_features)) - set(mask))] = 0
+        # X0[:,sorted(set(range(self.num_features)) - set(mask))] = 0
+        X0[:, sorted(set(mask))] = 0
         self.X = theano.shared(value=X0, name='X', borrow=True)
 
         try:
@@ -314,27 +317,26 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.row_mask,self.col_mask = None,None
         
         with self._subsample_rows() as self.row_mask:
-
             logging.info('set row_mask')
             
-            # with self._subsample_columns() as self.col_mask:
-            g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term,
-                                                 row_mask=self.row_mask)
-
-            logging.info('generated coefficients')
+            with self._subsample_columns() as self.col_mask:
+                logging.info('set col_mask')
+                g, h, c = self.generate_coefficients(constantTerm=self.use_constant_term,
+                                                     row_mask=self.row_mask)
+                logging.info('generated coefficients')
             
-            # SWIG optimizer, task-based C++ distribution
-            num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
+                # SWIG optimizer, task-based C++ distribution
+                num_partitions = int(rng.choice(range(self.min_partition_size, self.max_partition_size)))
         
-            # Find best optimal split
-            best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
+                # Find best optimal split
+                best_leaf_values = self.find_best_optimal_split(g, h, num_partitions)
                 
         self.X = self.X_all
         self.y = self.y_all
         self.N = self.N_all
         
         best_leaf_values_all = np.zeros((self.N, 1))
-        if self.row_mask or self.col_mask:
+        if self.row_mask:
             best_leaf_values_all[self.row_mask,:] = best_leaf_values
         best_leaf_values = best_leaf_values_all
         
@@ -362,8 +364,16 @@ class OptimalSplitGradientBoostingClassifier(object):
     def generate_coefficients(self, row_mask=None, constantTerm=False):
 
         if (self.use_closed_form_differentials):
-            g_f = self.grad_exp_loss_without_regularization(self.predict())
-            h_f = self.hess_exp_loss_without_regularization(self.predict())
+            if len(self.col_mask) == 0:
+                # If no column mask, use cached predictions and restrict by row
+                # depending on row mask
+                g_f = self.grad_exp_loss_without_regularization(self.predict())
+                h_f = self.hess_exp_loss_without_regularization(self.predict())
+            else:
+                # If column mask, cannot rely on cached predictions
+                g_f = self.grad_exp_loss_without_regularization(self.predict_from_input(self.X.get_value()))
+                h_f = self.hess_exp_loss_without_regularization(self.predict_from_input(self.X.get_value()))
+            
             g = theano.function([], g_f)()[0]
             h = theano.function([], h_f)()[0]
             c = None
@@ -416,10 +426,10 @@ class OptimalSplitGradientBoostingClassifier(object):
         return T.sum(T.exp(-1(2*y_hat.T-1)*(2*self.y-1)))
 
     def grad_exp_loss_without_regularization(self, y_hat):
-        return -2*(2*self.y-1)*T.exp(-(2*self.predict().T-1)*(2*self.y-1))
-    
+        return -2*(2*self.y-1)*T.exp(-(2*y_hat.T-1)*(2*self.y-1))
+
     def hess_exp_loss_without_regularization(self, y_hat):
-        return 4*(2*self.y-1)*(2*self.y-1)*T.exp(-(2*self.predict().T-1)*(2*self.y-1))
+        return 4*(2*self.y-1)*(2*self.y-1)*T.exp(-(2*y_hat.T-1)*(2*self.y-1))
     
     def exp_loss_without_regularization(self, y_hat):
         # return T.sum(T.exp(-y_hat * T.shape_padaxis(self.y, 1)))

@@ -219,14 +219,14 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
     base_q = 50*50/4
-    q1_baseline,q2_baseline,q3_baseline,q4_baseline=(70000,50000,30000,10000)
+    q1_baseline,q2_baseline,q3_baseline,q4_baseline=(10,10,10,10) # ~ 10000
     lambdas = (int(q4_baseline),
                int(q3_baseline),
                int(q2_baseline),
                int(q1_baseline))
-    numSplits = 50
+    numSplits = 10 # 50
     num_partitions = 4
-    baseline_all = 50000
+    baseline_all = 10
     baseline = baseline_all/(numSplits*numSplits)
     
     xx1, yy1 = Poisson_pointset(0, .5, 0, .5, lambdas[0])
