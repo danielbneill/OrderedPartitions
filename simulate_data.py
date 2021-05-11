@@ -17,14 +17,28 @@ def Poisson_pointset(xMin, xMax, yMin, yMax, lambda0):
     xDelta=xMax-xMin;yDelta=yMax-yMin; #rectangle dimensions
     areaTotal=xDelta*yDelta;
     
-    XCenter=.2
-    YCenter=.8
-    
     numbPoints = scipy.stats.poisson( lambda0*areaTotal ).rvs()#Poisson number of points
     xx = xDelta*scipy.stats.uniform.rvs(0,1,((numbPoints,1)))+xMin#x coordinates of Poisson points
     yy = yDelta*scipy.stats.uniform.rvs(0,1,((numbPoints,1)))+yMin#y coordinates of Poisson points
 
     return xx, yy
+
+def point_source_pointset(xMin, xMax, yMin, yMax, xMin_all, xMax_all, yMin_all, yMax_all, lambda0):
+    xDelta=xMax-xMin;yDelta=yMax-yMin; #rectangle dimensions
+    areaTotal=xDelta*yDelta;
+
+    numbPoints = lambda0
+    xx = (xDelta/3)*np.random.normal(0,1,((numbPoints,1)))+((xMin+xMax)/2)
+    yy = (yDelta/3)*np.random.normal(0,1,((numbPoints,1)))+((yMin+yMax)/2)
+
+    xx_filt = []; yy_filt = []
+    for ind,(_xx,_yy) in enumerate(zip(xx,yy)):
+        if (_xx > xMin_all) and (_xx < xMax_all) and (_yy > yMin_all) and (_yy < yMax_all):
+            xx_filt.append(_xx); yy_filt.append(_yy)
+        else:
+            continue
+
+    return np.array(xx_filt), np.array(yy_filt)
 
 def plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas):
     fig = plt.figure(figsize=(8, 8))
@@ -41,9 +55,9 @@ def plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas):
                    bottom='off') # turn off bottom ticks    
     plt.scatter(xx,yy, edgecolor='b', facecolor='none', alpha=0.5 )
     plt.xlabel("x"); plt.ylabel("y")
-    plt.title('Simulated Dataset, Intensities:{}'.format(lambdas[::-1]))
+    plt.title('Simulated dataset, intensities:{}'.format(lambdas[::-1]))
     plt.grid('on')
-    plt.savefig('PoissonDist.pdf')
+    plt.savefig('PointSourceDist.pdf')
     plt.close()
     # plt.pause(1e-3)
 
@@ -56,6 +70,8 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
         xind = np.searchsorted(xAxis, x, side='left')
         yind = np.searchsorted(yAxis, y, side='left')
         occ[xind, yind] +=1
+    # XXX
+    occ = np.max(occ) - occ
 
     columns = list()
     data = list()
@@ -66,11 +82,15 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     df = pd.DataFrame(dict(zip(columns, [[i] for i in data])))
     
     g = pd.Series(data).to_numpy().astype('float')
-    h = np.array(([baseline]*len(g))).astype('float')
+    # XXX
+    # Normalize h
+    # h = np.array(([baseline]*len(g))).astype('float')
+    h = np.array([np.sum(g)/g.shape[0]]*len(g)).astype('float')
+
 
     # iAxis = list(range(1,21))
     # ires = [solverSWIG_DP.OptimizerSWIG(i, g, h)()[1] for i in iAxis]
-    
+
     all_results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
     single_result = solverSWIG_LTSS.OptimizerSWIG(g, h)()
 
@@ -103,7 +123,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     plt.legend(scatters, ['Region {} Score: {}'.format(1+ind, round(score_fn(g, h, split), 2)) for ind,split in enumerate(all_results[0][::-1])],
                loc='lower left',
                )
-    plt.title('Simulated Data Subsets: {} All Regions'.format(num_partitions))
+    plt.title('Simulated data subsets: {} all regions'.format(num_partitions))
     # ax.add_artist(legend1)
 
     # plt.pause(1e-3)
@@ -112,7 +132,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     # plt.close()
     
     fig, axs = plt.subplots(2, 2, figsize=(8, 8))
-    fig.suptitle('Simulated Dataset Top 4 Regions')
+    fig.suptitle('Simulated dataset {}, region split'.format(num_partitions))
     
     # Plot first region
     x = list()
@@ -201,7 +221,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
     fig,ax = plt.subplots(**dict(figsize=(8,8)))
     # fig = plt.figure(figsize=(8, 8))
-    plt.title('Simulated Dataset Single Best')
+    plt.title('Simulated dataset, single best')
     
     for coord in dd:
         x,y = (int(p) for p in coord.split('_'))
@@ -218,22 +238,27 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    base_q = 50*50/4
-    q1_baseline,q2_baseline,q3_baseline,q4_baseline=(10,10,10,10) # ~ 10000
-    lambdas = (int(q4_baseline),
-               int(q3_baseline),
-               int(q2_baseline),
-               int(q1_baseline))
-    numSplits = 10 # 50
+    numSplits = 50
     num_partitions = 4
-    baseline_all = 10
+    base_q = numSplits*numSplits/4
+    q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
+    lambdas = (int(32*q4_baseline),
+               int(16*q3_baseline),
+               int(21*q2_baseline),
+               int(44*q1_baseline))
+    baseline_all = 1*(4*base_q)
     baseline = baseline_all/(numSplits*numSplits)
+
+    xx1, yy1 = point_source_pointset(0, .5, 0, .5, xMin, xMax, yMin, yMax, lambdas[0])
+    xx2, yy2 = point_source_pointset(.5, 1, 0, .5, xMin, xMax, yMin, yMax, lambdas[1])
+    xx4, yy4 = point_source_pointset(.5, 1, .5, 1, xMin, xMax, yMin, yMax, lambdas[2])
+    xx3, yy3 = point_source_pointset(0, .5, .5, 1, xMin, xMax, yMin, yMax, lambdas[3])
     
-    xx1, yy1 = Poisson_pointset(0, .5, 0, .5, lambdas[0])
-    xx2, yy2 = Poisson_pointset(.5, 1, 0, .5, lambdas[1])
-    xx4, yy4 = Poisson_pointset(.5, 1, .5, 1, lambdas[2])
-    xx3, yy3 = Poisson_pointset(0, .5, .5, 1, lambdas[3])
-    
+    # xx1, yy1 = Poisson_pointset(0, .5, 0, .5, lambdas[0])
+    # xx2, yy2 = Poisson_pointset(.5, 1, 0, .5, lambdas[1])
+    # xx4, yy4 = Poisson_pointset(.5, 1, .5, 1, lambdas[2])
+    # xx3, yy3 = Poisson_pointset(0, .5, .5, 1, lambdas[3])
+
     xx = np.concatenate([xx1, xx2, xx3, xx4])
     yy = np.concatenate([yy1, yy2, yy3, yy4])
     plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas)

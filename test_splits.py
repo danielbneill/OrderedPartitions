@@ -9,7 +9,7 @@ from itertools import chain, islice, combinations
 import matplotlib.pyplot as plot
 from scipy.spatial import ConvexHull, Delaunay
 
-SEED = 1834
+SEED = 1856
 rng = np.random.RandomState(SEED)
 
 def subsets(ns):
@@ -245,15 +245,17 @@ class Worker(multiprocessing.Process):
 
 def plot_convex_hull(a0,
                      b0,
+                     fig1=None,
+                     ax1=None,
                      score_fn=power_score_fn,
                      plot_extended=False,
                      plot_symmetric=False,
                      show_plot=True,
-                     show_contours=True):
+                     show_contours=True,
+                     label_interior_points=True,
+                     label_no_points=False,
+                     include_colorbar=True):
     NUM_AXIS_POINTS = 201
-
-
-    fig1, ax1 = None, None
 
     def in_hull(dhull, x, y):
         return dhull.find_simplex((x,y)) >= 0
@@ -261,10 +263,10 @@ def plot_convex_hull(a0,
     def F_symmetric(x,y,gamma):
         import warnings
         warnings.filterwarnings('ignore')
-        # ret = x**gamma/y + (Cx-x)**gamma/(Cy-y)
+        ret = x**gamma/y + (Cx-x)**gamma/(Cy-y)
         # ret = (np.log((1. + x)*(1. + y)) + np.log((1. + (Cx-x))*(1 + (Cy-y))))
         # ret = (x**gamma)/(y**1.0) + ((Cx-x)**gamma)/((Cy-y)**1.0)
-        ret = np.exp(-2.0*y)*np.power(2.0,x)/np.exp(-y) + np.exp(-2.0*(Cy-y))*np.power(2.0,(Cx-x))/np.exp(-(Cy-y))
+        # ret = np.exp(-2.0*y)*np.power(2.0,x)/np.exp(-y) + np.exp(-2.0*(Cy-y))*np.power(2.0,(Cx-x))/np.exp(-(Cy-y))
         # ret = (x**gamma) + ((Cx-x)**gamma)
         # ret = F_orig(x,y,gamma) + F_orig(Cx-x,Cy-y,gamma)
         
@@ -274,10 +276,10 @@ def plot_convex_hull(a0,
     def F_orig(x,y,gamma):
         import warnings
         warnings.filterwarnings('ignore')
-        # ret = x**gamma/y
+        ret = x**gamma/y
         # ret = -1.*np.log(1. + x)
         # ret = (x**gamma)/(y**1.0)
-        ret = np.exp(-2.0*y)*np.power(2.0,x)/np.exp(-y)        
+        # ret = np.exp(-2.0*y)*np.power(2.0,x)/np.exp(-y)        
         # ret = x**gamma
         # XXX
         # if x > y:
@@ -308,7 +310,7 @@ def plot_convex_hull(a0,
     else:
         title += 'Constrained Hull'
 
-    title += '  Case: (n, T) = : ( ' + str(len(a0)) + ', ' + str(PARTITION_SIZE) + ' )'
+    title += '  Case: (n, t) = : ( ' + str(len(a0)) + ', ' + str(PARTITION_SIZE) + ' )'
         
     X = list()
     Y = list()
@@ -318,7 +320,7 @@ def plot_convex_hull(a0,
         s = subset[0]
         X.append(np.sum(a[s]))
         Y.append(np.sum(b[s]))
-        txt.append(str(s))
+        txt.append(str([x+1 for x in s]))
 
     if plot_extended:
         X = [0.] + X
@@ -336,8 +338,11 @@ def plot_convex_hull(a0,
     dhull = Delaunay(vertices)
 
     if show_plot:
-        cmap = plot.cm.RdYlBu        
-        fig1, ax1 = plot.subplots(1,1)
+        cmap = plot.cm.RdYlBu
+        if fig1 is None: # Assume ax1 is None also
+            fig1 = plot.figure(figsize=(10,8))
+            ax1 = fig1.add_subplot(1,1,1)            
+            # fig1, ax1 = plot.subplots(1,1)
 
         xaxis = np.linspace(Xm, XM, NUM_AXIS_POINTS)
         yaxis = np.linspace(Ym, YM, NUM_AXIS_POINTS)
@@ -350,21 +355,28 @@ def plot_convex_hull(a0,
                 if in_hull(dhull, xv, yv):
                     continue
                 else:
-                    Zgrid[yi,xi] = 0.
+                    Zgrid[yi,xi] = -99.
+
+        Zgrid[Zgrid < 0] = .5*(np.min(Zgrid[Zgrid>0]) + np.max(Zgrid[Zgrid>0]))
 
         if show_contours:
             cp = ax1.contourf(Xgrid, Ygrid, Zgrid, cmap=cmap)            
             cp.changed()
-            fig1.colorbar(cp)
+            if include_colorbar:
+                fig1.colorbar(cp)
             
 
         ax1.scatter(X, Y)
         for i,t in enumerate(txt):
             if i in hull.vertices:
                 t = t.replace('[','<').replace(']','>')
-            else:
+            elif label_interior_points:
                 t = t.replace('[','').replace(']','')
+            else:
+                t = ''
             t = t.replace(', ', ',')
+            if label_no_points:
+                t = ''
             ax1.annotate(t, (X[i], Y[i]))
 
         for simplex in hull.simplices:
@@ -379,6 +391,54 @@ def plot_convex_hull(a0,
 
     return fig1, ax1, vertices_txt
     
+
+def plot_constrained_unconstrained_overlay(a0, b0, plot_constrained=True, score_fn=power_score_fn, show_plot=True, save_plot=False):
+    for labeled_case in (True, False):
+        for symmetric_case in (False, True):
+            fig1, ax1,vert_const_asym = plot_convex_hull(a0,
+                                                         b0,
+                                                         score_fn=power_score_fn,
+                                                         plot_extended=False,
+                                                         plot_symmetric=symmetric_case,
+                                                         show_plot=show_plot,
+                                                         label_interior_points=False,
+                                                         label_no_points=not labeled_case,
+                                                         include_colorbar=True)
+            fig2, ax2,vert_ext_asym = plot_convex_hull(a0,
+                                                       b0,
+                                                       fig1,
+                                                       ax1,
+                                                       score_fn=power_score_fn,
+                                                       plot_extended=True,
+                                                       plot_symmetric=symmetric_case,
+                                                       show_plot=show_plot,
+                                                       label_interior_points=False,
+                                                       label_no_points=not labeled_case,                                                 
+                                                       include_colorbar=False)
+            
+            title = 'Constrained and unconstrained hull partition polytopes, '
+            
+            if symmetric_case:
+                title += 'symm. score, '
+                if labeled_case:
+                    path = 'Hull_overlay_Sym_labeled_{}_{}.pdf'.format(len(a0), PARTITION_SIZE)
+                else:
+                    path = 'Hull_overlay_Sym_unlabeled_{}_{}.pdf'.format(len(a0), PARTITION_SIZE)
+            else:
+                if labeled_case:
+                    path = 'Hull_overlay_Nonsym_labeled_{}_{}.pdf'.format(len(a0), PARTITION_SIZE)
+                else:
+                    path = 'Hull_overlay_Nonsym_unlabeled_{}_{}.pdf'.format(len(a0), PARTITION_SIZE)
+
+            title+= 'n = {}'.format(len(a0))
+            plot.title(title)
+            
+            plot.xlabel('X')
+            plot.ylabel('Y')
+            
+            plot.savefig(path)
+            plot.close()
+    import pdb; pdb.set_trace()
 
 def plot_polytope(a0, b0, plot_constrained=True, score_fn=power_score_fn, show_plot=True, save_plot=False):
 
@@ -399,6 +459,7 @@ def plot_polytope(a0, b0, plot_constrained=True, score_fn=power_score_fn, show_p
                                                 plot_extended=False,
                                                 plot_symmetric=True,
                                                 show_plot=show_plot)
+
     if save_plot:
         plot.savefig('plot2.pdf')
     else:
@@ -529,7 +590,10 @@ if __name__ == '__main__':
         b0 = b0[sortind]
 
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
+
         # vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=True)
+        plot_constrained_unconstrained_overlay(a0, b0, score_fn=SCORE_FN, show_plot=True)        
+
         # print('=====')
 
         if False:

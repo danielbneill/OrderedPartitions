@@ -164,7 +164,6 @@ TEST(DPSolverTest, Baselines ) {
       ASSERT_EQ(expected_subset[j], opt_subset[j]);
     }
   }
-
 }
 
 TEST(DPSolverTest, OrderedProperty) {

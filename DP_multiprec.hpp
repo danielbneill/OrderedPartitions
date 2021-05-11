@@ -26,12 +26,14 @@ public:
   DPSolver_multi(int n,
 	   int T,
 	   gmpfvec a,
-	   gmpfvec b
+	   gmpfvec b,
+	   bool use_rational_optimization=false
 	   ) :
     n_{n},
     T_{T},
     a_{a},
-    b_{b}
+    b_{b},
+    use_rational_optimization_{use_rational_optimization}
   { _init(); }
 
   ivecvec get_optimal_subsets_extern() const;
@@ -51,12 +53,14 @@ private:
   ivec priority_sortind_;
   cpp_dec_float_100 optimal_score_;
   ivecvec subsets_;
+  bool use_rational_optimization_;
 
   void _init() { create(); optimize(); }
   void create();
   void optimize();
 
   void sort_by_priority(gmpfvec&, gmpfvec&);
+  cpp_dec_float_100 compute_score_optimized(int, int);
   cpp_dec_float_100 compute_score(int, int);
   void compute_partial_sums();
 

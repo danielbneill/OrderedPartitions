@@ -29,7 +29,7 @@ class OptimalSplitGradientBoostingClassifier(object):
                  solver_type='linear_hessian',
                  learning_rate=0.1,
                  distiller=classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier),
-                 use_closed_form_differentials=False,
+                 use_closed_form_differentials=True,
                  ):
         ############
         ## Inputs ##

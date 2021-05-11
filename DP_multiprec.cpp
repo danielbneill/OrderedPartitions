@@ -9,8 +9,16 @@
 #include "DP_multiprec.hpp"
 
 cpp_dec_float_100
-DPSolver_multi::compute_score(int i, int j) {
+DPSolver_multi::compute_score_optimized(int i, int j) {
   cpp_dec_float_100 score = a_sums_[i][j] / b_sums_[i][j];
+  return score;
+}
+
+cpp_dec_float_100
+DPSolver_multi::compute_score(int i, int j) {
+  cpp_dec_float_100 num_ = std::accumulate(a_.begin()+i, a_.begin()+j, static_cast<cpp_dec_float_100>(0.));
+  cpp_dec_float_100 den_ = std::accumulate(b_.begin()+i, b_.begin()+j, static_cast<cpp_dec_float_100>(0.));
+  cpp_dec_float_100 score = num_*num_/den_;
   return score;
 }
 
@@ -36,7 +44,7 @@ DPSolver_multi::compute_partial_sums() {
     }
   }      
 }
-3
+
 void
 DPSolver_multi::sort_by_priority(std::vector<cpp_dec_float_100>& a, std::vector<cpp_dec_float_100>& b) {
   std::vector<int> ind(a.size());
@@ -81,6 +89,7 @@ DPSolver_multi::print_nextStart_() {
 void
 DPSolver_multi::create() {
   optimal_score_ = 0.;
+  cpp_dec_float_100 (DPSolver_multi::*score_function)(int,int) = &DPSolver_multi::compute_score;
   
   // sort vectors by priority function G(x,y) = x/y
   sort_by_priority(a_, b_);
@@ -92,12 +101,15 @@ DPSolver_multi::create() {
   subsets_ = std::vector<std::vector<int>>(T_, std::vector<int>());
 
   // Precompute partial sums
-  compute_partial_sums();
+  if (use_rational_optimization_) {
+    compute_partial_sums();
+    score_function = &DPSolver_multi::compute_score_optimized;
+  }
 
   // Fill in first,second columns corresponding to T = 1,2
   for(int j=0; j<2; ++j) {
     for (int i=0; i<n_; ++i) {
-      maxScore_[i][j] = (j==0)?0.:compute_score(i,n_);
+      maxScore_[i][j] = (j==0)?0.:(this->*score_function)(i,n_);
       nextStart_[i][j] = (j==0)?-1:n_;
     }
   }
@@ -107,7 +119,7 @@ DPSolver_multi::create() {
   partialSums = std::vector<std::vector<cpp_dec_float_100>>(n_, std::vector<cpp_dec_float_100>(n_, 0.));
   for (int i=0; i<n_; ++i) {
     for (int j=i; j<n_; ++j) {
-      partialSums[i][j] = compute_score(i, j);
+      partialSums[i][j] = (this->*score_function)(i, j);
     }
   }
 

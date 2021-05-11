@@ -207,7 +207,7 @@ else:
     # X, y = data.data, data.target
     # X,y = pmlb.fetch_data('spambase', return_X_y=True)
     # X,y = pmlb.fetch_data('chess', return_X_y=True)
-    X,y = pmlb.fetch_data('churn', return_X_y=True) # X.shape = (5000, 20)
+    # X,y = pmlb.fetch_data('churn', return_X_y=True) # X.shape = (5000, 20)
     # X,y = pmlb.fetch_data('twonorm', return_X_y=True) # X.shape = (7400,20)
     # X,y = pmlb.fetch_data('clean2', return_X_y=True) # X.shape = (6598, 168)
     # X,y = pmlb.fetch_data('kr_vs_kp', return_X_y=True) # X.shape = (3196, 36)
@@ -217,11 +217,13 @@ else:
     # X,y = pmlb.fetch_data('dis', return_X_y=True) # X.shape = (3772, 29)
     # X,y = pmlb.fetch_data('GAMETES_Heterogeneity_20atts_1600_Het_0.4_0.2_50_EDM_2_001', return_X_y=True) # X.shape = (1600, 20)
     # X,y = pmlb.fetch_data('GAMETES_Epistasis_2_Way_1000atts_0.4H_EDM_1_EDM_1_1', return_X_y=True) # X.shape = (1600, 1000)
+    X,y = pmlb.fetch_data('flare', return_X_y=True) # X.shape (1066, 10)
 
 
 # GAMETES_Epistasis_2_Way_1000atts_0.4H_EDM_1_EDM_1_1 (1600, 1000) [0 1]
 
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=TEST_SIZE)
+
 if USE_01_LOSS:
     X_train = 2*X_train - 1
     X_test = 2*X_test - 1
@@ -232,7 +234,7 @@ if USE_01_LOSS:
 #############################
 if __name__ == '__main__':
 
-    num_steps = 50
+    num_steps = 300
 
     distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier) # use classifier
     # print('USING LDA')
@@ -240,15 +242,15 @@ if __name__ == '__main__':
     # distiller = classifier.classifierFactory(sklearn.tree.DecisionTreeRegressor)
 
     clfKwargs = { 'min_partition_size':            1,
-                  'max_partition_size':            12, # 50
-                  'row_sample_ratio':              0.40, # 0.50
+                  'max_partition_size':            10, # 50
+                  'row_sample_ratio':              0.5, # 0.50
                   'col_sample_ratio':              1.0,
                   'gamma':                         0.0, # 0.0025
                   'eta':                           0.0, # 0.05
                   'num_classifiers':               num_steps,
                   'use_constant_term':             False,
                   'solver_type':                   'linear_hessian',
-                  'learning_rate':                 0.25, # 0.25
+                  'learning_rate':                 0.5, # 0.25
                   'distiller':                     distiller,
                   'use_closed_form_differentials': True
                   }

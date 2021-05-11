@@ -20,12 +20,14 @@ public:
   DPSolver(int n,
 	   int T,
 	   fvec a,
-	   fvec b
+	   fvec b,
+	   bool use_rational_optimization=false
 	   ) :
     n_{n},
     T_{T},
     a_{a},
-    b_{b}
+    b_{b},
+    use_rational_optimization_{use_rational_optimization}
   { _init(); }
 
   ivecvec get_optimal_subsets_extern() const;
@@ -45,12 +47,14 @@ private:
   ivec priority_sortind_;
   float optimal_score_;
   ivecvec subsets_;
+  bool use_rational_optimization_;
 
   void _init() { create(); optimize(); }
   void create();
   void optimize();
 
   void sort_by_priority(fvec&, fvec&);
+  float compute_score_optimized(int, int);
   float compute_score(int, int);
   void compute_partial_sums();
 

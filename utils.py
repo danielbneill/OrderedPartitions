@@ -146,7 +146,13 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
 ## Summaries ##
 ###############
 
-def oos_summary(clf, X_test, y_test, learning_rate=1. ):
+def oos_summary(clf, X_test, y_test, learning_rate=1.,
+                catboost_iterations=100,
+                catboost_depth=None,
+                catboost_learning_rate=0.5,
+                catboost_loss_function='CrossEntropy',                
+                catboost_verbose=False
+                ):
     # Vanilla regression model
     X0 = clf.X.get_value()
     y0 = clf.y.get_value()
@@ -155,7 +161,7 @@ def oos_summary(clf, X_test, y_test, learning_rate=1. ):
     clf_cb = CatBoostClassifier(iterations=100,
                                 depth=None,
                                 learning_rate=learning_rate,
-                                loss_function='CrossEntropy',
+                                loss_function=catboost_loss_function,
                                 verbose=False)
     
     clf_cb.fit(X0, y0)
@@ -170,6 +176,11 @@ def oos_summary(clf, X_test, y_test, learning_rate=1. ):
 
     y_hat_clf = (y_hat_clf > .5).astype(int)
     y_hat_ols = (y_hat_ols > .5).astype(int)
+
+    igb_loss_IS = _loss(y_hat_clf)
+    ols_loss_IS = _loss(y_hat_ols)
+    lr_loss_IS = _loss(y_hat_lr)
+    cb_loss_IS = _loss(y_hat_cb)
     
     print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
     print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
@@ -202,6 +213,11 @@ def oos_summary(clf, X_test, y_test, learning_rate=1. ):
     print('OOS _accuracy_ols: {:1.4f}'.format(metrics.accuracy_score(y_hat_ols, y0)))
     print('OOS _accuracy_lr:  {:1.4f}'.format(metrics.accuracy_score(y_hat_lr, y0)))
     print('OOS _accuracy_cb:  {:1.4f}'.format(metrics.accuracy_score(y_hat_cb, y0)))
+
+    return (igb_loss_IS,
+            cb_loss_IS,
+            metrics.accuracy_score(y_hat_clf, y0),
+            metrics.accuracy_score(y_hat_cb, y0))
     
     # target_names = ['0', '1']
     # conf = plot_confusion(metrics.confusion_matrix(y_hat_clf, y0), target_names)

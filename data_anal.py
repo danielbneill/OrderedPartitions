@@ -176,10 +176,10 @@ def plot_spatial_data(df_dt, g, h, dt, single_best, results, plot_partition=True
         long_center = des_long['mean']
         # Overwrite coords
         coords=dict(lat_0=lat_center, lon_0=long_center,
-                    width=2.5E4*long_range, height=1E5*lat_range)
+                    width=20.E4*long_range, height=2.85E5*lat_range)
 
-        coords['width'] = 8E6
-        coords['height'] = 5.0E6
+        # coords['width'] = 8E6
+        # coords['height'] = 5.0E6
 
     fig = plt.figure(figsize=(8, 8))    
     m = Basemap(projection='lcc', resolution='h',
@@ -242,17 +242,16 @@ def plot_spatial_data(df_dt, g, h, dt, single_best, results, plot_partition=True
             plt.title('JHU CSSE COVID-19 Dataset {} Confirmed Cases: {}'.format(country, dt))
             path_str = 'single_best'
     path = '{}_{}_{}'.format(country, dt, path_str)
-    plt.show()
-    # plt.savefig(path)
-    # plt.close()
-    import pdb;pdb.set_trace()
+    # plt.show()
+    plt.savefig(path)
+    plt.close()
 
 ### DRIVER ###
 # if __name__ == '__main__':
 if False:
     allDates = sorted([fn.split('.')[0] for fn in os.listdir(PATH) if fn.endswith('csv')])    
-    countries = ('US',)
-    num_partitionss = (2,4)
+    countries = ('Japan','US')
+    num_partitionss = (4,4)
     dts = [allDates[i] for i in (99, 287, 408)]
     # dts = [allDates[i] for i in (287, 408)]
     for country in countries:
@@ -282,5 +281,5 @@ if __name__ == '__main__':
                       all_results[0],
                       plot_partition=True,
                       infer_map_region=True,
-                      part_num_thresh=2)
+                      part_num_thresh=0)
     
