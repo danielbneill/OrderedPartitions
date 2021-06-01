@@ -272,7 +272,7 @@ if __name__ == '__main__':
                                                                      dt,
                                                                      num_partitions,
                                                                      use_province_state=True,
-                                                                     provinceState='California')
+                                                                     provinceState='South Dakota')
     plot_spatial_data(df_dt,
                       g,
                       h,

@@ -946,6 +946,128 @@ if (True):
             rhs1 = F(a0[:i], b0[:i], gamma)
             rhs2 = 0.
 
+        # Exchange inequality
+        if (True):
+            lhs1 = 0.
+            lhs2 = 0.
+            rhs1 = 0.
+            rhs2 = 0.
+            l_in = l_out = r_in = r_out = 0
+            sets = subsets(NUM_POINTS)
+            m,n = rng.choice(len(sets), 2, replace=False)
+            lset, rset = set(sets[m][0]), set(sets[n][0])
+            lset = lset.difference(rset)
+
+            if lset and rset:
+                if ((min(lset) < min(rset)) and (max(lset) < max(rset)) and(max(lset) > min(rset))) or \
+                       ((min(lset) > min(rset)) and (max(lset) < max(rset))):
+                    if (len(lset)>1) and (len(rset)>1):
+                        l_in = min(lset)
+                        r_in = min(rset)
+                        r_over = [x for x in rset if x not in lset]
+                        l_over = [x for x in lset if x not in rset]
+
+
+                        if r_over:
+                            l_out = max(r_over)
+                            r_out = max(l_over)
+
+                            if ((b0[[l_in]]*a0[[l_out]]) - (b0[[l_out]]*a0[[l_in]]))/(b0[[l_in]] + b0[[l_out]]) < 0:
+                                print('HERE')
+                                import pdb;pdb.set_trace()
+
+                            # NO
+                            # lhs1 = max([F(a0[list(lset.difference([l_in]))] ,b0[list(lset.difference([l_in]))],gamma)+
+                            #             F(a0[list(rset.union([l_in]))],      b0[list(rset.union([l_in]))],gamma),
+                            #             F(a0[list(lset.difference([r_out]))], b0[list(lset.difference([r_out]))],gamma)+
+                            #             F(a0[list(rset.union([r_out]))],      b0[list(rset.union([r_out]))],gamma)])
+                            
+                            # NO
+                            lhs1 = max([F(a0[list(lset.difference([l_in]))] ,b0[list(lset.difference([l_in]))],gamma)+
+                                        F(a0[list(rset.union([l_in]))],      b0[list(rset.union([l_in]))],gamma),
+                                        F(a0[list(rset.difference([r_in]))], b0[list(rset.difference([r_in]))],gamma)+
+                                        F(a0[list(lset.union([r_in]))],      b0[list(lset.union([r_in]))],gamma)])
+
+                            # YES
+                            # lhs1 = max([F(a0[list(lset.difference([l_in]))] ,b0[list(lset.difference([l_in]))],gamma)+
+                            #             F(a0[list(rset.union([l_in]))],      b0[list(rset.union([l_in]))],gamma),
+                            #             F(a0[list(lset.union([l_out]))],     b0[list(lset.union([l_out]))],gamma)+
+                            #             F(a0[list(rset.difference([l_out]))],b0[list(rset.difference([l_out]))],gamma)])
+                            # lhs2 = max([
+                            #     F(a0[list(rset.difference([r_in]))] ,b0[list(rset.difference([r_in]))],gamma)+
+                            #     F(a0[list(lset.union([r_in]))],      b0[list(lset.union([r_in]))],gamma),
+                            #     F(a0[list(rset.union([r_out]))],     b0[list(rset.union([r_out]))],gamma)+
+                            #     F(a0[list(lset.difference([r_out]))],b0[list(lset.difference([r_out]))],gamma)
+                            #     ])
+                            lhs2 = 0.
+                            
+                            rhs1 = F(a0[list(lset)],b0[list(lset)],gamma)
+                            rhs2 = F(a0[list(rset)],b0[list(rset)],gamma)
+                        else:
+                            lhs1 = lhs2 = rhs1 = rhs2 = 0.
+                    else:
+                        lhs1 = lhs2 = rhs1 = rhs2 = 0.
+                else:
+                    lhs1 = lhs2 = rhs1 = rhs2 = 0.
+            else:
+                lhs1 = lhs2 = rhs1 = rhs2 = 0.
+
+
+                    
+                    # for _ in (0,1):                        
+                    #     if (len(lset)>1) and (len(rset)>1):
+                    #         l_in = min(lset)
+                    #         print('CALCULATED')
+                    #         r_over = [x for x in rset if x not in lset]
+                    #         if r_over:
+                    #             print('HERE')
+                    #             l_out = max(r_over)
+                    #             lhs1 = max([F(a0[list(lset.difference([l_in]))] ,b0[list(lset.difference([l_in]))],gamma)+
+                    #                     F(a0[list(rset.union([l_in]))],      b0[list(rset.union([l_in]))],gamma),
+                    #                         F(a0[list(lset.union([l_out]))],     b0[list(lset.union([l_out]))],gamma)+
+                    #                         F(a0[list(rset.difference([l_out]))],b0[list(rset.difference([l_out]))],gamma)])
+                    #             lhs2 = 0
+                    #             rhs1 = F(a0[list(lset)],b0[list(lset)],gamma)
+                    #             rhs2 = F(a0[list(rset)],b0[list(rset)],gamma)
+                    #         else:
+                    #             lhs1 = lhs2 = rhs1 = rhs2 = 0.
+                    #     else:
+                    #         lhs1 = lhs2 = rhs1 = rhs2 = 0.
+                    #     if (lhs1+lhs2)>(lhs10+lhs20):
+                    #         lhs10 = lhs1
+                    #         lhs20 = lhs2
+                    #         rhs10 = rhs1
+                    #         rhs20 = rhs2
+                    # 
+                    # 
+                    #     print('lset: {}'.format(lset))
+                    #     print('rset: {}'.format(rset))
+                    #     print('(l_in,l_out): ({},{})'.format(l_in,l_out))
+                    #     print('lhs: {}'.format(lhs1+lhs2))
+                    #     print('rhs: {}'.format(rhs1+rhs2))
+                    #     print('=====')
+                    #     
+                    #     rset_tmp = rset
+                    #     rset = lset
+                    #     lset = rset_tmp
+
+                # else:
+                #     lhs1 = lhs2 = rhs1 = rhs2 = 0.
+                        
+            # lhs1 = lhs10
+            # lhs2 = lhs20
+            # rhs1 = rhs10
+            # rhs2 = rhs20
+                    
+            print('lset: {}'.format(lset))
+            print('rset: {}'.format(rset))
+            print('(l_in,l_out): ({},{})'.format(l_in,l_out))
+            print('(r_in,r_out): ({},{})'.format(r_in,r_out))
+            print('lhs: {}'.format(lhs1+lhs2))
+            print('rhs: {}'.format(rhs1+rhs2))
+            print('==========================')
+                
+
         # DISCRETE MONOTONICITY
         # =====================
         if (False):
@@ -1082,7 +1204,7 @@ if (True):
 
         # INEQUALITY RELATED TO CONSECUTIVE SUBMODULARITY
         # ===============================================
-        if (True):
+        if (False):
             j,k,l,m = np.sort(rng.choice(int(NUM_POINTS+1), 4, replace=False))                        
             lset, rset = set(range(j,l)), set(range(k,m))
             p1, p2 = list(range(j,k)), list(range(l,m))
@@ -1434,8 +1556,7 @@ if (True):
             print(rhs1+rhs2)
             print('a0: ', a0)
             print('b0: ', b0)
-            import pdb
-            pdb.set_trace()
+            import pdb; pdb.set_trace()
             # sys.exit()
 
         count+=1

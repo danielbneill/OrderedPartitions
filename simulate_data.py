@@ -55,7 +55,7 @@ def plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas):
                    bottom='off') # turn off bottom ticks    
     plt.scatter(xx,yy, edgecolor='b', facecolor='none', alpha=0.5 )
     plt.xlabel("x"); plt.ylabel("y")
-    plt.title('Simulated dataset, intensities:{}'.format(lambdas[::-1]))
+    plt.title('Simulated dataset intensities:{}'.format(lambdas[::-1]))
     plt.grid('on')
     plt.savefig('PointSourceDist.pdf')
     plt.close()
@@ -71,7 +71,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
         yind = np.searchsorted(yAxis, y, side='left')
         occ[xind, yind] +=1
     # XXX
-    occ = np.max(occ) - occ
+    # occ = np.max(occ) - occ
 
     columns = list()
     data = list()
@@ -120,10 +120,10 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
                 s.append(sze)
                 c.append(colors[colInd]['color'])
         scatters.append(ax.scatter(x, y, c=c, s=s, label=c))
-    plt.legend(scatters, ['Region {} Score: {}'.format(1+ind, round(score_fn(g, h, split), 2)) for ind,split in enumerate(all_results[0][::-1])],
+    plt.legend(scatters, ['Region {} q: {}'.format(1+ind, round(sum(g[list(split)])/len(split), 2)) for ind,split in enumerate(all_results[0][::-1])],
                loc='lower left',
                )
-    plt.title('Simulated data subsets: {} all regions'.format(num_partitions))
+    plt.title('Simulated dataset partition size {}'.format(num_partitions))
     # ax.add_artist(legend1)
 
     # plt.pause(1e-3)
@@ -132,7 +132,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     # plt.close()
     
     fig, axs = plt.subplots(2, 2, figsize=(8, 8))
-    fig.suptitle('Simulated dataset {}, region split'.format(num_partitions))
+    fig.suptitle('Simulated dataset partition size {}'.format(num_partitions))
     
     # Plot first region
     x = list()
@@ -221,7 +221,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
     fig,ax = plt.subplots(**dict(figsize=(8,8)))
     # fig = plt.figure(figsize=(8, 8))
-    plt.title('Simulated dataset, single best')
+    plt.title('Simulated dataset single best')
     
     for coord in dd:
         x,y = (int(p) for p in coord.split('_'))
@@ -238,32 +238,31 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    numSplits = 50
+    numSplits = 25
     num_partitions = 4
     base_q = numSplits*numSplits/4
     q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
-    lambdas = (int(32*q4_baseline),
-               int(16*q3_baseline),
-               int(21*q2_baseline),
-               int(44*q1_baseline))
-    baseline_all = 1*(4*base_q)
+    lambdas = (int(.15*200*q4_baseline),
+               int(.15*100*q3_baseline),
+               int(.15*50*q2_baseline),
+               int(.15*10*q1_baseline))
+    baseline_all = 1*(30*base_q)
     baseline = baseline_all/(numSplits*numSplits)
 
-    xx1, yy1 = point_source_pointset(0, .5, 0, .5, xMin, xMax, yMin, yMax, lambdas[0])
-    xx2, yy2 = point_source_pointset(.5, 1, 0, .5, xMin, xMax, yMin, yMax, lambdas[1])
-    xx4, yy4 = point_source_pointset(.5, 1, .5, 1, xMin, xMax, yMin, yMax, lambdas[2])
-    xx3, yy3 = point_source_pointset(0, .5, .5, 1, xMin, xMax, yMin, yMax, lambdas[3])
+    # xx1, yy1 = point_source_pointset(0, .5, 0, .5, xMin, xMax, yMin, yMax, lambdas[0])
+    # xx2, yy2 = point_source_pointset(.5, 1, 0, .5, xMin, xMax, yMin, yMax, lambdas[1])
+    # xx4, yy4 = point_source_pointset(.5, 1, .5, 1, xMin, xMax, yMin, yMax, lambdas[2])
+    # xx3, yy3 = point_source_pointset(0, .5, .5, 1, xMin, xMax, yMin, yMax, lambdas[3])
     
-    # xx1, yy1 = Poisson_pointset(0, .5, 0, .5, lambdas[0])
-    # xx2, yy2 = Poisson_pointset(.5, 1, 0, .5, lambdas[1])
-    # xx4, yy4 = Poisson_pointset(.5, 1, .5, 1, lambdas[2])
-    # xx3, yy3 = Poisson_pointset(0, .5, .5, 1, lambdas[3])
+    xx1, yy1 = Poisson_pointset(0, .5, 0, .5, lambdas[0])
+    xx2, yy2 = Poisson_pointset(.5, 1, 0, .5, lambdas[1])
+    xx4, yy4 = Poisson_pointset(.5, 1, .5, 1, lambdas[2])
+    xx3, yy3 = Poisson_pointset(0, .5, .5, 1, lambdas[3])
 
     xx = np.concatenate([xx1, xx2, xx3, xx4])
     yy = np.concatenate([yy1, yy2, yy3, yy4])
     plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas)
 
-    # XXX
     form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline,
                        num_partitions=num_partitions, numSplits=numSplits)
 

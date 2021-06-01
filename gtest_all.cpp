@@ -96,7 +96,7 @@ TEST(PartitionGraphTest, OrderedProperty) {
 
   std::vector<float> a(n), b(n);
 
-  for (size_t i=0; i<5; ++i) {
+  for (size_t i=0; i<T; ++i) {
     for (auto &el : a)
       el = dist(gen);
     for (auto &el : b)
@@ -122,6 +122,37 @@ TEST(PartitionGraphTest, OrderedProperty) {
     ASSERT_EQ(sum, v.size()-1);
   }
   
+}
+
+TEST(DPSolverTest, OptimizationFlag) {
+
+  int n = 100, T = 25;
+  size_t NUM_CASES = 500;
+  
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_real_distribution<float> dista(-10., 10.), distb(0., 10.);
+
+  std::vector<float> a(n), b(n);
+
+  for (size_t i=0; i<NUM_CASES; ++i) {
+    for (auto &el : a)
+      el = dista(gen);
+    for (auto&el : b)
+      el = distb(gen);
+    
+    auto dp_unopt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
+    auto dp_opt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, true);
+    
+    auto subsets_unopt = dp_unopt.get_optimal_subsets_extern();
+    auto subsets_opt = dp_opt.get_optimal_subsets_extern();
+    
+    ASSERT_EQ(subsets_unopt.size(), subsets_opt.size());
+
+    for (size_t j=0; j<subsets_unopt.size(); ++j) {
+      ASSERT_EQ(subsets_unopt[j], subsets_opt[j]);
+    }
+  }
 }
 
 TEST(DPSolverTest, Baselines ) {
@@ -154,7 +185,7 @@ TEST(DPSolverTest, Baselines ) {
   
   // sort_by_priority(a, b);
 
-  auto dp = DPSolver(40, 5, a, b);
+  auto dp = DPSolver(40, 5, a, b, objective_fn::Gaussian, false, true);
   auto opt = dp.get_optimal_subsets_extern();
 
   for (size_t i=0; i<expected.size(); ++i) {
@@ -185,7 +216,7 @@ TEST(DPSolverTest, OrderedProperty) {
     // Presort
     sort_by_priority(a, b);
 
-    auto dp = DPSolver(n, T, a, b);
+    auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, true);
     auto opt = dp.get_optimal_subsets_extern();
 
     int sum;
