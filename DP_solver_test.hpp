@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <iterator>
 
 #include "DP.hpp"
 #include "graph.hpp"

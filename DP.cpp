@@ -93,6 +93,7 @@ DPSolver::create() {
   maxScore_ = std::vector<std::vector<float>>(n_, std::vector<float>(T_+1, std::numeric_limits<float>::min()));
   nextStart_ = std::vector<std::vector<int>>(n_, std::vector<int>(T_+1, -1));
   subsets_ = std::vector<std::vector<int>>(T_, std::vector<int>());
+  score_by_subset_ = std::vector<float>(T_, 0.);
 
   // Fill in first,second columns corresponding to T = 1,2
   for(int j=0; j<2; ++j) {
@@ -146,7 +147,10 @@ DPSolver::optimize() {
       score_num += a_[priority_sortind_[i]];
       score_den += b_[priority_sortind_[i]];
     }
+    // XXX
+    // Specific to score function
     optimal_score_ += score_num*score_num/score_den;
+    score_by_subset_[T_-t] = score_num*score_num/score_den;
     currentInd = nextInd;
   }
 }
@@ -159,4 +163,9 @@ DPSolver::get_optimal_subsets_extern() const {
 float
 DPSolver::get_optimal_score_extern() const {
   return optimal_score_;
+}
+
+fvec
+DPSolver::get_score_by_subset_extern() const {
+  return score_by_subset_;
 }

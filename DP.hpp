@@ -200,6 +200,7 @@ public:
 
   ivecvec get_optimal_subsets_extern() const;
   float get_optimal_score_extern() const;
+  fvec get_score_by_subset_extern() const;
   void print_maxScore_();
   void print_nextStart_();
     
@@ -213,6 +214,7 @@ private:
   ivec priority_sortind_;
   float optimal_score_;
   ivecvec subsets_;
+  fvec score_by_subset_;
   objective_fn parametric_dist_;
   bool risk_partitioning_objective_;
   bool use_rational_optimization_;
