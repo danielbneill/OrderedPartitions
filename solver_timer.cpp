@@ -2,6 +2,8 @@
 
 #include "solver_timer.hpp"
 
+using namespace Objectives;
+
 auto main(int argc, char **argv) -> int {
 
   int n, T, stride, partsStride;

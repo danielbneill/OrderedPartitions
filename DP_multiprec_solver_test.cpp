@@ -1,5 +1,7 @@
 #include "DP_multiprec_solver_test.hpp"
 
+using namespace Objectives;
+
 void print_subsets(std::vector<std::vector<int>>& subsets) {
   std::cout << "SUBSETS\n";
   std::cout << "[\n";
@@ -63,7 +65,7 @@ auto main() -> int {
   auto dp_multi = DPSolver_multi(10, 4, a10, b10);
   auto dp_multi_opt = dp_multi.get_optimal_subsets_extern();
 
-  auto dp = DPSolver(10, 4, a10_flt32, b10_flt32);
+  auto dp = DPSolver(10, 4, a10_flt32, b10_flt32, objective_fn::Gaussian, false, true);
   auto dp_opt = dp.get_optimal_subsets_extern();
   
   // auto pg = PartitionGraph(40, 5, a, b);

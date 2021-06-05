@@ -53,13 +53,18 @@ add_library(DP OBJECT DP.cpp)
 add_library(DP_multiprec OBJECT DP_multiprec.cpp)
 add_library(LTSS OBJECT LTSS.cpp)
 add_executable(gtest_all gtest_all.cpp)
+target_link_libraries(DP LTSS)
 target_link_libraries(DP_multiprec ${Boost_LIBRARIES} gmp)
-target_link_libraries(gtest_all graph DP ${GTEST_LIBRARIES} pthread)
+target_link_libraries(gtest_all graph LTSS DP ${GTEST_LIBRARIES} pthread)
 
 # C++ executable test_partitions
 add_library(test_optimal_partition test_optimal_partition.cpp)
 add_executable(test_partitions test_partitions.cpp)
 target_link_libraries(test_partitions test_optimal_partition pthread)
+
+# C++ LTSSSolver
+add_executable(LTSS_solver_test LTSS_solver_test.cpp)
+target_link_libraries(LTSS_solver_test LTSS)
 
 # C++ executable graph_to_dot
 add_executable(graph_to_dot graph_to_dot.cpp)
@@ -68,7 +73,7 @@ target_link_libraries(graph_to_dot graph)
 # C++ executable solver_timer
 add_library(timer OBJECT timer.cpp)
 add_executable(solver_timer solver_timer.cpp)
-target_link_libraries(solver_timer DP graph timer)
+target_link_libraries(solver_timer DP LTSS graph timer)
 
 # C++ executable multiprecisision
 add_executable(multiprecision multiprecision.cpp)
@@ -76,20 +81,16 @@ target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
 
 # C++ DPSolver
 add_executable(DP_solver_test DP_solver_test.cpp)
-target_link_libraries(DP_solver_test DP graph pthread)
+target_link_libraries(DP_solver_test DP LTSS graph pthread)
 
 # C++ DP_multiprecSolver
 add_executable(DP_multiprec_solver_test DP_multiprec_solver_test.cpp)
-target_link_libraries(DP_multiprec_solver_test ${Boost_LIBRARIES} gmp DP_multiprec DP graph pthread)
-
-# C++ LTSSSolver
-add_executable(LTSS_solver_test LTSS_solver_test.cpp)
-target_link_libraries(LTSS_solver_test LTSS)
+target_link_libraries(DP_multiprec_solver_test ${Boost_LIBRARIES} gmp DP_multiprec LTSS DP graph pthread)
 
 # SWIG bindings
 set_source_files_properties(proto.i PROPERTIES CPLUSPLUS ON)
 # set_source_files_properties(proto.i PROPERTIES SWIG_FLAGS "-includeall")
-swig_add_library(test_partition_optimizer LANGUAGE python OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR} OUTFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR} SOURCES python_graph.cpp graph.cpp python_dpsolver.cpp DP.cpp python_dp_multisolver.cpp DP_multiprec.cpp python_ltsssolver.cpp LTSS.cpp proto.i)
+swig_add_library(test_partition_optimizer LANGUAGE python OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR} OUTFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR} SOURCES python_graph.cpp graph.cpp LTSS.cpp python_dpsolver.cpp DP.cpp python_dp_multisolver.cpp DP_multiprec.cpp python_ltsssolver.cpp LTSS.cpp proto.i)
 swig_link_libraries(test_partition_optimizer ${PYTHON_LIBRARIES})
 
 # Equivalent CL swig:

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "DP_multiprec.hpp"
+#include "score.hpp"
 #include "DP.hpp"
 #include "graph.hpp"
 

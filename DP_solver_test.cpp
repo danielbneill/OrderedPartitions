@@ -32,7 +32,21 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 }
 
 auto main() -> int {
+ 
+  int n = 20, T = 2;
   
+  std::default_random_engine gen;
+  gen.seed(0XFACE0FF);
+  std::uniform_real_distribution<float> dista(-10., 10.), distb(0., 10.);
+
+  std::vector<float> a(n), b(n);
+
+  for (auto &el : a)
+    el = dista(gen);
+  for (auto &el : b)
+    el = distb(gen);
+
+  /*
   std::vector<float> a{0.0212651 , -0.20654906, -0.20654906, -0.20654906, -0.20654906,
       0.0212651 , -0.20654906,  0.0212651 , -0.20654906,  0.0212651 ,
       -0.20654906,  0.0212651 , -0.20654906, -0.06581402,  0.0212651 ,
@@ -49,16 +63,21 @@ auto main() -> int {
       0.21809504, 0.2218354 , 0.22745816, 0.21809504, 0.21809504,
       0.22745816, 0.218429  , 0.21809504, 0.22771114, 0.218429  ,
       0.21809504, 0.22771114, 0.22745816, 0.21809504, 0.22745816};
+  */
 
   // Presort
   sort_by_priority(a, b);
     
-  auto dp = DPSolver(40, 5, a, b);
+  auto dp = DPSolver(n, T, a, b);
   auto dp_opt = dp.get_optimal_subsets_extern();
   auto scores = dp.get_score_by_subset_extern();
 
-  auto pg = PartitionGraph(40, 5, a, b);
+  auto pg = PartitionGraph(n, T, a, b);
   auto pg_opt = pg.get_optimal_subsets_extern();
+
+  auto ltss = LTSSSolver(n, a, b);
+  auto ltss_opt = ltss.get_optimal_subset_extern();
+  auto ltss_score = ltss.get_optimal_score_extern();
 
   std::cout << "Partition graph subsets:\n";
   std::cout << "=======================\n";
@@ -69,6 +88,11 @@ auto main() -> int {
   std::cout << "\nScores: ";
   std::copy(scores.begin(), scores.end(), std::ostream_iterator<float>(std::cout, " "));
   std::cout << std::endl;
+  std::cout << "\nLTSSSolver subset:\n";
+  std::copy(ltss_opt.begin(), ltss_opt.end(), std::ostream_iterator<int>(std::cout, " "));
+  std::cout << "\n";
+  std::cout << "\nScore: ";
+  std::cout << ltss_score << "\n";
   
   /*
   std::vector<float> a{1., 2., 3., 4., 5.};

@@ -4,8 +4,10 @@
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include <random>
 
 #include "DP.hpp"
+#include "LTSS.hpp"
 #include "graph.hpp"
 
 #endif

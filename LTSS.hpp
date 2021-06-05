@@ -6,6 +6,12 @@
 #include <vector>
 #include <limits>
 #include <iterator>
+#include <algorithm>
+#include <memory>
+
+#include "score.hpp"
+
+using namespace Objectives;
 
 using ivec = std::vector<int>;
 using fvec = std::vector<float>;
@@ -16,11 +22,13 @@ class LTSSSolver {
 public:
   LTSSSolver(int n,
 	     fvec a,
-	     fvec b
+	     fvec b,
+	     objective_fn parametric_dist=objective_fn::Gaussian
 	     ) :
     n_{n},
     a_{a},
-    b_{b}
+    b_{b},
+    parametric_dist_{parametric_dist}
   { _init(); }
 
   ivec priority_sortind_;
@@ -33,6 +41,8 @@ private:
   fvec b_;
   float optimal_score_;
   ivec subset_;
+  objective_fn parametric_dist_;
+  std::unique_ptr<ParametricContext> context_;
 
   void _init() { create(); optimize(); }
   void create();

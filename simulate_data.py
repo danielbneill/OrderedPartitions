@@ -5,13 +5,18 @@ import matplotlib.pyplot as plt
 import solverSWIG_DP
 import solverSWIG_LTSS
 
-def score_fn(g, h, p):
+def score_fn_P(g, h, p):
     gsum = np.sum(g[list(p)])
     hsum = np.sum(h[list(p)])
     if gsum > hsum:
         return gsum*np.log(gsum/hsum) + hsum - gsum
     else:
         return 0.
+
+def score_fn_G(g, h, p):
+    gsum = np.sum(g[list(p)])
+    hsum = np.sum(h[list(p)])
+    return gsum*gsum/hsum
 
 def Poisson_pointset(xMin, xMax, yMin, yMax, lambda0):
     xDelta=xMax-xMin;yDelta=yMax-yMin; #rectangle dimensions
@@ -93,6 +98,8 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
     all_results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
     single_result = solverSWIG_LTSS.OptimizerSWIG(g, h)()
+
+    import pdb;pdb.set_trace()
 
     cc = [[columns[c] for c in list(x)] for x in all_results[0]]
     cc = cc[::-1]
@@ -238,8 +245,8 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    numSplits = 25
-    num_partitions = 4
+    numSplits = 20
+    num_partitions = 2
     base_q = numSplits*numSplits/4
     q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
     lambdas = (int(.15*200*q4_baseline),

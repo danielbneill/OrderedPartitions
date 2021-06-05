@@ -1,6 +1,7 @@
 #ifndef __PYTHON_DPSOLVER_HPP__
 #define __PYTHON_DPSOLVER_HPP__
 
+#include "score.hpp"
 #include "DP.hpp"
 #include "threadpool.hpp"
 #include "threadsafequeue.hpp"
