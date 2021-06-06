@@ -3,7 +3,17 @@
 
 using namespace Objectives;
 
-#define DPSOLVER_(n,T,a,b) (DPSolver(n, T, a, b, objective_fn::Gaussian, false, true))
+#define MULT_CLUST 1
+// #undef MULT_CLUST
+
+#define DPSOLVER_RISK_PART_(n,T,a,b)  (DPSolver(n, T, a, b, objective_fn::Gaussian, true, false))
+#define DPSOLVER_MULT_CLUST_(n,T,a,b) (DPSolver(n, T, a, b, objective_fn::Gaussian, false, true))
+
+#ifdef MULT_CLUST
+#define DPSOLVER_(n,T,a,b) (DPSOLVER_MULT_CLUST_(n,T,a,b))
+#else
+#define DPSOLVER_(n,T,a,b) (DPSOLVER_RISK_PART_(n,T,a,b))
+#endif
 
 ivecvec find_optimal_partition__DP(int n,
 			       int T,

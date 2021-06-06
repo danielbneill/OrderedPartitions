@@ -99,8 +99,6 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     all_results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
     single_result = solverSWIG_LTSS.OptimizerSWIG(g, h)()
 
-    import pdb;pdb.set_trace()
-
     cc = [[columns[c] for c in list(x)] for x in all_results[0]]
     cc = cc[::-1]
 
@@ -127,7 +125,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
                 s.append(sze)
                 c.append(colors[colInd]['color'])
         scatters.append(ax.scatter(x, y, c=c, s=s, label=c))
-    plt.legend(scatters, ['Region {} q: {}'.format(1+ind, round(sum(g[list(split)])/len(split), 2)) for ind,split in enumerate(all_results[0][::-1])],
+    plt.legend(scatters, ['Region {} q: {}'.format(1+ind, round(sum(g[list(split)])/len(split), 2)) if (len(split) > 0) else 'Region {} q: NA'.format(1+ind) for ind,split in enumerate(all_results[0][::-1])],
                loc='lower left',
                )
     plt.title('Simulated dataset partition size {}'.format(num_partitions))
@@ -245,14 +243,14 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    numSplits = 20
-    num_partitions = 2
+    numSplits = 50
+    num_partitions = 4
     base_q = numSplits*numSplits/4
     q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
-    lambdas = (int(.15*200*q4_baseline),
-               int(.15*100*q3_baseline),
-               int(.15*50*q2_baseline),
-               int(.15*10*q1_baseline))
+    lambdas = (int(.05*1000*q4_baseline), # 3000
+               int(.05*800*q3_baseline), # 1000
+               int(.05*600*q2_baseline),  # 300
+               int(.05*400*q1_baseline))   # 10
     baseline_all = 1*(30*base_q)
     baseline = baseline_all/(numSplits*numSplits)
 

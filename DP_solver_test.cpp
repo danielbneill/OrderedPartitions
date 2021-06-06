@@ -33,10 +33,10 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 
 auto main() -> int {
  
-  int n = 100, T = 10;
+  int n = 100, T = 3;
   
   std::default_random_engine gen;
-  gen.seed(0XF2CE0FA);
+  gen.seed(std::random_device()());
   std::uniform_real_distribution<float> dista(-10., 10.), distb(0., 10.);
 
   std::vector<float> a(n), b(n);
@@ -66,7 +66,7 @@ auto main() -> int {
   */
 
   // Presort
-  sort_by_priority(a, b);
+  // sort_by_priority(a, b);
     
   auto dp = DPSolver(n, T, a, b);
   auto dp_opt = dp.get_optimal_subsets_extern();

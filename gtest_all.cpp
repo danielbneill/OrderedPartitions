@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <numeric>
+#include <limits>
 #include <iterator>
 
 #include "graph.hpp"
@@ -246,7 +247,7 @@ TEST(DPSolverTest, OrderedProperty) {
   
 }
 
-TEST(DPSolverTest, HighestScoringSetTieOut) {
+TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
   
   int NUM_CASES = 500, T = 2;
 
