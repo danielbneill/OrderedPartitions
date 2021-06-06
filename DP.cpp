@@ -91,6 +91,14 @@ DPSolver::create_multiple_clustering_case() {
 						risk_partitioning_objective_,
 						use_rational_optimization_);
   }
+  else if (parametric_dist_ == objective_fn::RationalScore) {
+    context_ = std::make_unique<RationalScoreContext>(a_, 
+						      b_, 
+						      n_,
+						      parametric_dist_,
+						      risk_partitioning_objective_,
+						      use_rational_optimization_);
+  }
   else {
     throw distributionException();
   }
@@ -199,6 +207,14 @@ DPSolver::create() {
 						risk_partitioning_objective_,
 						use_rational_optimization_);
   }
+  else if (parametric_dist_ == objective_fn::RationalScore) {
+    context_ = std::make_unique<RationalScoreContext>(a_, 
+						      b_, 
+						      n_,
+						      parametric_dist_,
+						      risk_partitioning_objective_,
+						      use_rational_optimization_);
+  }
   else {
     throw distributionException();
   }
@@ -252,43 +268,66 @@ DPSolver::create() {
 void
 DPSolver::optimize_multiple_clustering_case() {
   // Pick out associated maxScores element
-  int currentInd = 0, nextInd = 0, nextInd1 = 0, nextInd2 = 0;
-  float score1, score2;
+  int currentInd = 0, nextInd = 0, nextInd1 = 0;
+  float score1;
   // XXX
   bool first_subset_found = true;
   for (int t=T_; t>0; --t) {
     float score_num1 = 0., score_num2 = 0., score_den1 = 0., score_den2 = 0.;
     std::vector<int> subset1, subset2;
     nextInd1 = nextStart_[currentInd][t];
-    nextInd2 = nextStart_sec_[currentInd][t];
     for (int i=currentInd; i<nextInd1; ++i) {
-      score_num1 += a_[priority_sortind_[i]];
-      score_den1 += b_[priority_sortind_[i]];
+      score_num1 += a_[i];
+      score_den1 += b_[i];
       subset1.push_back(priority_sortind_[i]);
     }
-    for (int i=currentInd; i<nextInd2; ++i) {
-      score_num2 += a_[priority_sortind_[i]];
-      score_den2 += b_[priority_sortind_[i]];
-      subset2.push_back(priority_sortind_[i]);
-    }
-    // score1 = compute_ambient_score(score_num1, score_den1) + maxScore_[nextStart_[currentInd][t]][t];
-    score1 = 10.;
-    score2 = maxScore_[currentInd][t];
-    if (true) {
-    // if (!first_subset_found && (score1 > score2)) {
-      first_subset_found = true;
-      subsets_[T_-t] = subset1;
-      score_by_subset_[T_-t] = compute_ambient_score(score_num1, score_den1);
-      nextInd = nextInd1;
-    }
-    else {
-      subsets_[T_-t] = subset2;
-      score_by_subset_[T_-t] = compute_ambient_score(score_num2, score_den2);      
-      nextInd = nextInd2;
-    }
+    first_subset_found = true;
+    subsets_[T_-t] = subset1;
+    score_by_subset_[T_-t] = compute_ambient_score(score_num1, score_den1);
+    nextInd = nextInd1;
     optimal_score_ += score_by_subset_[T_-t];
     currentInd = nextInd;
+    
+    // Early stopping, this could correspond to an optimal single subset being
+    // the entire set at the LTSS (t = 2) stage
+    if ((t > 1) && (currentInd == n_)) {
+      break;
+    }
   }
+
+  // reorder subsets
+  reorder_subsets(subsets_, score_by_subset_, a_, b_);
+
+}
+
+void
+DPSolver::reorder_subsets(ivecvec& subsets, 
+			  fvec& score_by_subsets,
+			  const fvec& a, 
+			  const fvec& b) {
+  std::vector<int> ind(subsets.size(), 0);
+  std::iota(ind.begin(), ind.end(), 0.);
+
+  std::stable_sort(ind.begin(), ind.end(),
+		   [&a, &b, score_by_subsets](int i, int j) {
+		     return (score_by_subsets[i] < score_by_subsets[j]);
+		   });
+
+  // Inefficient reordering
+  ivecvec subsets_s;
+  fvec score_by_subsets_s;
+  subsets_s = std::vector<std::vector<int>>(subsets.size(), std::vector<int>());
+  score_by_subsets_s = std::vector<float>(subsets.size(), 0.);
+
+  for (int i=0; i<subsets.size(); ++i) {
+    subsets_s[i] = subsets[ind[i]];
+    score_by_subsets_s[i] = score_by_subsets[ind[i]];
+  }
+
+  std::copy(subsets_s.begin(), subsets_s.end(), subsets.begin());
+  std::copy(score_by_subsets_s.begin(), score_by_subsets_s.end(), score_by_subsets.begin());
+		   
+  
 }
 
 void
@@ -298,7 +337,6 @@ DPSolver::optimize() {
   for (int t=T_; t>0; --t) {
     float score_num = 0., score_den = 0.;
     nextInd = nextStart_[currentInd][t];
-    std::cout << "cI: " << currentInd << " nI: " << nextInd << std::endl;
     for (int i=currentInd; i<nextInd; ++i) {
       subsets_[T_-t].push_back(priority_sortind_[i]);
       score_num += a_[priority_sortind_[i]];

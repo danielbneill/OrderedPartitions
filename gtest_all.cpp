@@ -42,6 +42,15 @@ void pretty_print_subsets(std::vector<std::vector<int>>& subsets) {
   std::cout << "]" << std::endl;
 }
 
+float rational_obj(std::vector<float> a, std::vector<float> b, const std::vector<int>& p) {
+  float den = 0., num = 0.;
+  for (auto ind : p) {
+    num += a[ind];
+    den += b[ind];
+  }
+  return num*num/den;
+}
+
 
 TEST(PartitionGraphTest, Baselines) {
 
@@ -127,7 +136,7 @@ TEST(PartitionGraphTest, OrderedProperty) {
 TEST(DPSolverTest, OptimizationFlag) {
 
   int n = 100, T = 25;
-  size_t NUM_CASES = 500;
+  size_t NUM_CASES = 10;
   
   std::default_random_engine gen;
   gen.seed(std::random_device()());
@@ -176,16 +185,16 @@ TEST(DPSolverTest, Baselines ) {
 
   std::vector<std::vector<int>> expected = {
     {1, 2, 3, 4, 6, 8, 10, 12, 16, 19, 22, 23, 25, 28, 29, 32, 35, 38, 21}, 
-    {13, 24}, 
-    {0, 5, 7, 9, 11, 14, 18, 33, 36, 15, 27, 30, 37, 39}, 
-    {17, 26}, 
-    {20, 31, 34}
+    {13}, 
+    {24},
+    {0}, 
+    {5, 7, 9, 11, 14, 18, 33, 36, 15, 27, 30, 37, 39, 17, 26, 20, 31, 34}
   };
 
   
   // sort_by_priority(a, b);
 
-  auto dp = DPSolver(40, 5, a, b, objective_fn::Gaussian, false, true);
+  auto dp = DPSolver(40, 5, a, b, objective_fn::Gaussian, true, false);
   auto opt = dp.get_optimal_subsets_extern();
 
   for (size_t i=0; i<expected.size(); ++i) {
@@ -223,9 +232,11 @@ TEST(DPSolverTest, OrderedProperty) {
     std::vector<int> v;
 
     for (auto& list : opt) {
-      v.resize(list.size());
-      std::adjacent_difference(list.begin(), list.end(), v.begin());
-      sum = std::accumulate(v.begin()+1, v.end(), 0);
+      if (list.size() > 1) {
+	v.resize(list.size());
+	std::adjacent_difference(list.begin(), list.end(), v.begin());
+	sum = std::accumulate(v.begin()+1, v.end(), 0);
+      }
     }
 
     // We ignored the first element as adjacent_difference has unintuitive
@@ -235,8 +246,49 @@ TEST(DPSolverTest, OrderedProperty) {
   
 }
 
+TEST(DPSolverTest, HighestScoringSetTieOut) {
+  
+  int NUM_CASES = 500, T = 2;
 
-TEST(MultiSolver, SmallScaleTieouts) {
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_int_distribution<int> distn(10, 100);
+  std::uniform_real_distribution<float> dista(-10., 10.);
+  std::uniform_real_distribution<float> distb( 0., 10.);
+
+  std::vector<float> a, b;
+
+  for (int case_num=0; case_num<NUM_CASES; ++case_num) {
+
+    int n = distn(gen);
+    a.resize(n); b.resize(n);
+
+    for (auto &el : a)
+      el = dista(gen);
+    for (auto &el : b)
+      el = distb(gen);
+
+    ASSERT_GE(n, 10);
+    ASSERT_LE(n, 100);
+
+    auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
+    auto ltss = LTSSSolver(n, a, b);
+
+    auto dp_opt = dp.get_optimal_subsets_extern();
+    auto scores = dp.get_score_by_subset_extern();
+    
+    auto ltss_opt = ltss.get_optimal_subset_extern();
+    auto ltss_score = ltss.get_optimal_score_extern();
+
+    ASSERT_EQ(ltss_opt.size(), dp_opt[1].size());
+    for (int i=0; i<ltss_opt.size(); ++i)
+      ASSERT_EQ(ltss_opt[i], dp_opt[1][i]);
+
+  }
+
+}
+
+TEST(MultiSolverTest, SmallScaleTieouts) {
 
   int n = 40, T = 10;
   size_t NUM_CASES = 250;
@@ -248,7 +300,7 @@ TEST(MultiSolver, SmallScaleTieouts) {
   
   std::vector<float> a(n), b(n), c(n);
 
-  for (size_t i=0; i<NUM_CASES; ++i) {
+  for (size_t case_num=0; case_num<NUM_CASES; ++case_num) {
     for (auto &el : a)
       el = dista(gen);
     for (auto &el : b)
@@ -262,7 +314,7 @@ TEST(MultiSolver, SmallScaleTieouts) {
     auto pg = PartitionGraph(n, T, a, b);
     auto opt_pg = pg.get_optimal_subsets_extern();
 
-    auto dp = DPSolver(n, T, a, b);
+    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
     auto opt_dp = dp.get_optimal_subsets_extern();
 
     ASSERT_EQ(opt_pg.size(), opt_dp.size());
@@ -309,7 +361,7 @@ TEST(MultiSolver, SmallScaleTieouts) {
   }
 }
 
-TEST(MultiSolver, LargeScaleTieouts) {
+TEST(MultiSolverTest, LargeScaleTieouts) {
 
   int n = 500, T = 15;
   size_t NUM_CASES = 5;
@@ -335,7 +387,8 @@ TEST(MultiSolver, LargeScaleTieouts) {
     auto pg = PartitionGraph(n, T, a, b);
     auto opt_pg = pg.get_optimal_subsets_extern();
 
-    auto dp = DPSolver(n, T, a, b);
+    // auto dp = DPSolver(n, T, a, b);
+    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
     auto opt_dp = dp.get_optimal_subsets_extern();
 
     ASSERT_EQ(opt_pg.size(), opt_dp.size());

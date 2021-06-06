@@ -84,6 +84,7 @@ private:
   void optimize_multiple_clustering_case();
 
   void sort_by_priority(fvec&, fvec&);
+  void reorder_subsets(ivecvec&, fvec&, const fvec&, const fvec&);
   float compute_score(int, int);
   float compute_ambient_score(float, float);
 };

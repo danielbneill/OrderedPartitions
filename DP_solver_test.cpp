@@ -33,10 +33,10 @@ void sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
 
 auto main() -> int {
  
-  int n = 20, T = 2;
+  int n = 100, T = 10;
   
   std::default_random_engine gen;
-  gen.seed(0XFACE0FF);
+  gen.seed(0XF2CE0FA);
   std::uniform_real_distribution<float> dista(-10., 10.), distb(0., 10.);
 
   std::vector<float> a(n), b(n);
