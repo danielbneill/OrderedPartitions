@@ -270,18 +270,15 @@ DPSolver::optimize_multiple_clustering_case() {
   // Pick out associated maxScores element
   int currentInd = 0, nextInd = 0, nextInd1 = 0;
   float score1;
-  // XXX
-  bool first_subset_found = true;
   for (int t=T_; t>0; --t) {
-    float score_num1 = 0., score_num2 = 0., score_den1 = 0., score_den2 = 0.;
-    std::vector<int> subset1, subset2;
+    float score_num1 = 0., score_den1 = 0.;
+    std::vector<int> subset1;
     nextInd1 = nextStart_[currentInd][t];
     for (int i=currentInd; i<nextInd1; ++i) {
       score_num1 += a_[i];
       score_den1 += b_[i];
       subset1.push_back(priority_sortind_[i]);
     }
-    first_subset_found = true;
     subsets_[T_-t] = subset1;
     score_by_subset_[T_-t] = compute_ambient_score(score_num1, score_den1);
     nextInd = nextInd1;

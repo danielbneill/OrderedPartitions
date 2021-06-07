@@ -43,9 +43,11 @@ void pretty_print_subsets(std::vector<std::vector<int>>& subsets) {
   std::cout << "]" << std::endl;
 }
 
-float rational_obj(std::vector<float> a, std::vector<float> b, const std::vector<int>& p) {
+float rational_obj(std::vector<float> a, std::vector<float> b, int start, int end) {
+  if (start == end)
+    return 0.;
   float den = 0., num = 0.;
-  for (auto ind : p) {
+  for (int ind=start; ind<end; ++ind) {
     num += a[ind];
     den += b[ind];
   }
@@ -287,6 +289,52 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
 
   }
 
+}
+
+TEST(DPSolverTest, OptimalityTestWithRandomPartitions) {
+  int NUM_CASES = 1000, T = 3;
+
+  std::default_random_engine gen;
+  gen.seed(std::random_device()());
+  std::uniform_int_distribution<int> distn(5, 50);
+  std::uniform_real_distribution<float> dista(-10., 10.);
+  std::uniform_real_distribution<float> distb( 0., 10.);
+
+  std::vector<float> a, b;
+
+  for (int case_num=0; case_num<NUM_CASES; ++case_num) {
+
+    int n = distn(gen);
+    a.resize(n); b.resize(n);
+
+    for (auto &el : a)
+      el = dista(gen);
+    for (auto &el : b)
+      el = distb(gen);
+  
+    sort_by_priority(a, b);
+
+    ASSERT_GE(n, 5);
+    ASSERT_LE(n, 100);
+
+    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
+    auto dp_opt = dp.get_optimal_subsets_extern();
+    auto scores = dp.get_score_by_subset_extern();
+    
+    std::uniform_int_distribution<int> distm(5, n);
+    int m1 = distm(gen), m21;
+    int m2 = distm(gen), m22;
+    m21 = std::min(m1, m2);
+    m22 = std::max(m1, m2);
+
+    float rand_score, dp_score;
+    rand_score = rational_obj(a, b, 0, m21) + rational_obj(a, b, m21, m22) + rational_obj(a, b, m22, n);
+    dp_score = rational_obj(a, b, dp_opt[0][0], 1+dp_opt[0][dp_opt[0].size()-1]) + 
+      rational_obj(a, b, dp_opt[1][0], 1+dp_opt[1][dp_opt[1].size()-1]) + 
+      rational_obj(a, b, dp_opt[2][0], 1+dp_opt[2][dp_opt[2].size()-1]);
+   
+    ASSERT_LE(rand_score, dp_score);
+  }
 }
 
 TEST(MultiSolverTest, SmallScaleTieouts) {
