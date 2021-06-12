@@ -12,7 +12,7 @@ import utils
 from optimalsplitboost import OptimalSplitGradientBoostingClassifier
 
 TEST_SIZE = 0.20
-FILENAME = './summary3.csv'
+FILENAME = './summary_final1.csv'
 
 ########################
 ## PMLB Dataset sizes ##
@@ -27,13 +27,28 @@ if False:
             # print(dataset_name, X.shape, np.unique(y))
 
 class_datasets = {'analcatdata_lawsuit', 'analcatdata_boxing2', 'heart_c', 'agaricus_lepiota', 'horse_colic', 'australian', 'flare', 'phoneme', 'breast_cancer_wisconsin', 'analcatdata_creditscore', 'clean1', 'monk2', 'analcatdata_aids', 'analcatdata_bankruptcy', 'churn', 'hypothyroid', 'lupus', 'GAMETES_Epistasis_2_Way_20atts_0.1H_EDM_1_1', 'labor', 'analcatdata_boxing1', 'xd6', 'Hill_Valley_without_noise', 'corral', 'adult', 'molecular_biology_promoters', 'twonorm', 'breast_w', 'bupa', 'diabetes', 'chess', 'german', 'mux6', 'backache', 'tokyo1', 'ionosphere', 'prnn_crabs', 'monk3', 'mofn_3_7_10', 'threeOf9', 'ring', 'spect', 'biomed', 'colic', 'sonar', 'hepatitis', 'cleve', 'monk1', 'irish', 'parity5+5', 'coil2000', 'magic', 'breast_cancer', 'analcatdata_cyyoung8092', 'GAMETES_Epistasis_3_Way_20atts_0.2H_EDM_1_1', 'GAMETES_Epistasis_2_Way_1000atts_0.4H_EDM_1_EDM_1_1', 'postoperative_patient_data', 'crx', 'clean2', 'house_votes_84', 'dis', 'haberman', 'saheart', 'GAMETES_Epistasis_2_Way_20atts_0.4H_EDM_1_1', 'GAMETES_Heterogeneity_20atts_1600_Het_0.4_0.2_50_EDM_2_001', 'profb', 'analcatdata_fraud', 'tic_tac_toe', 'kr_vs_kp', 'credit_g', 'prnn_synth', 'credit_a', 'parity5', 'mushroom', 'breast', 'glass2', 'pima', 'analcatdata_asbestos', 'appendicitis', 'vote', 'analcatdata_japansolvent', 'heart_h', 'GAMETES_Heterogeneity_20atts_1600_Het_0.4_0.2_75_EDM_2_001', 'wdbc', 'buggyCrx', 'analcatdata_cyyoung9302', 'hungarian', 'spambase', 'spectf', 'heart_statlog', 'Hill_Valley_with_noise'}
-class_datasets = sorted(class_datasets)
+class_datasets = sorted(class_datasets, reverse=False)
 
-df = pd.DataFrame(columns=['dataset', 'row_ratio', 'col_ratio', 'part_ratio', 'learning_rate', 'numsteps', 'rat', 'features', 'classes', 'imalance', 'igb_acc_IS', 'cbt_acc_IS', 'igb_acc_OS', 'cbt_acc_OS'])
-# Skipped 'adult'
-# Skipped 'magic'
+already_read = set(pd.unique(pd.read_csv('./summary_final.csv')['dataset']))
+already_read = set(pd.unique(pd.read_csv('./summary_final0.csv')['dataset']))
+# already_read = already_read.union(pd.read_csv('./summary4.csv')['dataset'])
+# already_read = already_read.union(pd.read_csv('./summary5.csv')['dataset'])
+# already_read = already_read.union(pd.read_csv('./summary6.csv')['dataset'])
+# already_read = already_read.union(pd.read_csv('./summary7.csv')['dataset'])
+# already_read = already_read.union(pd.read_csv('./summary8.csv')['dataset'])
+# already_read = already_read.union(pd.read_csv('./summary9.csv')['dataset'])
 
-for ind,dataset_name in enumerate(class_datasets[62:]):
+carve_out = set(('adult','agaricus_lepiota', 'churn', 'clean1', 'clean2', 'coil2000', 'magic', 'postoperative_patient_data', 'ring'))
+
+df = pd.DataFrame(columns=['dataset', 'row_ratio', 'col_ratio', 'part_ratio', 'learning_rate', 'numsteps', 'rat', 'features', 'classes', 'imalance', 'igb_loss_IS', 'cbt_loss_IS', 'igb_acc_OS', 'cbt_acc_OS'])
+
+for ind,dataset_name in enumerate(class_datasets):
+
+    if dataset_name in carve_out.union(already_read):
+        continue
+
+    print('PROCESSING DATASET: {}'.format(dataset_name))
+    
     X,y = pmlb.fetch_data(dataset_name, return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=TEST_SIZE)
 
@@ -67,7 +82,8 @@ for ind,dataset_name in enumerate(class_datasets[62:]):
     clf = OptimalSplitGradientBoostingClassifier( X_train, y_train, **clfKwargs)
 
     clf.fit(num_steps)
-    stats = utils.oos_summary(clf, X_test, y_test,
+
+    stats = utils.oos_summary(clf, X_train, y_train, X_test, y_test,
                               catboost_iterations=num_steps,
                               catboost_depth=None,
                               catboost_learning_rate=learning_rate,

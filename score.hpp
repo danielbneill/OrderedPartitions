@@ -19,7 +19,9 @@ using fvecvec = std::vector<std::vector<float>>;
 
 
 namespace Objectives {
-  enum class objective_fn { Gaussian, Poisson, RationalScore };
+  enum class objective_fn { Gaussian = 0, 
+			    Poisson = 1, 
+			    RationalScore = 2 };
 
   class ParametricContext {
   protected:
@@ -275,7 +277,7 @@ namespace Objectives {
 
   };
 
-}
+} // namespace Objectives
 
 
 #endif

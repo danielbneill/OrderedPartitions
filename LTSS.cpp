@@ -69,6 +69,14 @@ LTSSSolver::create() {
 						false,
 						false);
   }
+  else if (parametric_dist_ == objective_fn::RationalScore) {
+    context_ = std::make_unique<RationalScoreContext>(a_,
+						      b_,
+						      n_,
+						      parametric_dist_,
+						      false,
+						      false);
+  }
   else {
     throw distributionException();
   }

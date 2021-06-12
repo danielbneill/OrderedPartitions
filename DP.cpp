@@ -3,8 +3,10 @@
 #include <numeric>
 #include <limits>
 #include <iostream>
+#include <iomanip>
 #include <utility>
 #include <cmath>
+#include <string>
 #include <exception>
 
 #include "DP.hpp"
@@ -14,6 +16,9 @@ struct distributionException : public std::exception {
     return "Bad distributional assignment";
   };
 };
+
+template<typename T>
+class TD;
 
 void
 DPSolver::sort_by_priority(std::vector<float>& a, std::vector<float>& b) {
@@ -191,6 +196,7 @@ DPSolver::create() {
   sort_by_priority(a_, b_);
   
   // create reference to score function
+
   if (parametric_dist_ == objective_fn::Gaussian) {
     context_ = std::make_unique<GaussianContext>(a_, 
 						 b_, 

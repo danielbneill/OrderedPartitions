@@ -7,10 +7,15 @@ import theano.tensor as T
 import logging
 
 import classifier
-import solverSWIG_DP_Multi
+import solverSWIG_DP
 
 SEED = 515
 rng = np.random.RandomState(SEED)
+
+class Distribution:
+    GAUSSIAN = 0
+    POISSON = 1
+    RATIONALSCORE = 2
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.WARN)
 
@@ -30,6 +35,7 @@ class OptimalSplitGradientBoostingClassifier(object):
                  learning_rate=0.1,
                  distiller=classifier.classifierFactory(sklearn.tree.DecisionTreeClassifier),
                  use_closed_form_differentials=True,
+                 risk_partitioning_objective=False,
                  ):
         ############
         ## Inputs ##
@@ -58,6 +64,7 @@ class OptimalSplitGradientBoostingClassifier(object):
         self.learning_rate = learning_rate
         self.distiller = distiller
         self.use_closed_form_differentials = use_closed_form_differentials
+        self.risk_partitioning_objective = risk_partitioning_objective
         ################
         ## END Inputs ##
         ################
@@ -206,8 +213,15 @@ class OptimalSplitGradientBoostingClassifier(object):
             loss wins.
         '''
 
-        results = solverSWIG_DP_Multi.OptimizerSWIG(num_partitions, g, h)()
-
+        # XXX
+        # Revisit use_rational_optimization flag
+        results = solverSWIG_DP.OptimizerSWIG(num_partitions,
+                                              g,
+                                              h,
+                                              objective_fn=Distribution.RATIONALSCORE,
+                                              risk_partitioning_objective=self.risk_partitioning_objective,
+                                              use_rational_optimization=False)()
+        
         logging.info('found optimal partition')
 
         npart = T.scalar('npart')

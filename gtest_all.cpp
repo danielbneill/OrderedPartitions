@@ -292,7 +292,7 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
 }
 
 TEST(DPSolverTest, OptimalityTestWithRandomPartitions) {
-  int NUM_CASES = 1000, T = 3;
+  int NUM_CASES = 10000, NUM_SUBCASES = 1000, T = 3;
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
@@ -321,19 +321,21 @@ TEST(DPSolverTest, OptimalityTestWithRandomPartitions) {
     auto dp_opt = dp.get_optimal_subsets_extern();
     auto scores = dp.get_score_by_subset_extern();
     
-    std::uniform_int_distribution<int> distm(5, n);
-    int m1 = distm(gen), m21;
-    int m2 = distm(gen), m22;
-    m21 = std::min(m1, m2);
-    m22 = std::max(m1, m2);
-
-    float rand_score, dp_score;
-    rand_score = rational_obj(a, b, 0, m21) + rational_obj(a, b, m21, m22) + rational_obj(a, b, m22, n);
-    dp_score = rational_obj(a, b, dp_opt[0][0], 1+dp_opt[0][dp_opt[0].size()-1]) + 
-      rational_obj(a, b, dp_opt[1][0], 1+dp_opt[1][dp_opt[1].size()-1]) + 
-      rational_obj(a, b, dp_opt[2][0], 1+dp_opt[2][dp_opt[2].size()-1]);
-   
-    ASSERT_LE(rand_score, dp_score);
+    for (int subcase_num=0; subcase_num<NUM_SUBCASES; ++subcase_num) {
+      std::uniform_int_distribution<int> distm(5, n);
+      int m1 = distm(gen), m21;
+      int m2 = distm(gen), m22;
+      m21 = std::min(m1, m2);
+      m22 = std::max(m1, m2);
+      
+      float rand_score, dp_score;
+      rand_score = rational_obj(a, b, 0, m21) + rational_obj(a, b, m21, m22) + rational_obj(a, b, m22, n);
+      dp_score = rational_obj(a, b, dp_opt[0][0], 1+dp_opt[0][dp_opt[0].size()-1]) + 
+	rational_obj(a, b, dp_opt[1][0], 1+dp_opt[1][dp_opt[1].size()-1]) + 
+	rational_obj(a, b, dp_opt[2][0], 1+dp_opt[2][dp_opt[2].size()-1]);
+      
+      ASSERT_LE(rand_score, dp_score);
+    }
   }
 }
 

@@ -146,7 +146,7 @@ def plot_confusion(confusion_matrix, class_names, figsize=(10,7), fontsize=14):
 ## Summaries ##
 ###############
 
-def oos_summary(clf, X_test, y_test, learning_rate=1.,
+def oos_summary(clf, X_train, y_train, X_test, y_test, learning_rate=1.,
                 catboost_iterations=100,
                 catboost_depth=None,
                 catboost_learning_rate=0.5,
@@ -181,7 +181,10 @@ def oos_summary(clf, X_test, y_test, learning_rate=1.,
     ols_loss_IS = _loss(y_hat_ols)
     lr_loss_IS = _loss(y_hat_lr)
     cb_loss_IS = _loss(y_hat_cb)
-    
+
+    # igb_acc_IS = metrics.accuracy_score(y_hat_clf, y_train)
+    # cp_acc_IS = metrics.accuracy_sscore(y_hat_cb, y_train)
+
     print('IS _loss_clf: {:4.6f}'.format(_loss(y_hat_clf)))
     print('IS _loss_ols: {:4.6f}'.format(_loss(y_hat_ols)))
     print('IS _loss_lr:  {:4.6f}'.format(_loss(y_hat_lr)))

@@ -66,7 +66,16 @@ def plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas):
     plt.close()
     # plt.pause(1e-3)
 
-def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=4, numSplits=10):
+def form_location_data(xx,
+                       yy,
+                       xMin,
+                       xMax,
+                       yMin,
+                       yMax,
+                       baseline,
+                       num_partitions=4,
+                       numSplits=10,
+                       risk_partitioning_objective=False):
     d = np.concatenate([xx, yy], axis=1)
     xAxis = np.linspace(xMin, xMax, numSplits)
     yAxis = np.linspace(yMin, yMax, numSplits)
@@ -77,6 +86,8 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
         occ[xind, yind] +=1
     # XXX
     # occ = np.max(occ) - occ
+
+    objective_str = 'risk_part' if risk_partitioning_objective else 'mult_clust'
 
     columns = list()
     data = list()
@@ -92,11 +103,10 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     # h = np.array(([baseline]*len(g))).astype('float')
     h = np.array([np.sum(g)/g.shape[0]]*len(g)).astype('float')
 
-
     # iAxis = list(range(1,21))
     # ires = [solverSWIG_DP.OptimizerSWIG(i, g, h)()[1] for i in iAxis]
 
-    all_results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h)()
+    all_results = solverSWIG_DP.OptimizerSWIG(num_partitions, g, h, 2, risk_partitioning_objective, False)()
     single_result = solverSWIG_LTSS.OptimizerSWIG(g, h)()
 
     cc = [[columns[c] for c in list(x)] for x in all_results[0]]
@@ -132,7 +142,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     # ax.add_artist(legend1)
 
     # plt.pause(1e-3)
-    plt.savefig('AllRegions.pdf')
+    plt.savefig('AllRegions_{}.pdf'.format(objective_str))
     plt.close()
     # plt.close()
     
@@ -220,7 +230,7 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
     axs[1,0].set_title('Region 4')    
 
     # plt.pause(1e-3)
-    plt.savefig('SepRegions.pdf')
+    plt.savefig('SepRegions_{}.pdf'.format(objective_str))
     plt.close()
     # plt.close()
 
@@ -236,21 +246,24 @@ def form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline, num_partitions=
                     label='dd0')
 
     # plt.pause(1e-3)
-    plt.savefig('SingleRegion.pdf')
+    plt.savefig('SingleRegion_{}.pdf'.format(objective_str))
     plt.close()
     # plt.close()
         
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    numSplits = 50
+    numSplits = 25
     num_partitions = 4
     base_q = numSplits*numSplits/4
+
+    # q = 1 for multiple_cluster detection
+    
     q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
-    lambdas = (int(.05*1000*q4_baseline), # 3000
-               int(.05*800*q3_baseline), # 1000
-               int(.05*600*q2_baseline),  # 300
-               int(.05*400*q1_baseline))   # 10
+    lambdas = (int(.01*2000*q4_baseline), # 3000
+               int(.01*800*q3_baseline), # 1000
+               int(.01*400*q2_baseline),  # 300
+               int(.01*20*q1_baseline))   # 10
     baseline_all = 1*(30*base_q)
     baseline = baseline_all/(numSplits*numSplits)
 
@@ -269,5 +282,7 @@ if __name__ == '__main__':
     plot_pointset(xx, yy, xMin, xMax, yMin, yMax, numSplits, lambdas)
 
     form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline,
-                       num_partitions=num_partitions, numSplits=numSplits)
+                       num_partitions=num_partitions, numSplits=numSplits, risk_partitioning_objective=False)
+    form_location_data(xx, yy, xMin, xMax, yMin, yMax, baseline,
+                       num_partitions=num_partitions, numSplits=numSplits, risk_partitioning_objective=True)
 

@@ -218,7 +218,7 @@ class Task(object):
                 max_sum = val
                 arg_max = part
             # print('    PARTITION SCORE: {:4.4f}'.format(val))
-        print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {}'.format(max_sum, list(arg_max)))
+        # print('MAX PARTITION SCORE: {:4.4f}, MAX_PARTITION: {}'.format(max_sum, list(arg_max)))
         return (max_sum, arg_max)
 
 class EndTask(object):
@@ -592,7 +592,7 @@ if __name__ == '__main__':
         r_max_raw = optimize(a0, b0, PARTITION_SIZE, POWER, NUM_WORKERS, PRIORITY_POWER)
 
         # vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=True)
-        plot_constrained_unconstrained_overlay(a0, b0, score_fn=SCORE_FN, show_plot=True)        
+        # plot_constrained_unconstrained_overlay(a0, b0, score_fn=SCORE_FN, show_plot=True)        
 
         # print('=====')
 
@@ -689,11 +689,18 @@ if __name__ == '__main__':
             # pdb.set_trace()
             # plot.close()
 
+        if all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1):
+            print('OPTIMAL PARTITION: {}'.format(r_max_raw[1]))
+            print('=================')            
+
         try:
             # assert False
             assert all(np.diff(list(chain.from_iterable(r_max_raw[1]))) == 1)
             # assert np.max([o[0] for o in con_optim_all]) >= np.max([o[0] for o in optim_all])
         except AssertionError as e:
+
+            print('OPTIMAL PARTITION ***: {}'.format(r_max_raw[1]))
+            print('=================')
 
             vert_const_asym, vert_const_sym, vert_ext_asym, vert_ext_sym = plot_polytope(a0, b0, score_fn=SCORE_FN, show_plot=False)
             if len(set(vert_const_sym).difference(set(vert_ext_sym))) == 0:
