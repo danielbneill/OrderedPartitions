@@ -252,10 +252,13 @@ TEST(DPSolverTest, OrderedProperty) {
 TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
   
   int NUM_CASES = 500, T = 2;
+  size_t lower_n=4, upper_n=4;
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
-  std::uniform_int_distribution<int> distn(10, 100);
+  // XXX
+  // std::uniform_int_distribution<int> distn(10, 100);
+  std::uniform_int_distribution<int> distn(lower_n, upper_n);
   std::uniform_real_distribution<float> dista(-10., 10.);
   std::uniform_real_distribution<float> distb( 0., 10.);
 
@@ -271,28 +274,34 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
     for (auto &el : b)
       el = distb(gen);
 
-    ASSERT_GE(n, 10);
-    ASSERT_LE(n, 100);
+    // Presort
+    sort_by_priority(a, b);
+
+    ASSERT_GE(n, lower_n);
+    ASSERT_LE(n, upper_n);
 
     auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
-    auto ltss = LTSSSolver(n, a, b);
-
     auto dp_opt = dp.get_optimal_subsets_extern();
     auto scores = dp.get_score_by_subset_extern();
-    
+
+    auto dp_risk_part = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
+    auto dp_opt_risk_part = dp_risk_part.get_optimal_subsets_extern();
+    auto scores_risk_part = dp_risk_part.get_score_by_subset_extern();
+
+    auto ltss = LTSSSolver(n, a, b);
     auto ltss_opt = ltss.get_optimal_subset_extern();
     auto ltss_score = ltss.get_optimal_score_extern();
 
     ASSERT_EQ(ltss_opt.size(), dp_opt[1].size());
-    for (int i=0; i<ltss_opt.size(); ++i)
+    for (int i=0; i<ltss_opt.size(); ++i) {
       ASSERT_EQ(ltss_opt[i], dp_opt[1][i]);
-
+    }
   }
 
 }
 
 TEST(DPSolverTest, OptimalityTestWithRandomPartitions) {
-  int NUM_CASES = 10000, NUM_SUBCASES = 1000, T = 3;
+  int NUM_CASES = 1000, NUM_SUBCASES = 500, T = 3;
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
@@ -320,7 +329,7 @@ TEST(DPSolverTest, OptimalityTestWithRandomPartitions) {
     auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
     auto dp_opt = dp.get_optimal_subsets_extern();
     auto scores = dp.get_score_by_subset_extern();
-    
+
     for (int subcase_num=0; subcase_num<NUM_SUBCASES; ++subcase_num) {
       std::uniform_int_distribution<int> distm(5, n);
       int m1 = distm(gen), m21;

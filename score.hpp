@@ -53,7 +53,7 @@ namespace Objectives {
 
     virtual ~ParametricContext() = default;
 
-    virtual void compute_partial_sums() { std::cout << "SHOULD NOT REACH THIS" << std::endl; };
+    virtual void compute_partial_sums() {};
 
     virtual float compute_score_exp(int, int) = 0;
     virtual float compute_score_exp_optimized(int, int) {};
