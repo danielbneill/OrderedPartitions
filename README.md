@@ -7,7 +7,7 @@ Utilities for subset scanning/optimization over partitions of records. There are
     - c++17-compliant compiler
   * For full classifier
     - SWIG
-    - theano, for gradient, hessian calculation
+    - theano, for gradient, hessian calculation [only for python-based XGBoost applications]
     - Boost, for BGL for graph solver
 
 To make
@@ -43,4 +43,4 @@ binaries:
 
 # classifier
 
-  * ImpliedBoost.py, classifier based on bottom-up tree specification. Multiple T (partition size) are tested at each iteration step on different threads/tasks, optimal T chosen based on objective function. Work in progress.
+  * InductiveGBoost.py, classifier based on bottom-up tree specification. Multiple T (partition size) are tested at each iteration step on different threads/tasks, optimal T chosen based on objective function. Work in progress.
