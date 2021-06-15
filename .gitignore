@@ -7,5 +7,12 @@ __pycache__
 *.dat
 *.dot
 *.pdf
+*.png
+*.csv
+*.tar.gz
+*.tar
+*.gz
+*.txt
+core
 *~
 .ipnyb_checkpoints/

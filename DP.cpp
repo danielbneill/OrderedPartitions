@@ -278,14 +278,14 @@ DPSolver::optimize_multiple_clustering_case() {
   float score1;
   for (int t=T_; t>0; --t) {
     float score_num1 = 0., score_den1 = 0.;
-    std::vector<int> subset1;
+    std::vector<int> subset;
     nextInd1 = nextStart_[currentInd][t];
     for (int i=currentInd; i<nextInd1; ++i) {
       score_num1 += a_[i];
       score_den1 += b_[i];
-      subset1.push_back(priority_sortind_[i]);
+      subset.push_back(priority_sortind_[i]);
     }
-    subsets_[T_-t] = subset1;
+    subsets_[T_-t] = subset;
     score_by_subset_[T_-t] = compute_ambient_score(score_num1, score_den1);
     nextInd = nextInd1;
     optimal_score_ += score_by_subset_[T_-t];
