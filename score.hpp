@@ -119,11 +119,6 @@ namespace Objectives {
       }
     }
   
-    void compute_partial_sums() override {
-      throw optimizationFlagException();
-    }
-
-
     float compute_score_multclust(int i, int j) override {    
       // CHECK
       float C = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
@@ -133,14 +128,6 @@ namespace Objectives {
       } else {
 	return 0.;
       }
-    }
-
-    float compute_score_multclust_optimized(int i, int j) override {
-      throw optimizationFlagException();
-    }
-    
-    float compute_score_riskpart_optimized(int i, int j) override {
-      throw optimizationFlagException();
     }
 
     float compute_score_riskpart(int i, int j) override {
@@ -163,6 +150,19 @@ namespace Objectives {
 	return 0.;
       }
     }  
+
+    void compute_partial_sums() override {
+      throw optimizationFlagException();
+    }
+
+    float compute_score_multclust_optimized(int i, int j) override {
+      throw optimizationFlagException();
+    }
+    
+    float compute_score_riskpart_optimized(int i, int j) override {
+      throw optimizationFlagException();
+    }
+
   };
 
   class GaussianContext : public ParametricContext {
@@ -182,18 +182,6 @@ namespace Objectives {
     { if (use_rational_optimization) {
 	compute_partial_sums();
       }
-    }
-  
-    void compute_partial_sums() override {
-      throw optimizationFlagException();
-    }
-
-    float compute_score_multclust_optimized(int i, int j) override {
-      throw optimizationFlagException();
-    }
-    
-    float compute_score_riskpart_optimized(int i, int j) override {
-      throw optimizationFlagException();
     }
   
     float compute_score_multclust(int i, int j) override {
@@ -224,6 +212,17 @@ namespace Objectives {
       }
     }
 
+    void compute_partial_sums() override {
+      throw optimizationFlagException();
+    }
+
+    float compute_score_multclust_optimized(int i, int j) override {
+      throw optimizationFlagException();
+    }
+    
+    float compute_score_riskpart_optimized(int i, int j) override {
+      throw optimizationFlagException();
+    }
 
   };
 

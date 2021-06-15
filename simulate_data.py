@@ -253,17 +253,19 @@ def form_location_data(xx,
 
 if __name__ == '__main__':
     xMin,xMax,yMin,yMax=0,1,0,1
-    numSplits = 25
+    numSplits = 50
     num_partitions = 4
     base_q = numSplits*numSplits/4
 
     # q = 1 for multiple_cluster detection
     
     q1_baseline,q2_baseline,q3_baseline,q4_baseline=(base_q,base_q,base_q,base_q)
-    lambdas = (int(.01*2000*q4_baseline), # 3000
-               int(.01*800*q3_baseline), # 1000
-               int(.01*400*q2_baseline),  # 300
-               int(.01*20*q1_baseline))   # 10
+    lambdas = (int(40*q4_baseline), # 3000
+               int(10*q3_baseline), # 1000
+               int(5*q2_baseline),  # 300
+               int(.1*q1_baseline))   # 10
+
+    # Not needed; baseline is calculated as population baseline regardless of below settings
     baseline_all = 1*(30*base_q)
     baseline = baseline_all/(numSplits*numSplits)
 
