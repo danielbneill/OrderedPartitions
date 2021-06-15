@@ -10,6 +10,9 @@
 #include <cmath>
 #include <exception>
 
+
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 using ipair = std::pair<int, int>;
 using ipairlist = std::list<ipair>;
 using ilist = std::list<int>;
@@ -156,10 +159,14 @@ namespace Objectives {
     }
 
     float compute_score_multclust_optimized(int i, int j) override {
+      UNUSED(i);
+      UNUSED(j);
       throw optimizationFlagException();
     }
     
     float compute_score_riskpart_optimized(int i, int j) override {
+      UNUSED(i);
+      UNUSED(j);
       throw optimizationFlagException();
     }
 
@@ -217,10 +224,14 @@ namespace Objectives {
     }
 
     float compute_score_multclust_optimized(int i, int j) override {
+      UNUSED(i);
+      UNUSED(j);
       throw optimizationFlagException();
     }
     
     float compute_score_riskpart_optimized(int i, int j) override {
+      UNUSED(i);
+      UNUSED(j);
       throw optimizationFlagException();
     }
 

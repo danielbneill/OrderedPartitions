@@ -12,6 +12,8 @@
 #include "threadpool.hpp"
 #include "threadsafequeue.hpp"
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 class Score {
 public:
   static double power_(double a, double b, double gamma) {
@@ -27,6 +29,7 @@ public:
     return std::exp(-a)/b;
   }
   static double log_(double a, double b) {
+    UNUSED(b);
     return -1.*std::log(1+a);
   }
   static double log_prod_(double a, double b) {
@@ -46,6 +49,7 @@ public:
   }
   // placeholder for testing
   static double score_summand_(double a, double b, double gamma) {
+    UNUSED(gamma);
     return (std::pow(a,6.0))*(std::pow(b,-5.0));
     return a;
   }

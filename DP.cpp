@@ -275,7 +275,6 @@ void
 DPSolver::optimize_multiple_clustering_case() {
   // Pick out associated maxScores element
   int currentInd = 0, nextInd = 0, nextInd1 = 0;
-  float score1;
   for (int t=T_; t>0; --t) {
     float score_num1 = 0., score_den1 = 0.;
     std::vector<int> subset;
@@ -299,20 +298,18 @@ DPSolver::optimize_multiple_clustering_case() {
   }
 
   // reorder subsets
-  reorder_subsets(subsets_, score_by_subset_, a_, b_);
+  reorder_subsets(subsets_, score_by_subset_);
 
 }
 
 void
 DPSolver::reorder_subsets(ivecvec& subsets, 
-			  fvec& score_by_subsets,
-			  const fvec& a, 
-			  const fvec& b) {
+			  fvec& score_by_subsets) {
   std::vector<int> ind(subsets.size(), 0);
   std::iota(ind.begin(), ind.end(), 0.);
 
   std::stable_sort(ind.begin(), ind.end(),
-		   [&a, &b, score_by_subsets](int i, int j) {
+		   [score_by_subsets](int i, int j) {
 		     return (score_by_subsets[i] < score_by_subsets[j]);
 		   });
 
@@ -322,7 +319,7 @@ DPSolver::reorder_subsets(ivecvec& subsets,
   subsets_s = std::vector<std::vector<int>>(subsets.size(), std::vector<int>());
   score_by_subsets_s = std::vector<float>(subsets.size(), 0.);
 
-  for (int i=0; i<subsets.size(); ++i) {
+  for (size_t i=0; i<subsets.size(); ++i) {
     subsets_s[i] = subsets[ind[i]];
     score_by_subsets_s[i] = score_by_subsets[ind[i]];
   }

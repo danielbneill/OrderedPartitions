@@ -14,6 +14,8 @@
 #include "score.hpp"
 #include "LTSS.hpp"
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 using ipair = std::pair<int, int>;
 using ipairlist = std::list<ipair>;
 using ilist = std::list<int>;
@@ -84,7 +86,7 @@ private:
   void optimize_multiple_clustering_case();
 
   void sort_by_priority(fvec&, fvec&);
-  void reorder_subsets(ivecvec&, fvec&, const fvec&, const fvec&);
+  void reorder_subsets(ivecvec&, fvec&);
   float compute_score(int, int);
   float compute_ambient_score(float, float);
 };

@@ -244,7 +244,8 @@ PartitionTest::formPartitions_() {
 
 resultPair
 PartitionTest::get_results() const {
-  while (!optimization_done_);
+  while (!optimization_done_)
+    ;
     return optimalResult_;
 }
 

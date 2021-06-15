@@ -109,7 +109,7 @@ TEST(PartitionGraphTest, OrderedProperty) {
 
   std::vector<float> a(n), b(n);
 
-  for (size_t i=0; i<T; ++i) {
+  for (int i=0; i<T; ++i) {
     for (auto &el : a)
       el = dist(gen);
     for (auto &el : b)
@@ -298,16 +298,9 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
 
     auto ltss = LTSSSolver(n, a, b);
     auto ltss_opt = ltss.get_optimal_subset_extern();
-    auto ltss_score = ltss.get_optimal_score_extern();
 
-    if (ltss_opt.size() != dp_opt[1].size()) {
-      std::cerr << "HERE" << std::endl;
-    }
     ASSERT_EQ(ltss_opt.size(), dp_opt[1].size());
-    for (int i=0; i<ltss_opt.size(); ++i) {
-      if (ltss_opt[i] != dp_opt[1][i]) {
-	std::cerr << "HERE" << std::endl;
-      }
+    for (size_t i=0; i<ltss_opt.size(); ++i) {
       ASSERT_EQ(ltss_opt[i], dp_opt[1][i]);
     }
   }
