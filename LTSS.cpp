@@ -86,16 +86,11 @@ void
 LTSSSolver::optimize() {
   optimal_score_ = 0.;
 
-  // std::cout << "n_ : " << n_ << "\n";
-  // std::cout << "a_.size(): " << a_.size() << "\n";
-  // std::cout << "b_.size(): " << b_.size() << "\n";
-
-  float maxScore = std::numeric_limits<float>::min();
+  float maxScore = -std::numeric_limits<float>::max();
   std::pair<int, int> p;
   // Test ascending partitions
   for (int i=1; i<=n_; ++i) {
     auto score = compute_score(0, i);
-    // std::cout << "asc i: " << i << " score: " << score << "\n";
     if (score > maxScore) {
       maxScore = score;
       p = std::make_pair(0, i);
@@ -104,10 +99,6 @@ LTSSSolver::optimize() {
   // Test descending partitions
   for (int i=n_-1; i>=0; --i) {
     auto score = compute_score(i, n_);
-    // std::cout << "dsc i: " << i << " score: " << score << "\n";
-    // if (i < n_) {
-    //   std::cout << "test i: " << i << " accum: " << std::accumulate(a_.begin()+i, a_.end(), 0.) << "\n";
-    // }
     if (score > maxScore) {
       maxScore = score;
       p = std::make_pair(i, n_);

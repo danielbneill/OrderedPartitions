@@ -9,6 +9,7 @@
 #include <limits>
 #include <iterator>
 
+#include "score.hpp"
 #include "graph.hpp"
 #include "DP.hpp"
 
@@ -153,17 +154,24 @@ TEST(DPSolverTest, OptimizationFlag) {
     for (auto&el : b)
       el = distb(gen);
     
-    auto dp_unopt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
-    auto dp_opt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, true);
+    // Optimization flag only implemented for RationalScore context...
+    auto dp_unopt = DPSolver(n, T, a, b, objective_fn::RationalScore, false, false);
+    auto dp_opt = DPSolver(n, T, a, b, objective_fn::RationalScore, false, true);
     
     auto subsets_unopt = dp_unopt.get_optimal_subsets_extern();
     auto subsets_opt = dp_opt.get_optimal_subsets_extern();
     
     ASSERT_EQ(subsets_unopt.size(), subsets_opt.size());
-
+    
     for (size_t j=0; j<subsets_unopt.size(); ++j) {
       ASSERT_EQ(subsets_unopt[j], subsets_opt[j]);
     }
+
+    // ...throw otherwise
+    auto dp_gauss_unopt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
+    EXPECT_THROW(auto dp_gauss_opt = DPSolver(n, T, a, b, objective_fn::Gaussian, false, true), Objectives::optimizationFlagException);
+    auto dp_poiss_unopt = DPSolver(n, T, a, b, objective_fn::Poisson, false, false);
+    EXPECT_THROW(auto dp_poiss_opt = DPSolver(n, T, a, b, objective_fn::Poisson, false, true), Objectives::optimizationFlagException);
   }
 }
 
@@ -188,10 +196,10 @@ TEST(DPSolverTest, Baselines ) {
 
   std::vector<std::vector<int>> expected = {
     {1, 2, 3, 4, 6, 8, 10, 12, 16, 19, 22, 23, 25, 28, 29, 32, 35, 38, 21}, 
-    {13}, 
-    {24},
-    {0}, 
-    {5, 7, 9, 11, 14, 18, 33, 36, 15, 27, 30, 37, 39, 17, 26, 20, 31, 34}
+    {13, 24}, 
+    {0, 5, 7, 9, 11, 14, 18, 33, 36, 15, 27, 30, 37, 39},
+    {17, 26}, 
+    {20, 31, 34}
   };
 
   
@@ -228,7 +236,7 @@ TEST(DPSolverTest, OrderedProperty) {
     // Presort
     sort_by_priority(a, b);
 
-    auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, true);
+    auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
     auto opt = dp.get_optimal_subsets_extern();
 
     int sum;
@@ -252,12 +260,10 @@ TEST(DPSolverTest, OrderedProperty) {
 TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
   
   int NUM_CASES = 500, T = 2;
-  size_t lower_n=4, upper_n=4;
+  size_t lower_n=10, upper_n=100;
 
   std::default_random_engine gen;
   gen.seed(std::random_device()());
-  // XXX
-  // std::uniform_int_distribution<int> distn(10, 100);
   std::uniform_int_distribution<int> distn(lower_n, upper_n);
   std::uniform_real_distribution<float> dista(-10., 10.);
   std::uniform_real_distribution<float> distb( 0., 10.);
@@ -280,10 +286,12 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
     ASSERT_GE(n, lower_n);
     ASSERT_LE(n, upper_n);
 
-    auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
+    // auto dp = DPSolver(n, T, a, b, objective_fn::Gaussian, false, false);
+    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, false, false);
     auto dp_opt = dp.get_optimal_subsets_extern();
     auto scores = dp.get_score_by_subset_extern();
 
+    // auto dp_risk_part = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
     auto dp_risk_part = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
     auto dp_opt_risk_part = dp_risk_part.get_optimal_subsets_extern();
     auto scores_risk_part = dp_risk_part.get_score_by_subset_extern();
@@ -292,8 +300,14 @@ TEST(DPSolverTest, HighestScoringSetOf2TieOut) {
     auto ltss_opt = ltss.get_optimal_subset_extern();
     auto ltss_score = ltss.get_optimal_score_extern();
 
+    if (ltss_opt.size() != dp_opt[1].size()) {
+      std::cerr << "HERE" << std::endl;
+    }
     ASSERT_EQ(ltss_opt.size(), dp_opt[1].size());
     for (int i=0; i<ltss_opt.size(); ++i) {
+      if (ltss_opt[i] != dp_opt[1][i]) {
+	std::cerr << "HERE" << std::endl;
+      }
       ASSERT_EQ(ltss_opt[i], dp_opt[1][i]);
     }
   }
@@ -379,20 +393,6 @@ TEST(MultiSolverTest, SmallScaleTieouts) {
 
     ASSERT_EQ(opt_pg.size(), opt_dp.size());
 
-    /*
-      std::copy(a.begin(), a.end(), std::ostream_iterator<float>(std::cout, " "));
-      std::cout << std::endl;
-      std::copy(b.begin(), b.end(), std::ostream_iterator<float>(std::cout, " "));
-      std::cout << std::endl;
-      std::copy(c.begin(), c.end(), std::ostream_iterator<float>(std::cout, " " ));
-      std::cout << std::endl;
-      std::cout << "PG SOLVER\n";
-      pretty_print_subsets(opt_pg);
-      std::cout << "DP SOLVER\n";
-      pretty_print_subsets(opt_dp);
-      std::cout << "=====\n";
-    */
-
     // Scores
     float pg_score_num = 0., pg_score_den = 0.;
     float dp_score_num = 0., dp_score_den = 0.;
@@ -408,9 +408,6 @@ TEST(MultiSolverTest, SmallScaleTieouts) {
       dp_score += dp_score_num*dp_score_num/dp_score_den;
     }
 
-    // std::cout << "Scores (PG, DP): " << pg_score << " : " << dp_score << std::endl;
-    
-    
     for (size_t i=0; i<opt_pg.size(); ++i) {
       for (size_t j=0; j<opt_pg[i].size(); ++j) {
 	ASSERT_EQ(opt_pg[i][j], opt_dp[i][j]);
@@ -423,7 +420,7 @@ TEST(MultiSolverTest, SmallScaleTieouts) {
 
 TEST(MultiSolverTest, LargeScaleTieouts) {
 
-  int n = 500, T = 15;
+  int n = 250, T = 15;
   size_t NUM_CASES = 5;
   
   std::default_random_engine gen;
@@ -448,24 +445,10 @@ TEST(MultiSolverTest, LargeScaleTieouts) {
     auto opt_pg = pg.get_optimal_subsets_extern();
 
     // auto dp = DPSolver(n, T, a, b);
-    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, false);
+    auto dp = DPSolver(n, T, a, b, objective_fn::RationalScore, true, true);
     auto opt_dp = dp.get_optimal_subsets_extern();
 
     ASSERT_EQ(opt_pg.size(), opt_dp.size());
-
-    /*
-      std::copy(a.begin(), a.end(), std::ostream_iterator<float>(std::cout, " "));
-      std::cout << std::endl;
-      std::copy(b.begin(), b.end(), std::ostream_iterator<float>(std::cout, " "));
-      std::cout << std::endl;
-      std::copy(c.begin(), c.end(), std::ostream_iterator<float>(std::cout, " " ));
-      std::cout << std::endl;
-      std::cout << "PG SOLVER\n";
-      pretty_print_subsets(opt_pg);
-      std::cout << "DP SOLVER\n";
-      pretty_print_subsets(opt_dp);
-      std::cout << "=====\n";
-    */
 
     // Scores
     float pg_score_num = 0., pg_score_den = 0.;
@@ -482,9 +465,6 @@ TEST(MultiSolverTest, LargeScaleTieouts) {
       dp_score += dp_score_num*dp_score_num/dp_score_den;
     }
 
-    // std::cout << "Scores (PG, DP): " << pg_score << " : " << dp_score << std::endl;
-    
-    
     for (size_t i=0; i<opt_pg.size(); ++i) {
       for (size_t j=0; j<opt_pg[i].size(); ++j) {
 	ASSERT_TRUE((opt_pg[i][j] == opt_dp[i][j]) || (dp_score > pg_score));
