@@ -29,7 +29,9 @@ cmake_policy(SET CMP0086 OLD)
 include(GNUInstallDirs)
 
 # GTest
-find_package(GTest REQUIRED)
+if (USE_C++14 OR USE_C++17)
+  find_package(GTest REQUIRED)
+endif()
 
 # SWIG, Python
 find_package(SWIG REQUIRED)
@@ -58,8 +60,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 set(CMAKE_SWIG_FLAGS "")
+if (USE_C++14 OR USE_C++17)
+  include_directories(${GTEST_INCLUDE_DIRS})
+endif()
 
-include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${Boost_INCLUDE_DIR})
@@ -70,18 +74,17 @@ add_library(DP OBJECT DP.cpp)
 add_library(DP_multiprec OBJECT DP_multiprec.cpp)
 add_library(LTSS OBJECT LTSS.cpp)
 
-# C++ executable gtest_all
-add_executable(gtest_all gtest_all.cpp)
 target_link_libraries(DP LTSS)
 target_link_libraries(DP_multiprec ${Boost_LIBRARIES} gmp)
-target_link_libraries(gtest_all graph LTSS DP ${GTEST_LIBRARIES} pthread)
+
+# C++ executable gtest_all
+if (USE_C++14 OR USE_C++17)
+  add_executable(gtest_all gtest_all.cpp)
+  target_link_libraries(gtest_all graph LTSS DP ${GTEST_LIBRARIES} pthread)
+endif()
 
 # C++ executable test_partitions
-if (USE_C++17)
-  add_library(test_optimal_partition test_optimal_partition.cpp)
-  add_executable(test_partitions test_partitions.cpp)
-  target_link_libraries(test_partitions test_optimal_partition pthread)
-elseif (USE_C++14)
+if (USE_C++14 OR USE_C++17)
   add_library(test_optimal_partition test_optimal_partition.cpp)
   add_executable(test_partitions test_partitions.cpp)
   target_link_libraries(test_partitions test_optimal_partition pthread)
@@ -92,8 +95,10 @@ add_executable(LTSS_solver_test LTSS_solver_test.cpp)
 target_link_libraries(LTSS_solver_test LTSS)
 
 # C++ executable graph_to_dot
-add_executable(graph_to_dot graph_to_dot.cpp)
-target_link_libraries(graph_to_dot graph)
+if (USE_C++14 OR USE_C++17)
+  add_executable(graph_to_dot graph_to_dot.cpp)
+  target_link_libraries(graph_to_dot graph)
+endif()
 
 # C++ executable solver_timer
 add_library(timer OBJECT timer.cpp)
@@ -101,8 +106,10 @@ add_executable(solver_timer solver_timer.cpp)
 target_link_libraries(solver_timer DP LTSS graph timer)
 
 # C++ executable multiprecisision
-add_executable(multiprecision multiprecision.cpp)
-target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
+if (USE_C++14 OR USE_C++17)
+  add_executable(multiprecision multiprecision.cpp)
+  target_link_libraries(multiprecision ${Boost_LIBRARIES} gmp)
+endif()
 
 # C++ DPSolver
 add_executable(DP_solver_test DP_solver_test.cpp)
