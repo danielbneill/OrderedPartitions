@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "port_utils.hpp"
 #include "threadsafequeue.hpp"
-
 
 class ThreadPool
 {
@@ -88,7 +88,7 @@ public:
 	}
     }
 
-    auto get(void)
+    auto get(void) -> T
     {
       return m_future.get();
     }
@@ -156,10 +156,10 @@ public:
    * Submit a job to be run by the thread pool.
    */
   template <typename Func, typename... Args>
-  auto submit(Func&& func, Args&&... args)
+  auto submit(Func&& func, Args&&... args) -> TaskFuture<typename std::result_of<Func(Args...)>::type>
   {
     auto boundTask = std::bind(std::forward<Func>(func), std::forward<Args>(args)...);
-    using ResultType = std::result_of_t<decltype(boundTask)()>;
+    using ResultType = typename std::result_of<decltype(boundTask)()>::type;
     using PackagedTask = std::packaged_task<ResultType()>;
     using TaskType = ThreadTask<PackagedTask>;
             
@@ -222,8 +222,8 @@ namespace DefaultThreadPool
   /**
    * Submit a job to the default thread pool.
    */
-  template <typename Func, typename... Args>
-  inline auto submitJob(Func&& func, Args&&... args)
+  template<typename Func, typename... Args>
+  inline auto submitJob(Func&& func, Args&&... args) -> ThreadPool::TaskFuture<typename std::result_of<Func(Args...)>::type>
   {
     return getThreadPool().submit(std::forward<Func>(func), std::forward<Args>(args)...);
   }

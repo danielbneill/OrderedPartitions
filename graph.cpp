@@ -124,8 +124,8 @@ PartitionGraph::optimize() {
   // std::cerr << "COMPUTING SHORTEST PATH\n";
 
   int nb_vertices = boost::num_vertices(G_);
-  boost::property_map<graph_t, float EdgeWeightProperty::*>::type weight_pmap;
-  weight_pmap = boost::get(&EdgeWeightProperty::weight, G_);
+  boost::property_map<graph_t, float EdgeWeightProperty::*>::type weight_pmap_;
+  weight_pmap_ = boost::get(&EdgeWeightProperty::weight, G_);
   
   // init the distance
   std::vector<float> distance(nb_vertices, (std::numeric_limits<float>::max)());
@@ -139,7 +139,7 @@ PartitionGraph::optimize() {
   // bellman-ford
   __attribute__((unused)) bool r = bellman_ford_shortest_paths(G_, 
 							       nb_vertices, 
-							       boost::weight_map(weight_pmap).
+							       boost::weight_map(weight_pmap_).
 							       distance_map(&distance[0]).
 							       predecessor_map(&parent[0])
 							       );

@@ -2,15 +2,25 @@ cmake_minimum_required(VERSION 3.6)
 
 project(proto)
 
-option(USE_C++17 "Use C++17 compliant compiler, default is C++14" OFF)
+option(USE_C++17 "Use C++17 compliant compiler, default is C++11" OFF)
+option(USE_C++14 "Use C++14 compliant compiler, default is C++!1" OFF)
+
+if(CMAKE_CXX_COMPILER_LOADED)
+  message(STATUS "The C++ compiler ID is: ${CMAKE_CXX_COMPILER_ID}")
+  message(STATUS "The C++ compiler version is: ${CMAKE_CXX_COMPILER_VERSION}")
+endif()
 
 if (USE_C++17)
   set(CMAKE_CXX_STANDARD 17)
   message(STATUS "C++17-compliant CXX")
-else()
+elseif (USE_C++14)
   set(CMAKE_CXX_STANDARD 14)
   message(STATUS "C++14-compliant CXX")
+else()
+  set(CMAKE_CXX_STANDARD 11)
+  message(STATUS "C++11-compliant CXX")
 endif()
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_policy(SET CMP0078 OLD)

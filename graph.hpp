@@ -21,7 +21,10 @@
 //                GraphProperites, EdgeList>
 //
              
+// typedef boost::property<boost::edge_weight_t, float> EdgeWeightProperty;
+
 struct EdgeWeightProperty {
+  EdgeWeightProperty() : weight(0) {}
   EdgeWeightProperty(float w) : weight(w) {}
   float weight;
 };
