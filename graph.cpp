@@ -8,6 +8,9 @@
 
 #include "graph.hpp"
 
+template<typename T>
+class TD;
+
 float
 PartitionGraph::compute_weight(int i, int j) {
   float weight = -1. * std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
@@ -250,9 +253,10 @@ PartitionGraph::write_dot() {
   }
 
   auto weightProp = boost::get(&EdgeWeightProperty::weight, G_);
+  using weightPropType = boost::adj_list_edge_property_map<boost::directed_tag, float, float&, unsigned long, EdgeWeightProperty, float EdgeWeightProperty::*>;
 
   // Full labeling
-  write_graphviz(std::cout, G_, name_label_writer(nameProp), weight_label_writer(weightProp));
+  write_graphviz(std::cout, G_, name_label_writer<std::vector<std::string>>(nameProp), weight_label_writer<weightPropType>(weightProp));
 
   // Only node name labeling
   // write_graphviz(std::cout, G_, name_label_writer(nameProp));

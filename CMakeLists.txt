@@ -2,7 +2,15 @@ cmake_minimum_required(VERSION 3.6)
 
 project(proto)
 
-set(CMAKE_CXX_STANDARD 17)
+option(USE_C++17 "Use C++17 compliant compiler, default is C++14" OFF)
+
+if (USE_C++17)
+  set(CMAKE_CXX_STANDARD 17)
+  message(STATUS "C++17-compliant CXX")
+else()
+  set(CMAKE_CXX_STANDARD 14)
+  message(STATUS "C++14-compliant CXX")
+endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_policy(SET CMP0078 OLD)
@@ -47,11 +55,12 @@ include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-# C++ executable gtest_all
 add_library(graph OBJECT graph.cpp)
 add_library(DP OBJECT DP.cpp)
 add_library(DP_multiprec OBJECT DP_multiprec.cpp)
 add_library(LTSS OBJECT LTSS.cpp)
+
+# C++ executable gtest_all
 add_executable(gtest_all gtest_all.cpp)
 target_link_libraries(DP LTSS)
 target_link_libraries(DP_multiprec ${Boost_LIBRARIES} gmp)
