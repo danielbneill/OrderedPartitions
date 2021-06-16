@@ -77,9 +77,15 @@ target_link_libraries(DP_multiprec ${Boost_LIBRARIES} gmp)
 target_link_libraries(gtest_all graph LTSS DP ${GTEST_LIBRARIES} pthread)
 
 # C++ executable test_partitions
-add_library(test_optimal_partition test_optimal_partition.cpp)
-add_executable(test_partitions test_partitions.cpp)
-target_link_libraries(test_partitions test_optimal_partition pthread)
+if (USE_C++17)
+  add_library(test_optimal_partition test_optimal_partition.cpp)
+  add_executable(test_partitions test_partitions.cpp)
+  target_link_libraries(test_partitions test_optimal_partition pthread)
+elseif (USE_C++14)
+  add_library(test_optimal_partition test_optimal_partition.cpp)
+  add_executable(test_partitions test_partitions.cpp)
+  target_link_libraries(test_partitions test_optimal_partition pthread)
+endif()
 
 # C++ LTSSSolver
 add_executable(LTSS_solver_test LTSS_solver_test.cpp)

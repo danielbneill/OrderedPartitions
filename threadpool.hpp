@@ -76,10 +76,10 @@ public:
     {
     }
 
-    TaskFuture(const TaskFuture& rhs) = delete;
-    TaskFuture& operator=(const TaskFuture& rhs) = delete;
-    TaskFuture(TaskFuture&& other) = default;
-    TaskFuture& operator=(TaskFuture&& other) = default;
+    TaskFuture(const TaskFuture&) = delete;
+    TaskFuture& operator=(const TaskFuture&) = delete;
+    TaskFuture(TaskFuture&&) = default;
+    TaskFuture& operator=(TaskFuture&&) = default;
     ~TaskFuture(void)
     {
       if(m_future.valid())

@@ -76,6 +76,7 @@ PartitionTest::runTest() {
 
   // submit work if chunk size is large enough, otherwise single process
   // DISABLED
+#ifdef FALSE
   if (false) {
     for (int i=0; i<NUM_TASKS; ++i) {
       v_.push_back(DefaultThreadPool::submitJob(task, i*window, (i+1)*window));
@@ -88,6 +89,8 @@ PartitionTest::runTest() {
   } else {
     v_.push_back(DefaultThreadPool::submitJob(task, 0, numPartitions));
   }
+#endif
+  v_.push_back(DefaultThreadPool::submitJob(task, 0, numPartitions));
   
   for (auto& item : v_)
     item.get();
