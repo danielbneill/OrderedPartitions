@@ -126,6 +126,7 @@ swig_add_library(test_partition_optimizer LANGUAGE python OUTPUT_DIR ${CMAKE_CUR
 swig_link_libraries(test_partition_optimizer ${PYTHON_LIBRARIES})
 
 # Equivalent CL swig:
+# % export SWIG_FLAGS="-includeall"
 # % swig -c++ -python proto.i
-# % g++ -std=c++17 -c -fpic python_graph.cpp proto_wrap.cxx -I/usr/include/python3.6
-# % g++ -std=c++17 -shared python_graph.o graph.o proto_wrap.o -o _proto.so -lstdc++
+# % g++ -std=c++11 -c -fPIC python_graph.cpp graph.cpp LTSS.cpp python_dpsolver.cpp DP.cpp python_dp_multisolver.cpp DP_multiprec.cpp python_ltsssolver.cpp LTSS.cpp proto_wrap.cxx -I/usr/include/python3.6
+# % g++ -std=c++11 -shared python_graph.o graph.o python_dpsolver.o DP.o python_dp_multisolver.o DP_multiprec.o python_ltsssolver.o LTSS.o proto_wrap.o -o _proto.so -lstdc++

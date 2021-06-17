@@ -4,6 +4,7 @@ proto.py
 protoPYTHON_wrap.cxx
 __pycache__
 *.so
+*.o
 *.dat
 *.dot
 *.pdf
