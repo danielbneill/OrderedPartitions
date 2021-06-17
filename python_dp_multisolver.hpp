@@ -13,10 +13,11 @@
 #include <boost/multiprecision/gmp.hpp>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
+#include "score.hpp"
+
 // using boost::multiprecision::cpp_dec_float_100;
 // using namespace boost::multiprecision;
 
-using ivecvec = std::vector<std::vector<int>>;
 using gmpvec = std::vector<boost::multiprecision::cpp_dec_float_100>;
 using swgmppair = std::pair<ivecvec, boost::multiprecision::cpp_dec_float_100>;
 
