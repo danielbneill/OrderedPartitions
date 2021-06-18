@@ -11,23 +11,23 @@
 #include <type_traits>
 
 std::vector<std::vector<int> > find_optimal_partition__PG(int n,
-			       int T,
-			       std::vector<float> a,
-			       std::vector<float> b);
+							  int T,
+							  std::vector<float> a,
+							  std::vector<float> b);
 float find_optimal_weight__PG(int n,
-			  int T,
-			  std::vector<float> a,
-			  std::vector<float> b);
+			      int T,
+			      std::vector<float> a,
+			      std::vector<float> b);
 
 std::pair<std::vector<std::vector<int> >, float> optimize_one__PG(int n,
-								 int T,
-								 std::vector<float> a,
-								 std::vector<float> b);
+								  int T,
+								  std::vector<float> a,
+								  std::vector<float> b);
 
-std::pair<std::vector<std::vector<int>>, float> sweep_best__PG(int n,
-							       int T,
-							       std::vector<float> a,
-							       std::vector<float> b);
+std::pair<std::vector<std::vector<int> >, float> sweep_best__PG(int n,
+								int T,
+								std::vector<float> a,
+								std::vector<float> b);
 std::vector<std::pair<std::vector<std::vector<int>>, float>> sweep_parallel__PG(int n,
 										int T,
 										std::vector<float> a,
