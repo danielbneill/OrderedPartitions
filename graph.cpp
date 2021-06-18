@@ -145,7 +145,6 @@ PartitionGraph::optimize() {
 							       );
   
   // optimal paths
-  using ipair = std::pair<int,int>;
   std::list<int> pathlist;
   int first=0, index = parent.back();
 
@@ -153,7 +152,7 @@ PartitionGraph::optimize() {
   while (index > 0) { pathlist.push_back(index); index = parent[index]; }
   // node optimalpath
   std::for_each(pathlist.rbegin(), pathlist.rend(), [this, &first](int a){
-		  ipair node = int_to_node(a);
+		  std::pair<int, int> node = int_to_node(a);
 		  int last = node.first;
 		  this->optimalpath_.push_back(std::make_pair(first, last));
 		  first = last;
@@ -169,13 +168,13 @@ PartitionGraph::optimize() {
     subset_ind++;
   }
 
-  std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](ipair i) {
+  std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](std::pair<int, int> i) {
 		  this->optimalweight_ += this->compute_weight(i.first, i.second);
 		});
 
   // Details
   /*
-    std::for_each(optimalpath_.begin(), optimalpath_.end(), [](ipair i){
+    std::for_each(optimalpath_.begin(), optimalpath_.end(), [](std::pair<int, int> i){
     std::cout << "[" << i.first << ", " << i.second << ") --> ";
     });
     std::cout << " >>SINK<< \n";
@@ -185,7 +184,7 @@ PartitionGraph::optimize() {
     std::cout << "\n";
     
     std::cout << "WEIGHTS\n";
-    std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](ipair i) {
+    std::for_each(optimalpath_.begin(), optimalpath_.end(), [this](std::pair<int, int> i) {
     std::cout << "[" << i.first << ", " << i.second << ") : " 
     << this->compute_weight(i.first, i.second) << "\n";
     });

@@ -10,14 +10,7 @@
 #include <limits>
 #include <type_traits>
 
-using ivec = std::vector<int>;
-using fvec = std::vector<float>;
-using ivecvec = std::vector<ivec>;
-using swpair = std::pair<ivecvec, float>;
-using swcont = std::vector<swpair>;
-
-
-ivecvec find_optimal_partition__PG(int n,
+std::vector<std::vector<int>> find_optimal_partition__PG(int n,
 			       int T,
 			       std::vector<float> a,
 			       std::vector<float> b);
@@ -26,23 +19,23 @@ float find_optimal_weight__PG(int n,
 			  std::vector<float> a,
 			  std::vector<float> b);
 
-swpair optimize_one__PG(int n,
-		   int T,
-		   std::vector<float> a,
-		   std::vector<float> b);
+std::pair<std::vector<std::vector<int>>, float> optimize_one__PG(int n,
+								 int T,
+								 std::vector<float> a,
+								 std::vector<float> b);
 
-swpair sweep_best__PG(int n,
-		  int T,
-		  std::vector<float> a,
-		  std::vector<float> b);
-swcont sweep_parallel__PG(int n,
-		    int T,
-		    std::vector<float> a,
-		    std::vector<float> b);
-swcont sweep__PG(int n,
-	     int T,
-	     std::vector<float> a,
-	     std::vector<float> b);
+std::pair<std::vector<std::vector<int>>, float> sweep_best__PG(int n,
+							       int T,
+							       std::vector<float> a,
+							       std::vector<float> b);
+std::vector<std::pair<std::vector<std::vector<int>>, float>> sweep_parallel__PG(int n,
+										int T,
+										std::vector<float> a,
+										std::vector<float> b);
+std::vector<std::pair<std::vector<std::vector<int>>, float>> sweep__PG(int n,
+								       int T,
+								       std::vector<float> a,
+								       std::vector<float> b);
 
 
 #endif

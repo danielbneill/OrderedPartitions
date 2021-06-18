@@ -163,7 +163,7 @@ DPSolver_multi::optimize() {
   }
 }
 
-ivecvec
+std::vector<std::vector<int>>
 DPSolver_multi::get_optimal_subsets_extern() const {
   return subsets_;
 }

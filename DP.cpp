@@ -303,8 +303,8 @@ DPSolver::optimize_multiple_clustering_case() {
 }
 
 void
-DPSolver::reorder_subsets(ivecvec& subsets, 
-			  fvec& score_by_subsets) {
+DPSolver::reorder_subsets(std::vector<std::vector<int>>& subsets, 
+			  std::vector<float>& score_by_subsets) {
   std::vector<int> ind(subsets.size(), 0);
   std::iota(ind.begin(), ind.end(), 0.);
 
@@ -314,8 +314,8 @@ DPSolver::reorder_subsets(ivecvec& subsets,
 		   });
 
   // Inefficient reordering
-  ivecvec subsets_s;
-  fvec score_by_subsets_s;
+  std::vector<std::vector<int>> subsets_s;
+  std::vector<float> score_by_subsets_s;
   subsets_s = std::vector<std::vector<int>>(subsets.size(), std::vector<int>());
   score_by_subsets_s = std::vector<float>(subsets.size(), 0.);
 
@@ -348,7 +348,7 @@ DPSolver::optimize() {
   }
 }
 
-ivecvec
+std::vector<std::vector<int>>
 DPSolver::get_optimal_subsets_extern() const {
   return subsets_;
 }
@@ -358,7 +358,7 @@ DPSolver::get_optimal_score_extern() const {
   return optimal_score_;
 }
 
-fvec
+std::vector<float>
 DPSolver::get_score_by_subset_extern() const {
   return score_by_subset_;
 }

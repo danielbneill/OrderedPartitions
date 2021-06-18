@@ -111,7 +111,7 @@ LTSSSolver::optimize() {
   optimal_score_ = maxScore;
 }
 
-ivec
+std::vector<int>
 LTSSSolver::get_optimal_subset_extern() const {
   return subset_;
 }

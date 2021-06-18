@@ -14,16 +14,11 @@
 
 using namespace Objectives;
 
-using ivec = std::vector<int>;
-using fvec = std::vector<float>;
-using ivecvec = std::vector<std::vector<int>>;
-using fvecvec = std::vector<std::vector<float>>;
-
 class LTSSSolver {
 public:
   LTSSSolver(int n,
-	     fvec a,
-	     fvec b,
+	     std::vector<float> a,
+	     std::vector<float> b,
 	     objective_fn parametric_dist=objective_fn::Gaussian
 	     ) :
     n_{n},
@@ -32,16 +27,16 @@ public:
     parametric_dist_{parametric_dist}
   { _init(); }
 
-  ivec priority_sortind_;
-  ivec get_optimal_subset_extern() const;
+  std::vector<int> priority_sortind_;
+  std::vector<int> get_optimal_subset_extern() const;
   float get_optimal_score_extern() const;
 
 private:
   int n_;
-  fvec a_;
-  fvec b_;
+  std::vector<float> a_;
+  std::vector<float> b_;
   float optimal_score_;
-  ivec subset_;
+  std::vector<int> subset_;
   objective_fn parametric_dist_;
   std::unique_ptr<ParametricContext> context_;
 
@@ -49,7 +44,7 @@ private:
   void create();
   void optimize();
 
-  void sort_by_priority(fvec&, fvec&);
+  void sort_by_priority(std::vector<float>&, std::vector<float>&);
   float compute_score(int, int);
 };
 

@@ -38,28 +38,21 @@ using graph_t = boost::adjacency_list<boost::listS,
 using edge_descriptor = boost::graph_traits<graph_t>::edge_descriptor;
 using edge_iterator =   boost::graph_traits<graph_t>::edge_iterator;
 
-using ipair = std::pair<int, int>;
-using ipairlist = std::list<ipair>;
-using ilist = std::list<int>;
-using ivec = std::vector<int>;
-using fvec = std::vector<float>;
-using ivecvec = std::vector<std::vector<int>>;
-
 class PartitionGraph {
 public:
   PartitionGraph(int n, 
 		 int T,
-		 fvec a,
-		 fvec b
+		 std::vector<float> a,
+		 std::vector<float> b
 		 ) :
     n_{n},
     T_{T},
     a_{a},
     b_{b},
     per_level_{n-T+1},
-    priority_sortind_{ivec(T_)},
+    priority_sortind_{std::vector<int>(T_)},
     optimalweight_{0.},
-    subsets_{ivecvec(T_)}
+    subsets_{std::vector<std::vector<int>>(T_)}
   { _init(); }
 
   PartitionGraph(int n,
@@ -70,9 +63,9 @@ public:
     n_{n},
     T_{T},
     per_level_{n-T+1},
-    priority_sortind_{ivec(T_)},
+    priority_sortind_{std::vector<int>(T_)},
     optimalweight_{0.},
-    subsets_{ivecvec(T_)}
+    subsets_{std::vector<std::vector<int>>(T_)}
   { 
     a_.assign(a, a+n);
     b_.assign(b, b+n);
@@ -83,32 +76,32 @@ public:
   void optimize();
   void _init() { create(); optimize(); }
 
-  ipairlist get_optimal_path() const;
-  ivec get_optimal_path_extern() const;
-  ivecvec get_optimal_subsets_extern() const;
+  std::list<std::pair<int, int>> get_optimal_path() const;
+  std::vector<int> get_optimal_path_extern() const;
+  std::vector<std::vector<int>> get_optimal_subsets_extern() const;
   float get_optimal_weight_extern() const;
   void write_dot();
 
 private:
   int n_;
   int T_;
-  fvec a_;
-  fvec b_;
+  std::vector<float> a_;
+  std::vector<float> b_;
   int per_level_;
-  ivec priority_sortind_;
-  ipairlist optimalpath_;
-  ilist optimalnodepath_;
+  std::vector<int> priority_sortind_;
+  std::list<std::pair<int, int>> optimalpath_;
+  std::list<int> optimalnodepath_;
   float optimalweight_;
-  ilist optimaledgeweights_;
-  ivecvec subsets_;
+  std::list<int> optimaledgeweights_;
+  std::vector<std::vector<int>> subsets_;
   graph_t G_;
 
   inline int node_to_int(int,int);
-  inline ipair int_to_node(int);
-  void sort_by_priority(fvec&, fvec&);
+  inline std::pair<int, int> int_to_node(int);
+  void sort_by_priority(std::vector<float>&, std::vector<float>&);
   float compute_weight(int, int);
-  float compute_weight(int, int, fvec&);
-  void add_edge_and_weight(int, int, fvec&&);
+  float compute_weight(int, int, std::vector<float>&);
+  void add_edge_and_weight(int, int, std::vector<float>&&);
 };
 
 #endif

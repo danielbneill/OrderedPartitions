@@ -19,13 +19,13 @@ using namespace Objectives;
 #define DPSOLVER_(n,T,a,b) (DPSOLVER_RISK_PART_(n,T,a,b))
 #endif
 
-ivecvec find_optimal_partition__DP(int n,
-				   int T,
-				   std::vector<float> a,
-				   std::vector<float> b,
-				   int parametric_dist,
-				   bool risk_partitioning_objective,
-				   bool use_rational_optimization) {
+std::vector<std::vector<int>> find_optimal_partition__DP(int n,
+							 int T,
+							 std::vector<float> a,
+							 std::vector<float> b,
+							 int parametric_dist,
+							 bool risk_partitioning_objective,
+							 bool use_rational_optimization) {
   auto dp = DPSolver(n, 
 		     T, 
 		     a, 
@@ -53,7 +53,7 @@ float find_optimal_score__DP(int n,
   return dp.get_optimal_score_extern();
 }
 
-swpair optimize_one__DP(int n,
+std::pair<std::vector<std::vector<int>>, float> optimize_one__DP(int n,
 			int T,
 			std::vector<float> a,
 			std::vector<float> b,
@@ -67,21 +67,21 @@ swpair optimize_one__DP(int n,
 		     static_cast<objective_fn>(parametric_dist), 
 		     risk_partitioning_objective, 
 		     use_rational_optimization);
-  ivecvec subsets = dp.get_optimal_subsets_extern();
+  std::vector<std::vector<int>> subsets = dp.get_optimal_subsets_extern();
   float score = dp.get_optimal_score_extern();
   
   return std::make_pair(subsets, score);
 }
 
-swpair sweep_best__DP(int n,
-		      int T,
-		      std::vector<float> a,
-		      std::vector<float> b,
-		      int parametric_dist,
-		      bool risk_partitioning_objective,
-		      bool use_rational_optimization) {
+std::pair<std::vector<std::vector<int>>, float> sweep_best__DP(int n,
+							       int T,
+							       std::vector<float> a,
+							       std::vector<float> b,
+							       int parametric_dist,
+							       bool risk_partitioning_objective,
+							       bool use_rational_optimization) {
   float best_score = std::numeric_limits<float>::max(), score;
-  ivecvec subsets;
+  std::vector<std::vector<int>> subsets;
 
   for (int i=T; i>1; --i) {
     auto dp = DPSolver(n, 
@@ -104,20 +104,20 @@ swpair sweep_best__DP(int n,
   return std::make_pair(subsets, score);
 }
 
-swcont sweep_parallel__DP(int n,
+std::vector<std::pair<std::vector<std::vector<int>>, float>> sweep_parallel__DP(int n,
 			  int T,
 			  std::vector<float> a,
 			  std::vector<float> b,
 			  int parametric_dist,
 			  bool risk_partitioning_objective,
-			  bool use_rational_optimization) {
-
-  ThreadsafeQueue<swpair> results_queue;
-
+										bool use_rational_optimization) {
+  
+  ThreadsafeQueue<std::pair<std::vector<std::vector<int>>, float>> results_queue;
+  
   auto task = [&results_queue](int n, 
 			       int i, 
-			       fvec a, 
-			       fvec b, 
+			       std::vector<float> a, 
+			       std::vector<float> b, 
 			       int parametric_dist,
 			       bool risk_partitioning_objective,
 			       bool use_rational_optimization) {
@@ -140,8 +140,8 @@ swcont sweep_parallel__DP(int n,
   for (auto& item : v) 
     item.get();
 
-  swpair result;
-  swcont results;
+  std::pair<std::vector<std::vector<int>>, float> result;
+  std::vector<std::pair<std::vector<std::vector<int>>, float>> results;
   while (!results_queue.empty()) {
     bool valid = results_queue.waitPop(result);
     if (valid) {
@@ -153,16 +153,16 @@ swcont sweep_parallel__DP(int n,
 
 }
 
-swcont sweep__DP(int n,
-		 int T,
-		 std::vector<float> a,
-		 std::vector<float> b,
-		 int parametric_dist,
-		 bool risk_partitioning_objective,
-		 bool use_rational_optimization) {
+std::vector<std::pair<std::vector<std::vector<int>>, float>> sweep__DP(int n,
+								       int T,
+								       std::vector<float> a,
+								       std::vector<float> b,
+								       int parametric_dist,
+								       bool risk_partitioning_objective,
+								       bool use_rational_optimization) {
   float score;
-  ivecvec subsets;
-  swcont r;
+  std::vector<std::vector<int>> subsets;
+  std::vector<std::pair<std::vector<std::vector<int>>, float>> r;
 
   for (int i=T; i>1; --i) {
     auto dp = DPSolver(n, 

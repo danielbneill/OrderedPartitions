@@ -13,20 +13,12 @@
 using boost::multiprecision::cpp_dec_float_100;
 using namespace boost::multiprecision;
 
-using ipair = std::pair<int, int>;
-using ipairlist = std::list<ipair>;
-using ilist = std::list<int>;
-using ivec = std::vector<int>;
-using gmpfvec = std::vector<cpp_dec_float_100>;
-using ivecvec = std::vector<std::vector<int>>;
-using gmpfvecvec = std::vector<std::vector<cpp_dec_float_100>>;
-
 class DPSolver_multi {
 public:
   DPSolver_multi(int n,
 	   int T,
-	   gmpfvec a,
-	   gmpfvec b,
+	   std::vector<cpp_dec_float_100> a,
+	   std::vector<cpp_dec_float_100> b,
 	   bool use_rational_optimization=false
 	   ) :
     n_{n},
@@ -36,7 +28,7 @@ public:
     use_rational_optimization_{use_rational_optimization}
   { _init(); }
 
-  ivecvec get_optimal_subsets_extern() const;
+  std::vector<std::vector<int>> get_optimal_subsets_extern() const;
   cpp_dec_float_100 get_optimal_score_extern() const;
   void print_maxScore_();
   void print_nextStart_();
@@ -44,22 +36,22 @@ public:
 private:
   int n_;
   int T_;
-  gmpfvec a_;
-  gmpfvec b_;
-  gmpfvecvec a_sums_;
-  gmpfvecvec b_sums_;
-  gmpfvecvec maxScore_;
-  ivecvec nextStart_;
-  ivec priority_sortind_;
+  std::vector<cpp_dec_float_100> a_;
+  std::vector<cpp_dec_float_100> b_;
+  std::vector<std::vector<cpp_dec_float_100>> a_sums_;
+  std::vector<std::vector<cpp_dec_float_100>> b_sums_;
+  std::vector<std::vector<cpp_dec_float_100>> maxScore_;
+  std::vector<std::vector<int>> nextStart_;
+  std::vector<int> priority_sortind_;
   cpp_dec_float_100 optimal_score_;
-  ivecvec subsets_;
+  std::vector<std::vector<int>> subsets_;
   bool use_rational_optimization_;
 
   void _init() { create(); optimize(); }
   void create();
   void optimize();
 
-  void sort_by_priority(gmpfvec&, gmpfvec&);
+  void sort_by_priority(std::vector<cpp_dec_float_100>&, std::vector<cpp_dec_float_100>&);
   cpp_dec_float_100 compute_score_optimized(int, int);
   cpp_dec_float_100 compute_score(int, int);
   void compute_partial_sums();

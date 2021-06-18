@@ -16,22 +16,14 @@
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-using ipair = std::pair<int, int>;
-using ipairlist = std::list<ipair>;
-using ilist = std::list<int>;
-using ivec = std::vector<int>;
-using fvec = std::vector<float>;
-using ivecvec = std::vector<std::vector<int>>;
-using fvecvec = std::vector<std::vector<float>>;
-
 using namespace Objectives;
 
 class DPSolver {
 public:
   DPSolver(int n,
 	   int T,
-	   fvec a,
-	   fvec b,
+	   std::vector<float> a,
+	   std::vector<float> b,
 	   objective_fn parametric_dist=objective_fn::Gaussian,
 	   bool risk_partitioning_objective=false,
 	   bool use_rational_optimization=false
@@ -47,23 +39,23 @@ public:
     
   { _init(); }
 
-  ivecvec get_optimal_subsets_extern() const;
+  std::vector<std::vector<int>> get_optimal_subsets_extern() const;
   float get_optimal_score_extern() const;
-  fvec get_score_by_subset_extern() const;
+  std::vector<float> get_score_by_subset_extern() const;
   void print_maxScore_();
   void print_nextStart_();
     
 private:
   int n_;
   int T_;
-  fvec a_;
-  fvec b_;
-  fvecvec maxScore_, maxScore_sec_;
-  ivecvec nextStart_, nextStart_sec_;
-  ivec priority_sortind_;
+  std::vector<float> a_;
+  std::vector<float> b_;
+  std::vector<std::vector<float>> maxScore_, maxScore_sec_;
+  std::vector<std::vector<int>> nextStart_, nextStart_sec_;
+  std::vector<int> priority_sortind_;
   float optimal_score_;
-  ivecvec subsets_;
-  fvec score_by_subset_;
+  std::vector<std::vector<int>> subsets_;
+  std::vector<float> score_by_subset_;
   objective_fn parametric_dist_;
   bool risk_partitioning_objective_;
   bool use_rational_optimization_;
@@ -85,8 +77,8 @@ private:
   void optimize();
   void optimize_multiple_clustering_case();
 
-  void sort_by_priority(fvec&, fvec&);
-  void reorder_subsets(ivecvec&, fvec&);
+  void sort_by_priority(std::vector<float>&, std::vector<float>&);
+  void reorder_subsets(std::vector<std::vector<int>>&, std::vector<float>&);
   float compute_score(int, int);
   float compute_ambient_score(float, float);
 };

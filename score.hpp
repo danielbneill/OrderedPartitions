@@ -13,14 +13,6 @@
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-using ipair = std::pair<int, int>;
-using ipairlist = std::list<ipair>;
-using ilist = std::list<int>;
-using ivec = std::vector<int>;
-using fvec = std::vector<float>;
-using ivecvec = std::vector<std::vector<int>>;
-using fvecvec = std::vector<std::vector<float>>;
-
 namespace Objectives {
   enum class objective_fn { Gaussian = 0, 
 			    Poisson = 1, 
@@ -36,18 +28,18 @@ namespace Objectives {
 
   class ParametricContext {
   protected:
-    fvec a_;
-    fvec b_;
+    std::vector<float> a_;
+    std::vector<float> b_;
     int n_;
-    fvecvec a_sums_;
-    fvecvec b_sums_;
+    std::vector<std::vector<float>> a_sums_;
+    std::vector<std::vector<float>> b_sums_;
     objective_fn parametric_dist_;
     bool risk_partitioning_objective_;
     bool use_rational_optimization_;
 
   public:
-    ParametricContext(fvec a, 
-		      fvec b, 
+    ParametricContext(std::vector<float> a, 
+		      std::vector<float> b, 
 		      int n, 
 		      objective_fn parametric_dist,
 		      bool risk_partitioning_objective,
@@ -106,8 +98,8 @@ namespace Objectives {
   class PoissonContext : public ParametricContext {
 
   public:
-    PoissonContext(fvec a, 
-		   fvec b, 
+    PoissonContext(std::vector<float> a, 
+		   std::vector<float> b, 
 		   int n, 
 		   objective_fn parametric_dist,
 		   bool risk_partitioning_objective,
@@ -175,8 +167,8 @@ namespace Objectives {
   class GaussianContext : public ParametricContext {
 
   public:
-    GaussianContext(fvec a, 
-		    fvec b, 
+    GaussianContext(std::vector<float> a, 
+		    std::vector<float> b, 
 		    int n, 
 		    objective_fn parametric_dist,
 		    bool risk_partitioning_objective,
@@ -244,8 +236,8 @@ namespace Objectives {
     // XGBoost, e.g.
 
   public:
-    RationalScoreContext(fvec a,
-			 fvec b,
+    RationalScoreContext(std::vector<float> a,
+			 std::vector<float> b,
 			 int n,
 			 objective_fn parametric_dist,
 			 bool risk_partitioning_objective,
