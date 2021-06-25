@@ -1,7 +1,11 @@
 #ifndef __PORT_UTILS__
 #define __PORT_UTILS__
 
-#define IS_11
+/*
+#ifndef IS_11
+  #define IS_11
+#endif
+*/
 #ifdef IS_11
   namespace std {
     template<typename T, typename... Args>

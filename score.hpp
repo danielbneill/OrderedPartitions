@@ -129,7 +129,7 @@ namespace Objectives {
       // CHECK
       float C = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
       float B = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
-      return B*std::log(C/B);
+      return C*std::log(C/B);
     }
     
     float compute_ambient_score_multclust(float a, float b) override {
@@ -185,16 +185,21 @@ namespace Objectives {
   
     float compute_score_multclust(int i, int j) override {
       // CHECK
-      float summand = std::pow(std::accumulate(a_.begin()+i, a_.begin()+j, 0.), 2) /
-	std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
-      return .5*(summand - 1);
+      float C = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
+      float B = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
+      if (C > B) {
+	float summand = std::pow(C, 2) / B;
+	return .5*(summand - 1);
+      } else {
+	return 0.;
+      }
     }
   
     float compute_score_riskpart(int i, int j) override {
       // CHECK
       float C = std::accumulate(a_.begin()+i, a_.begin()+j, 0.);
       float B = std::accumulate(b_.begin()+i, b_.begin()+j, 0.);
-      return C*C/2./B + B/2. - C;
+      return C*C/2./B;
     }
 
     float compute_ambient_score_multclust(float a, float b) override {
